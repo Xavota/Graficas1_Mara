@@ -7,9 +7,9 @@ public:
 	Arreglo(int size, int y = 0, int x = 0);
 	~Arreglo();
 
-	void setX(int x) { m_x = x; }
-	void setY(int y) { m_y = y; }
-	void setValueSize(int size) { m_size = size; }
+	void setX(int x) { m_x = x; setP(); setStart(); }
+	void setY(int y) { m_y = y; setStart(); }
+	void setValueSize(int size) { m_size = size; setP(); setStart(); }
 	void setVal(void*** val, int sizey = NULL, int sizex = NULL);
 	void setVal(void* val, int y, int x);
 
