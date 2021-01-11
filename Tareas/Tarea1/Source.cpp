@@ -5,7 +5,7 @@
 using namespace std;
 
 int main() {
-	Arreglo arr(sizeof(int), 5, 5);
+	Arreglo arr(sizeof(char), 5, 5);
 
 	arr.setVal((void***)new char** [5]{  new char* [5]{new char('a'),new char('b'),new char('c'),new char('d'),new char('e')},
 										 new char* [5]{new char('f'),new char('g'),new char('h'),new char('i'),new char('j')},
