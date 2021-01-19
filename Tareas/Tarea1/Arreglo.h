@@ -12,14 +12,16 @@ public:
 	void setValueSize(int size) { m_size = size; setP(); setStart(); }
 	void setVal(void*** val, int sizey = NULL, int sizex = NULL);
 	void setVal(void* val, int y, int x);
+	void setValFor(void*** val, int sizey = NULL, int sizex = NULL);
+	void setValFor(void* val, int y, int x);
 
 	int getX() { return m_x; }
 	int getY() { return m_y; }
 	int getP() { return m_p; }
 	int getSize() { return m_size; }
-	void* getPointer(int x, int y) { return m_start; }
 	void*** getVal();
 	void* getVal(int y, int x);
+	void* getValFor(int y, int x);
 
 private:
 	void setP();

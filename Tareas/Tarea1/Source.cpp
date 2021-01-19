@@ -1,11 +1,13 @@
 #include "Arreglo.h"
 #include <iostream>
 #include <string>
+#include <chrono>
 
 using namespace std;
 
 int main() {
 	Arreglo arr(sizeof(char), 5, 5);
+	auto start = chrono::high_resolution_clock::now();
 
 	arr.setVal((void***)new char** [5]{  new char* [5]{new char('a'),new char('b'),new char('c'),new char('d'),new char('e')},
 										 new char* [5]{new char('f'),new char('g'),new char('h'),new char('i'),new char('j')},
@@ -72,6 +74,11 @@ int main() {
 		cout << endl;
 	}
 
+	auto end = chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> time = end - start;
+
+	cout << "time: " << time.count() << endl;
 	system("pause");
 
 	return 0;
