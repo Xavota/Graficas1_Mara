@@ -374,6 +374,9 @@
   <ItemGroup />
   <ItemGroup>
     <ClCompile Include="Camara.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="OBJInstance.cpp" />
     <ClCompile Include="Tutorial07.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
@@ -382,6 +385,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camara.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Mouse.h" />
+    <ClInclude Include="OBJInstance.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Vector.h" />
     <ResourceCompile Include="Tutorial07.rc" />
