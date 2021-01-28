@@ -432,6 +432,7 @@ HRESULT InitDevice()
 		{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
 		{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} } }, 24);
 
+
     D3D11_BUFFER_DESC bd;
     ZeroMemory( &bd, sizeof(bd) );
     bd.Usage = D3D11_USAGE_DEFAULT;
@@ -762,25 +763,25 @@ void Render()
 	cb.mWorld = XMMatrixMultiplyTranspose(g_World, XMMatrixTranslation(pos1.x(), pos1.y(), pos1.z()));
 	cb.vMeshColor = g_vMeshColor;
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	g_pImmediateContext->DrawIndexed(g_OBJInstances[0].getMesh()->getIndexCount(), 0, 0);
 
 	pos1 = g_OBJInstances[1].getPosition();
 	cb.mWorld = XMMatrixMultiplyTranspose(g_World, XMMatrixTranslation(pos1.x(), pos1.y(), pos1.z()));
 	cb.vMeshColor = g_vMeshColor;
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	g_pImmediateContext->DrawIndexed(g_OBJInstances[1].getMesh()->getIndexCount(), 0, 0);
 
 	pos1 = g_OBJInstances[2].getPosition();
 	cb.mWorld = XMMatrixMultiplyTranspose(g_World, XMMatrixTranslation(pos1.x(), pos1.y(), pos1.z()));
 	cb.vMeshColor = g_vMeshColor;
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	g_pImmediateContext->DrawIndexed(g_OBJInstances[2].getMesh()->getIndexCount(), 0, 0);
 
 	pos1 = g_OBJInstances[3].getPosition();
 	cb.mWorld = XMMatrixMultiplyTranspose(g_World, XMMatrixTranslation(pos1.x(), pos1.y(), pos1.z()));
 	cb.vMeshColor = g_vMeshColor;
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	g_pImmediateContext->DrawIndexed(g_OBJInstances[3].getMesh()->getIndexCount(), 0, 0);
 
     //
     // Present our back buffer to our front buffer

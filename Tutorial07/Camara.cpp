@@ -105,10 +105,10 @@ float* Camara::getProjectionMatrix()
 
 float* Camara::getOrtograficMatrix()
 {
-	float r = m_viewWidth / 2;
-	float l = -m_viewWidth / 2;
-	float t = m_viewHeight / 2;
-	float b = -m_viewHeight / 2;
+	float r = m_viewWidth / 150;
+	float l = -m_viewWidth / 150;
+	float t = m_viewHeight / 150;
+	float b = -m_viewHeight / 150;
 	float f = (m_farZ - m_nearZ) / 2;
 	float n = -(m_farZ - m_nearZ) / 2;
 
