@@ -49,6 +49,10 @@ void Camara::Init(Vector eye, Vector lookAt, Vector WorldUp, float ViewWidth, fl
 	m_fovAngleY = FovAngleY;
 
 	m_isPersective = isPerspective;
+
+    m_ortoMatrix = new float[16];
+    m_perspectiveMatrix = new float[16];
+    m_viewMatrix = new float[16];
 }
 
 void Camara::setEyePos(Vector eye)
@@ -92,10 +96,29 @@ Vector Camara::getUpVector()
 
 float* Camara::getViewMatrix()
 {
-    return new float[16]{m_right.x(),           m_up.x(),           m_front.x(),          0,
+	m_viewMatrix[0 * 4 + 0] = m_right.x();
+	m_viewMatrix[0 * 4 + 1] = m_up.x();
+	m_viewMatrix[0 * 4 + 2] = m_front.x();
+	m_viewMatrix[0 * 4 + 3] = 0;
+	m_viewMatrix[1 * 4 + 0] = m_right.y();
+	m_viewMatrix[1 * 4 + 1] = m_up.y();
+	m_viewMatrix[1 * 4 + 2] = m_front.y();
+	m_viewMatrix[1 * 4 + 3] = 0;
+	m_viewMatrix[2 * 4 + 0] = m_right.z();
+	m_viewMatrix[2 * 4 + 1] = m_up.z();
+	m_viewMatrix[2 * 4 + 2] = m_front.z();
+	m_viewMatrix[2 * 4 + 3] = 0;
+	m_viewMatrix[3 * 4 + 0] = -m_right.Point(m_eye);
+	m_viewMatrix[3 * 4 + 1] = -m_up.Point(m_eye);
+	m_viewMatrix[3 * 4 + 2] = -m_front.Point(m_eye);
+	m_viewMatrix[3 * 4 + 3] = 1;
+
+    /*return new float[16]{m_right.x(),           m_up.x(),           m_front.x(),          0,
                          m_right.y(),           m_up.y(),           m_front.y(),          0,
                          m_right.z(),           m_up.z(),           m_front.z(),          0,
-                        -m_right.Point(m_eye), -m_up.Point(m_eye), -m_front.Point(m_eye), 1};
+                        -m_right.Point(m_eye), -m_up.Point(m_eye), -m_front.Point(m_eye), 1};*/
+
+    return m_viewMatrix;
 }
 
 float* Camara::getProjectionMatrix()
@@ -112,12 +135,30 @@ float* Camara::getOrtograficMatrix()
 	float f = (m_farZ - m_nearZ) / 2;
 	float n = -(m_farZ - m_nearZ) / 2;
 
-	return new float[16]{
+    m_ortoMatrix[0 * 4 + 0] = 2 / (r - l);
+    m_ortoMatrix[0 * 4 + 1] = 0;
+	m_ortoMatrix[0 * 4 + 2] = 0;
+	m_ortoMatrix[0 * 4 + 3] = -((r + l) / (r - l));
+	m_ortoMatrix[1 * 4 + 0] = 0;
+	m_ortoMatrix[1 * 4 + 1] = 2 / (t - b);
+	m_ortoMatrix[1 * 4 + 2] = 0;
+	m_ortoMatrix[1 * 4 + 3] = -((t + b) / (t - b));
+	m_ortoMatrix[2 * 4 + 0] = 0;
+	m_ortoMatrix[2 * 4 + 1] = 0;
+	m_ortoMatrix[2 * 4 + 2] = 2 / (f - n);
+	m_ortoMatrix[2 * 4 + 3] = -((f + n) / (f - n));
+	m_ortoMatrix[3 * 4 + 0] = 0;
+	m_ortoMatrix[3 * 4 + 1] = 0;
+	m_ortoMatrix[3 * 4 + 2] = 0;
+	m_ortoMatrix[3 * 4 + 3] = 1;
+
+	/*return new float[16]{
 		2 / (r - l), 0, 0, -((r + l) / (r - l)),
 		0, 2 / (t - b), 0, -((t + b) / (t - b)),
 		0, 0, 2 / (f - n), -((f + n) / (f - n)),
 		0, 0, 0, 1
-	};
+	};*/
+    return m_ortoMatrix;
 }
 
 float* Camara::getPerspectiveMatrix()
@@ -127,12 +168,31 @@ float* Camara::getPerspectiveMatrix()
 	float height = fovCos / fovSin;
 	float width = AspectRatio * height;
 
-	return new float[16]{
+	m_perspectiveMatrix[0 * 4 + 0] = height / AspectRatio;
+	m_perspectiveMatrix[0 * 4 + 1] = 0;
+	m_perspectiveMatrix[0 * 4 + 2] = 0;
+	m_perspectiveMatrix[0 * 4 + 3] = 0;
+	m_perspectiveMatrix[1 * 4 + 0] = 0;
+	m_perspectiveMatrix[1 * 4 + 1] = height;
+	m_perspectiveMatrix[1 * 4 + 2] = 0;
+	m_perspectiveMatrix[1 * 4 + 3] = 0;
+	m_perspectiveMatrix[2 * 4 + 0] = 0;
+	m_perspectiveMatrix[2 * 4 + 1] = 0;
+	m_perspectiveMatrix[2 * 4 + 2] = (m_farZ / (m_farZ - m_nearZ));
+	m_perspectiveMatrix[2 * 4 + 3] = 1;
+	m_perspectiveMatrix[3 * 4 + 0] = 0;
+	m_perspectiveMatrix[3 * 4 + 1] = 0;
+	m_perspectiveMatrix[3 * 4 + 2] = -m_farZ / (m_farZ - m_nearZ) * m_nearZ;
+	m_perspectiveMatrix[3 * 4 + 3] = 1;
+
+	/*return new float[16]{
 		height / AspectRatio, 0, 0, 0,
 		0, height, 0, 0,
 		0, 0, (m_farZ / (m_farZ - m_nearZ)), 1,
 		0, 0, -m_farZ / (m_farZ - m_nearZ) * m_nearZ, 0
-	};
+	};*/
+
+	return m_perspectiveMatrix;	
 }
 
 float* Camara::getViewMatrix(Vector eye, Vector lookAt, Vector Worldup)
@@ -145,10 +205,29 @@ float* Camara::getViewMatrix(Vector eye, Vector lookAt, Vector Worldup)
 
     Vector y = z.Cross(x);
 
+	/*m_viewMatrix[0 * 4 + 0] = x.x();
+	m_viewMatrix[0 * 4 + 1] = y.x();
+	m_viewMatrix[0 * 4 + 2] = z.x();
+	m_viewMatrix[0 * 4 + 3] = 0;
+	m_viewMatrix[1 * 4 + 0] = x.y();
+	m_viewMatrix[1 * 4 + 1] = y.y();
+	m_viewMatrix[1 * 4 + 2] = z.y();
+	m_viewMatrix[1 * 4 + 3] = 0;
+	m_viewMatrix[2 * 4 + 0] = x.z();
+	m_viewMatrix[2 * 4 + 1] = y.z();
+	m_viewMatrix[2 * 4 + 2] = z.z();
+	m_viewMatrix[2 * 4 + 3] = 0;
+	m_viewMatrix[3 * 4 + 0] = -x.Point(m_eye);
+	m_viewMatrix[3 * 4 + 1] = -y.Point(m_eye);
+	m_viewMatrix[3 * 4 + 2] = -z.Point(m_eye);
+	m_viewMatrix[3 * 4 + 3] = 1;*/
+
     return new float[16]{ x.x(),         y.x(),       z.x(), 0,
                           x.y(),         y.y(),       z.y(), 0,
                           x.z(),         y.z(),       z.z(), 0,
                   -x.Point(eye), -y.Point(eye), -z.Point(eye), 1};
+
+	//return m_viewMatrix;
 }
 
 float* Camara::getOrtograficMatrix(float ViewWidth, float ViewHeight, float NearZ, float FarZ)
@@ -160,12 +239,31 @@ float* Camara::getOrtograficMatrix(float ViewWidth, float ViewHeight, float Near
     float f = (FarZ - NearZ) / 2;
     float n = -(FarZ - NearZ) / 2;
 
+	/*m_ortoMatrix[0 * 4 + 0] = 2 / (r - l);
+	m_ortoMatrix[0 * 4 + 1] = 0;
+	m_ortoMatrix[0 * 4 + 2] = 0;
+	m_ortoMatrix[0 * 4 + 3] = -((r + l) / (r - l));
+	m_ortoMatrix[1 * 4 + 0] = 0;
+	m_ortoMatrix[1 * 4 + 1] = 2 / (t - b);
+	m_ortoMatrix[1 * 4 + 2] = 0;
+	m_ortoMatrix[1 * 4 + 3] = -((t + b) / (t - b));
+	m_ortoMatrix[2 * 4 + 0] = 0;
+	m_ortoMatrix[2 * 4 + 1] = 0;
+	m_ortoMatrix[2 * 4 + 2] = 2 / (f - n);
+	m_ortoMatrix[2 * 4 + 3] = -((f + n) / (f - n));
+	m_ortoMatrix[3 * 4 + 0] = 0;
+	m_ortoMatrix[3 * 4 + 1] = 0;
+	m_ortoMatrix[3 * 4 + 2] = 0;
+	m_ortoMatrix[3 * 4 + 3] = 1;*/
+
     return new float[16]{
         2 / (r - l), 0, 0, -((r + l) / (r - l)),
         0, 2 / (t - b), 0, -((t + b) / (t - b)),
         0, 0, 2 / (f - n), -((f + n) / (f - n)),
         0, 0, 0, 1
     };
+
+	//return m_ortoMatrix;
 }
 
 float* Camara::getPerspectiveMatrix(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
@@ -174,12 +272,31 @@ float* Camara::getPerspectiveMatrix(float FovAngleY, float AspectRatio, float Ne
     float height = fovCos / fovSin;
     float width = AspectRatio * height;
 
+	/*m_perspectiveMatrix[0 * 4 + 0] = height / AspectRatio;
+	m_perspectiveMatrix[0 * 4 + 1] = 0;
+	m_perspectiveMatrix[0 * 4 + 2] = 0;
+	m_perspectiveMatrix[0 * 4 + 3] = 0;
+	m_perspectiveMatrix[1 * 4 + 0] = 0;
+	m_perspectiveMatrix[1 * 4 + 1] = height;
+	m_perspectiveMatrix[1 * 4 + 2] = 0;
+	m_perspectiveMatrix[1 * 4 + 3] = 0;
+	m_perspectiveMatrix[2 * 4 + 0] = 0;
+	m_perspectiveMatrix[2 * 4 + 1] = 0;
+	m_perspectiveMatrix[2 * 4 + 2] = (m_farZ / (m_farZ - m_nearZ));
+	m_perspectiveMatrix[2 * 4 + 3] = 1;
+	m_perspectiveMatrix[3 * 4 + 0] = 0;
+	m_perspectiveMatrix[3 * 4 + 1] = 0;
+	m_perspectiveMatrix[3 * 4 + 2] = -m_farZ / (m_farZ - m_nearZ) * m_nearZ;
+	m_perspectiveMatrix[3 * 4 + 3] = 1;*/
+
     return new float[16]{
         height / AspectRatio, 0, 0, 0,
         0, height, 0, 0,
         0, 0, (FarZ / (FarZ - NearZ)), 1,
         0, 0, -FarZ / (FarZ - NearZ) * NearZ, 0
     };
+
+	//return m_perspectiveMatrix;
 }
 
 void Camara::move(Vector moved)

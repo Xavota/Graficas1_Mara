@@ -707,6 +707,7 @@ void Update(float dt)
     LPPOINT p = new POINT;
 	GetCursorPos(p);
 	Mouse::setMousePos({ (float)p->x, -(float)p->y, 0 });
+    delete p;
 
     g_Cameras[g_ActualCamera].Update();
 }

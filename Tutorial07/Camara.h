@@ -73,4 +73,8 @@ private:
 	float m_viewHeight;
 	float m_nearZ; 
 	float m_farZ;
+
+	float *m_ortoMatrix;
+	float *m_perspectiveMatrix;
+	float *m_viewMatrix;
 };

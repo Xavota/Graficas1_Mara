@@ -14,6 +14,11 @@ OBJInstance::OBJInstance()
 
 OBJInstance::~OBJInstance()
 {
+	if (m_mesh != nullptr)
+	{
+		delete m_mesh;
+		m_mesh = nullptr;
+	}
 }
 
 void OBJInstance::setPosition(Vector pos)
