@@ -19,6 +19,9 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="OBJInstance.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Device.h" />
+    <ClInclude Include="DeviceContext.h" />
+    <ClInclude Include="SwapChain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -27,6 +30,9 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="OBJInstance.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="DeviceContext.cpp" />
+    <ClCompile Include="SwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Tutorial07.fx">
