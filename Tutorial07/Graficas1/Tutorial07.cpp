@@ -6,10 +6,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 #include <windows.h>
+#ifdef directX
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <xnamath.h>
+#endif
 #include "resource.h"
 #include "Camara.h"
 #include "Mesh.h"
