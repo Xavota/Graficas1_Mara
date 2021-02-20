@@ -103,6 +103,11 @@ void DeviceContext::RSSetState(ID3D11RasterizerState* pRasterizerState)
 	m_pImmediateContext->RSSetState(pRasterizerState);
 }
 
+void DeviceContext::Flush()
+{
+	m_pImmediateContext->Flush();
+}
+
 void DeviceContext::ClearState()
 {
 	if (m_pImmediateContext) m_pImmediateContext->ClearState();

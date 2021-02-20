@@ -18,6 +18,15 @@ public:
 		/* [annotation][out][in] */
 		__out  void** ppSurface);
 
+	HRESULT ResizeBuffers(
+		/* [in] */ UINT BufferCount,
+		/* [in] */ UINT Width,
+		/* [in] */ UINT Height,
+		/* [in] */ DXGI_FORMAT NewFormat,
+		/* [in] */ UINT SwapChainFlags);
+
+	HRESULT Resize(unsigned int width, unsigned int height);
+
 	void Release();
 
 	void Present(

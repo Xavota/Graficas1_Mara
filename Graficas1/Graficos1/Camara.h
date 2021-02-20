@@ -18,22 +18,22 @@ public:
 	void setWorldUpVector(Vector up);
 	Vector getUpVector();
 
-	void setIsPerspective(bool isPerspective) { m_isPersective = isPerspective; }
+	void setIsPerspective(bool isPerspective) { m_isPersective = isPerspective; m_resized = true; }
 	bool getIsPerspective() { return m_isPersective; }
 
-	void setFovAngleY(float fovAngleY) { m_fovAngleY = fovAngleY; }
+	void setFovAngleY(float fovAngleY) { m_fovAngleY = fovAngleY;  m_resized = true; }
 	float getFovAngleY() { return m_fovAngleY; }
 
-	void setViewWidth(float viewWidth) { m_viewWidth = viewWidth; }
+	void setViewWidth(float viewWidth) { m_viewWidth = viewWidth; m_resized = true; }
 	float getViewWidth() { return m_viewWidth; }
 
-	void setViewHeight(bool viewHeight) { m_viewHeight = viewHeight; }
-	bool getViewHeight() { return m_viewHeight; }
+	void setViewHeight(float viewHeight) { m_viewHeight = viewHeight; m_resized = true; }
+	float getViewHeight() { return m_viewHeight; }
 
-	void setNearZ(float nearZ) { m_nearZ = nearZ; }
+	void setNearZ(float nearZ) { m_nearZ = nearZ; m_resized = true; }
 	float getNearZ() { return m_nearZ; }
 
-	void setFarZ(float farZ) { m_farZ = farZ; }
+	void setFarZ(float farZ) { m_farZ = farZ;  m_resized = true; }
 	float getFarZ() { return m_farZ; }
 
 
@@ -77,4 +77,6 @@ private:
 	float *m_ortoMatrix;
 	float *m_perspectiveMatrix;
 	float *m_viewMatrix;
+
+	bool m_resized = true;
 };

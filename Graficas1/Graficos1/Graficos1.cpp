@@ -1,8 +1,16 @@
+#define GUI
+
 #include<windows.h>
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <xnamath.h>
+
+#ifdef GUI
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+#endif
 
 
 #include "resource.h"
@@ -48,7 +56,7 @@ D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 
-ID3D11Device*                       g_pd3dDevice = NULL;
+//ID3D11Device*                       g_pd3dDevice = NULL;
 Device*                             g_Device = NULL;
 
 ID3D11DeviceContext*                g_pImmediateContext = NULL;
@@ -92,6 +100,21 @@ char                                g_ActualCamera = 0;
 Mesh*                               g_CubeMesh;
 OBJInstance*                        g_OBJInstances;
 
+#ifdef GUI
+/**
+ * @brief   Forward declare message handler from imgui_impl_win32.cpp
+ * @param   #HWND: A handle to the window.
+ * @param   #UINT: The message.
+ * @param   #WPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
+ * @param   #LPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
+ * @return  #LRESULT: The return value is the result of the message processing and depends on the message sent..
+ * @bug     No know Bugs.
+ * @return  #LRESULT: Status code.
+ */
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
+#endif
+
+
 /**
  * @brief   Message bomb.
  * @bug     No know Bugs.
@@ -102,8 +125,132 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
+	#ifdef GUI
+	// Handle UI inputs
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam))
+		return 1;
+	#endif
+
 	switch (message)
 	{
+	case WM_SIZE:
+		//if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
+	{
+
+		static bool _first = true;
+		if (!_first)
+		{
+			RECT rc;
+			GetWindowRect(hwnd, &rc);
+
+			UINT width = rc.right - rc.left;
+			UINT height = rc.bottom - rc.top;
+
+			cout << width << ", " << height << endl;
+
+			for (int i = 0; i < g_CameraCount; i++)
+			{
+				g_Cameras[i].setViewWidth(width);
+				g_Cameras[i].setViewHeight(height);
+			}
+
+			if (g_pRenderTargetView) g_pRenderTargetView->Release();
+			if (g_pDepthStencilView) g_pDepthStencilView->Release();
+
+			//g_pImmediateContext->Flush();
+			//g_IntermediteContext->Flush();
+
+			//g_pSwapChain->ResizeBuffers(DXGI_MAX_SWAP_CHAIN_BUFFERS, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, NULL);
+			g_SwapChain->ResizeBuffers(DXGI_MAX_SWAP_CHAIN_BUFFERS, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+
+			ID3D11Texture2D* buffer = NULL;
+			HRESULT hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
+
+			if (FAILED(hr))
+			{
+				throw std::exception("Swapchain not created successfully");
+			}
+
+			hr = g_Device->CreateRenderTargetView(buffer, NULL, &g_pRenderTargetView);
+			buffer->Release();
+
+			if (FAILED(hr))
+			{
+				throw std::exception("Swapchain not created successfully");
+			}
+
+			D3D11_TEXTURE2D_DESC descDepth = {};
+			ZeroMemory(&descDepth, sizeof(descDepth));
+			descDepth.Width = width;
+			descDepth.Height = height;
+			descDepth.MipLevels = 1;
+			descDepth.ArraySize = 1;
+			descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			descDepth.SampleDesc.Count = 1;
+			descDepth.SampleDesc.Quality = 0;
+			descDepth.Usage = D3D11_USAGE_DEFAULT;
+			descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			descDepth.CPUAccessFlags = 0;
+			descDepth.MiscFlags = 0;
+
+			//hr = g_pd3dDevice->CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+			hr = g_Device->CreateTexture2D(&descDepth, nullptr, &buffer);
+			if (FAILED(hr))
+			{
+				throw std::exception("Swapchain not created successfully");
+			}
+
+			hr = g_Device->CreateDepthStencilView(buffer, NULL, &g_pDepthStencilView);
+			buffer->Release();
+
+			if (FAILED(hr))
+			{
+				throw std::exception("Swapchain not created successfully");
+			}
+
+			g_vp.Width = (FLOAT)width;
+			g_vp.Height = (FLOAT)height;
+			g_vp.MinDepth = 0.0f;
+			g_vp.MaxDepth = 1.0f;
+			g_vp.TopLeftX = 0;
+			g_vp.TopLeftY = 0;
+
+			/*HRESULT hr = S_OK;
+
+			ID3D11Texture2D* pBackBuffer = NULL;
+			//hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+			hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+			if (FAILED(hr))
+				return hr;
+
+			//hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+			hr = g_Device->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+			pBackBuffer->Release();
+			if (FAILED(hr))
+				return hr;
+
+			D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+			ZeroMemory(&descDSV, sizeof(descDSV));
+			descDSV.Format = DXGI_FORMAT_D32_FLOAT;
+			descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			descDSV.Texture2D.MipSlice = 0;
+
+			hr = g_Device->CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+			if (FAILED(hr))
+				return hr;*/
+
+		}
+		_first = !_first;
+	}
+	return 0;
+	break;
+
+	/*case WM_SYSCOMMAND:
+		if ((wparam & 0xfff0) == SC_KEYMENU)
+		{
+			return 0;
+		}
+		break;*/
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		EndPaint(hwnd, &ps);
@@ -186,6 +333,29 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
   return S_OK;
 }
+
+#ifdef GUI
+/**
+ * @brief   Init the UI.
+ * @bug     No know Bugs.
+ * @return  #HRESULT: Status code.
+ */
+ HRESULT InitImgUI()
+ {
+   // Setup Dear ImGui context
+   IMGUI_CHECKVERSION();
+   ImGui::CreateContext();
+
+   // Setup Dear ImGui style
+   ImGui::StyleColorsDark();
+
+   // Setup Platform/Renderer back ends
+   ImGui_ImplWin32_Init(g_hwnd);
+   ImGui_ImplDX11_Init(g_Device->GetDevicePtr(), g_IntermediteContext->getDeviceContextPtr());
+
+   return S_OK;
+ }
+ #endif
 
 HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -695,11 +865,19 @@ HRESULT InitDevice()
   XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
   g_View = XMMatrixLookAtLH(Eye, At, Up);*/
 
+  RECT rct;
+  GetWindowRect(g_hwnd, &rct);
+
+  UINT _width = rct.right - rct.left;
+  UINT _height = rct.bottom - rct.top;
+
+  cout << width << ", " << height << endl;
+
   g_Cameras = new Camara[g_CameraCount];
   g_Cameras[0].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
-	  width, height, 0.01f, 100.0f, true, XM_PIDIV4);
+	  _width, _height, 0.01f, 100.0f, true, XM_PIDIV4);
   g_Cameras[1].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
-	  width, height, 0.01f, 100.0f, false, XM_PIDIV4);
+	  _width, _height, 0.01f, 100.0f, false, XM_PIDIV4);
   g_View = XMMATRIX(g_Cameras[g_ActualCamera].getViewMatrix());
 
   CBNeverChanges cbNeverChanges;
@@ -732,6 +910,32 @@ HRESULT InitDevice()
 
   return S_OK;
 }
+
+#ifdef GUI
+void UIRender()
+{
+	// Start the Dear ImGui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// example window
+	if (ImGui::Begin("Another Window", nullptr))
+	{
+		if (ImGui::Button("Boton", { 100, 40 }))
+		{
+			
+		}
+	}
+	//ImGui::ShowDemoWindow();
+	ImGui::End();
+
+	// render UI
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+}
+#endif
 
 void Update(float dt)
 {
@@ -920,6 +1124,9 @@ void Render()
   //
   // Present our back buffer to our front buffer
   //
+  #ifdef GUI
+  UIRender();
+  #endif
   //g_pSwapChain->Present(0, 0);
   g_SwapChain->Present(0,0);
 }
@@ -956,14 +1163,30 @@ void CleanupDevice()
  */
 int main()
 {
-  // create the window and console
-  InitWindow(1280, 720);
+  // create the window and consolei
+  if (FAILED(InitWindow(1280, 720)))
+  {
+	DestroyWindow(g_hwnd);
+	return 0;
+  }
+
   if (FAILED(InitDevice()))
   {
     CleanupDevice();
     return 0;
   }
 
+
+	#ifdef GUI
+  // create UI
+  if (FAILED(InitImgUI()))
+  {
+	  ImGui_ImplDX11_Shutdown();
+	  ImGui_ImplWin32_Shutdown();
+	  ImGui::DestroyContext();
+	  return 0;
+  }
+  #endif
   // main loop
   MSG msg = { 0 };
   auto start = high_resolution_clock::now();
@@ -982,6 +1205,12 @@ int main()
 		Render();
     }
   }
+  // clean resources
+  #ifdef GUI
+  ImGui_ImplDX11_Shutdown();
+  ImGui_ImplWin32_Shutdown();
+  ImGui::DestroyContext();
+  #endif
   DeleteObject(g_hwnd);
   CleanupDevice();
   return (int)msg.wParam;

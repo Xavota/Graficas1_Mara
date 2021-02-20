@@ -163,27 +163,32 @@ float* Camara::getOrtograficMatrix()
 
 float* Camara::getPerspectiveMatrix()
 {
-    float AspectRatio = m_viewWidth / m_viewHeight;
-	float fovCos = cosf(m_fovAngleY * .5f), fovSin = sinf(m_fovAngleY * .5f);
-	float height = fovCos / fovSin;
-	float width = AspectRatio * height;
+	if (m_resized)
+	{
+		float AspectRatio = m_viewWidth / m_viewHeight;
+		float fovCos = cosf(m_fovAngleY * .5f), fovSin = sinf(m_fovAngleY * .5f);
+		float height = fovCos / fovSin;
+		float width = AspectRatio * height;
 
-	m_perspectiveMatrix[0 * 4 + 0] = height / AspectRatio;
-	m_perspectiveMatrix[0 * 4 + 1] = 0;
-	m_perspectiveMatrix[0 * 4 + 2] = 0;
-	m_perspectiveMatrix[0 * 4 + 3] = 0;
-	m_perspectiveMatrix[1 * 4 + 0] = 0;
-	m_perspectiveMatrix[1 * 4 + 1] = height;
-	m_perspectiveMatrix[1 * 4 + 2] = 0;
-	m_perspectiveMatrix[1 * 4 + 3] = 0;
-	m_perspectiveMatrix[2 * 4 + 0] = 0;
-	m_perspectiveMatrix[2 * 4 + 1] = 0;
-	m_perspectiveMatrix[2 * 4 + 2] = (m_farZ / (m_farZ - m_nearZ));
-	m_perspectiveMatrix[2 * 4 + 3] = 1;
-	m_perspectiveMatrix[3 * 4 + 0] = 0;
-	m_perspectiveMatrix[3 * 4 + 1] = 0;
-	m_perspectiveMatrix[3 * 4 + 2] = -m_farZ / (m_farZ - m_nearZ) * m_nearZ;
-	m_perspectiveMatrix[3 * 4 + 3] = 1;
+		m_perspectiveMatrix[0 * 4 + 0] = height / AspectRatio;
+		m_perspectiveMatrix[0 * 4 + 1] = 0;
+		m_perspectiveMatrix[0 * 4 + 2] = 0;
+		m_perspectiveMatrix[0 * 4 + 3] = 0;
+		m_perspectiveMatrix[1 * 4 + 0] = 0;
+		m_perspectiveMatrix[1 * 4 + 1] = height;
+		m_perspectiveMatrix[1 * 4 + 2] = 0;
+		m_perspectiveMatrix[1 * 4 + 3] = 0;
+		m_perspectiveMatrix[2 * 4 + 0] = 0;
+		m_perspectiveMatrix[2 * 4 + 1] = 0;
+		m_perspectiveMatrix[2 * 4 + 2] = (m_farZ / (m_farZ - m_nearZ));
+		m_perspectiveMatrix[2 * 4 + 3] = 1;
+		m_perspectiveMatrix[3 * 4 + 0] = 0;
+		m_perspectiveMatrix[3 * 4 + 1] = 0;
+		m_perspectiveMatrix[3 * 4 + 2] = -m_farZ / (m_farZ - m_nearZ) * m_nearZ;
+		m_perspectiveMatrix[3 * 4 + 3] = 1;
+
+		m_resized = false;
+	}
 
 	/*return new float[16]{
 		height / AspectRatio, 0, 0, 0,

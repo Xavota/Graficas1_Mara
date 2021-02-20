@@ -133,6 +133,8 @@ public:
 		/* [annotation] */
 		__in_opt  ID3D11RasterizerState* pRasterizerState);
 
+	void Flush();
+
 	void ClearState();
 	void Release();
 
