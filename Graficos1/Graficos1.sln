@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graficos1", "Graficos1\Graficos1.vcxproj", "{663224EE-A4E1-4E3A-9EC0-587B27CC489D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{131E37F6-149C-4437-A9A4-5B8B935705DF} = {131E37F6-149C-4437-A9A4-5B8B935705DF}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicModule", "GraphicModule\GraphicModule.vcxproj", "{131E37F6-149C-4437-A9A4-5B8B935705DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_DirectX|x64 = Debug_DirectX|x64
+		Debug_DirectX|x86 = Debug_DirectX|x86
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release_DirectX|x64 = Release_DirectX|x64
+		Release_DirectX|x86 = Release_DirectX|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug_DirectX|x64.ActiveCfg = Debug_DirectX|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug_DirectX|x64.Build.0 = Debug_DirectX|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug_DirectX|x86.ActiveCfg = Debug_DirectX|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug_DirectX|x86.Build.0 = Debug_DirectX|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug|x64.ActiveCfg = Debug|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug|x64.Build.0 = Debug|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug|x86.ActiveCfg = Debug|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Debug|x86.Build.0 = Debug|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release_DirectX|x64.ActiveCfg = Release_DirectX|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release_DirectX|x64.Build.0 = Release_DirectX|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release_DirectX|x86.ActiveCfg = Release_DirectX|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release_DirectX|x86.Build.0 = Release_DirectX|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release|x64.ActiveCfg = Release|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release|x64.Build.0 = Release|x64
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release|x86.ActiveCfg = Release|Win32
+		{663224EE-A4E1-4E3A-9EC0-587B27CC489D}.Release|x86.Build.0 = Release|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug_DirectX|x64.ActiveCfg = Debug_DirectX|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug_DirectX|x64.Build.0 = Debug_DirectX|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug_DirectX|x86.ActiveCfg = Debug_DirectX|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug_DirectX|x86.Build.0 = Debug_DirectX|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug|x64.ActiveCfg = Debug|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug|x64.Build.0 = Debug|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug|x86.ActiveCfg = Debug|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Debug|x86.Build.0 = Debug|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release_DirectX|x64.ActiveCfg = Release_DirectX|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release_DirectX|x64.Build.0 = Release_DirectX|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release_DirectX|x86.ActiveCfg = Release_DirectX|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release_DirectX|x86.Build.0 = Release_DirectX|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release|x64.ActiveCfg = Release|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release|x64.Build.0 = Release|x64
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release|x86.ActiveCfg = Release|Win32
+		{131E37F6-149C-4437-A9A4-5B8B935705DF}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C6B4F57-56F9-4F16-8996-9F77F7C302AC}
+	EndGlobalSection
+EndGlobal
