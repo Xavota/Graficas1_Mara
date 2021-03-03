@@ -40,11 +40,23 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
   switch (_msg)
   {
   case WM_SIZE:
-    //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
-    {
-    }
-    return 0;
-    break;
+	  //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
+  {
+	  static bool _first = true;
+	  if (!_first)
+	  {
+		  RECT rc;
+		  GetClientRect(_hwnd, &rc);
+
+		  UINT width = rc.right - rc.left;
+		  UINT height = rc.bottom - rc.top;
+
+          g_Test.Resize(width, height);
+	  }
+	  _first = !_first;
+  }
+  return 0;
+  break;
 
   case WM_SYSCOMMAND:
     if ((_wParam & 0xfff0) == SC_KEYMENU)
