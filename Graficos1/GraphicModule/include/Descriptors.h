@@ -1,8 +1,28 @@
 #pragma once
+#include <windows.h>
 
+#if defined(DX11)
+
+#include <xnamath.h>
+
+#endif
 //#include <d3d11.h>
 
 #define MAX_SWAP_CHAIN_BUFFERS        ( 16 )
+#define FLOAT32_MAX	( 3.402823466e+38f )
+
+#define CPU_ACCESS_NONE    ( 0 )
+#define CPU_ACCESS_DYNAMIC    ( 1 )
+#define CPU_ACCESS_READ_WRITE    ( 2 )
+#define CPU_ACCESS_SCRATCH    ( 3 )
+#define CPU_ACCESS_FIELD        15
+#define USAGE_SHADER_INPUT             ( 1L << (0 + 4) )
+#define USAGE_RENDER_TARGET_OUTPUT     ( 1L << (1 + 4) )
+#define USAGE_BACK_BUFFER              ( 1L << (2 + 4) )
+#define USAGE_SHARED                   ( 1L << (3 + 4) )
+#define USAGE_READ_ONLY                ( 1L << (4 + 4) )
+#define USAGE_DISCARD_ON_PRESENT       ( 1L << (5 + 4) )
+#define USAGE_UNORDERED_ACCESS         ( 1L << (6 + 4) )
 
 enum FORMAT
 {
@@ -284,6 +304,153 @@ enum PRIMITIVE_TOPOLOGY
 	PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST = 64,
 };
 
+enum DRIVER_TYPE
+{
+	DRIVER_TYPE_UNKNOWN =	0,
+	DRIVER_TYPE_HARDWARE =	(DRIVER_TYPE_UNKNOWN + 1),
+	DRIVER_TYPE_REFERENCE = (DRIVER_TYPE_HARDWARE + 1),
+	DRIVER_TYPE_NULL =		(DRIVER_TYPE_REFERENCE + 1),
+	DRIVER_TYPE_SOFTWARE =	(DRIVER_TYPE_NULL + 1),
+	DRIVER_TYPE_WARP =		(DRIVER_TYPE_SOFTWARE + 1)
+};
+
+enum FEATURE_LEVEL
+{
+	FEATURE_LEVEL_9_1 = 0x9100,
+	FEATURE_LEVEL_9_2 = 0x9200,
+	FEATURE_LEVEL_9_3 = 0x9300,
+	FEATURE_LEVEL_10_0 = 0xa000,
+	FEATURE_LEVEL_10_1 = 0xa100,
+	FEATURE_LEVEL_11_0 = 0xb000
+};
+
+enum MODE_SCANLINE_ORDER
+{
+	MODE_SCANLINE_ORDER_UNSPECIFIED = 0,
+	MODE_SCANLINE_ORDER_PROGRESSIVE = 1,
+	MODE_SCANLINE_ORDER_UPPER_FIELD_FIRST = 2,
+	MODE_SCANLINE_ORDER_LOWER_FIELD_FIRST = 3
+};
+
+enum MODE_SCALING
+{
+	MODE_SCALING_UNSPECIFIED = 0,
+	MODE_SCALING_CENTERED = 1,
+	MODE_SCALING_STRETCHED = 2
+};
+
+enum SWAP_EFFECT
+{
+	SWAP_EFFECT_DISCARD = 0,
+	SWAP_EFFECT_SEQUENTIAL = 1
+};
+
+enum CREATE_DEVICE_FLAG
+{
+	CREATE_DEVICE_SINGLETHREADED = 0x1,
+	CREATE_DEVICE_DEBUG = 0x2,
+	CREATE_DEVICE_SWITCH_TO_REF = 0x4,
+	CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS = 0x8,
+	CREATE_DEVICE_BGRA_SUPPORT = 0x20
+};
+
+struct CBChangesEveryFrame
+{
+#if defined(DX11)
+	XMMATRIX mWorld;
+	XMFLOAT4 vMeshColor;
+#endif
+};
+
+struct Vector4
+{
+	float x;
+	float y;
+	float z;
+	float w;
+};
+
+struct Vector3 {
+	float x;
+	float y;
+	float z;
+};
+
+struct Vector2 {
+	float x;
+	float y;
+};
+
+struct Vertex
+{
+	Vector3 Pos;
+	Vector2 Tex;
+};
+
+struct MATRIX
+{
+	union
+	{
+		Vector4 r[4];
+		struct
+		{
+			float _11, _12, _13, _14;
+			float _21, _22, _23, _24;
+			float _31, _32, _33, _34;
+			float _41, _42, _43, _44;
+		};
+		float m[4][4];
+	};
+};
+
+struct Color
+{
+	float r;
+	float g;
+	float b;
+	float a;
+};
+
+struct ChangesEveryFrameDesc
+{
+	MATRIX mWorld;
+	Color vMeshColor;
+};
+
+struct SAMPLE_DESC
+{
+	unsigned int Count;
+	unsigned int Quality;
+};
+
+struct RATIONAL
+{
+	unsigned int Numerator;
+	unsigned int Denominator;
+};
+
+struct MODE_DESC
+{
+	unsigned int Width;
+	unsigned int Height;
+	RATIONAL RefreshRate;
+	FORMAT Format;
+	MODE_SCANLINE_ORDER ScanlineOrdering;
+	MODE_SCALING Scaling;
+};
+
+struct SWAP_CHAIN_DESC
+{
+	MODE_DESC BufferDesc;
+	SAMPLE_DESC SampleDesc;
+	unsigned int BufferUsage;
+	unsigned int BufferCount;
+	HWND OutputWindow;
+	long Windowed;
+	SWAP_EFFECT SwapEffect;
+	unsigned int Flags;
+};
+
 struct VIEWPORT
 {
 	float TopLeftX;
@@ -308,14 +475,14 @@ struct RASTERIZER_DESC
 {
 	FILL_MODE FillMode;
 	CULL_MODE CullMode;
-	bool FrontCounterClockwise;
+	long FrontCounterClockwise;
 	int DepthBias;
 	float DepthBiasClamp;
 	float SlopeScaledDepthBias;
-	bool DepthClipEnable;
-	bool ScissorEnable;
-	bool MultisampleEnable;
-	bool AntialiasedLineEnable;
+	long DepthClipEnable;
+	long ScissorEnable;
+	long MultisampleEnable;
+	long AntialiasedLineEnable;
 };
 
 struct SAMPLER_DESC
@@ -565,12 +732,6 @@ struct SHADER_RESOURCE_VIEW_DESC
 		TEXCUBE_ARRAY_SRV TextureCubeArray;
 		BUFFEREX_SRV BufferEx;
 	};
-};
-
-typedef struct SAMPLE_DESC
-{
-	unsigned int Count;
-	unsigned int Quality;
 };
 
 struct TEXTURE2D_DESC

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Descriptors.h"
 
 #include "Device.h"
@@ -11,15 +12,18 @@
 #include "ShaderResourceView.h"
 #include "Buffer.h"
 
+#include "OBJInstance.h"
+
 class RenderManager
 {
 public:
 	RenderManager() = default;
 	~RenderManager() = default;
 
+#if defined(DX11)
 	inline ID3D11Device*& getDevicePtr() { return m_device.GetDevicePtr(); }
 	inline ID3D11DeviceContext*& getDeviceContextPtr() { return m_deviceContext.getDeviceContextPtr(); }
-	IDXGISwapChain*& GetSwapChainPtr() { return m_swapChain.GetSwapChainPtr(); }
+	inline IDXGISwapChain*& getSwapChainPtr() { return m_swapChain.GetSwapChainPtr(); }
 
 	/*Device functions*/
 	HRESULT CreateRenderTargetView( Texture2D& texture, const RENDER_TARGET_VIEW_DESC* desc, RenderTargetView& rtv);
@@ -32,7 +36,7 @@ public:
 	HRESULT CreatePixelShader( const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage,
 							  ID3D11PixelShader** ppPixelShader);
 	HRESULT CreateBuffer( const BUFFER_DESC* pDesc, const SUBRESOURCE_DATA* pInitialData, Buffer& ppBuffer);
-	HRESULT CreateSamplerState( const SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState);
+	HRESULT CreateSamplerState(const SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState);
 	HRESULT CreateRasterizerState( const RASTERIZER_DESC* pRasterizerDesc, ID3D11RasterizerState** ppRasterizerState);
 	HRESULT CreateShaderResourceView( Texture2D& pResource, const SHADER_RESOURCE_VIEW_DESC* pDesc, ShaderResourceView& ppSRView);
 
@@ -40,7 +44,8 @@ public:
 	void UpdateSubresource( Buffer& pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData,
 							unsigned int SrcRowPitch, unsigned int SrcDepthPitch );
 	void DrawIndexed( unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation );
-	void OMSetRenderTargets( unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView );
+	void OMSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView);
+	void ClearAndSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4]);
 	void RSSetViewports( unsigned int NumViewports, const VIEWPORT* pViewports );
 	void IASetInputLayout( ID3D11InputLayout* pInputLayout );
 	void IASetVertexBuffers( unsigned int StartSlot, unsigned int NumBuffers, Buffer& ppVertexBuffers, 
@@ -65,6 +70,19 @@ public:
 	//HRESULT Resize(unsigned int width, unsigned int height);
 	void Present( unsigned int SyncInterval, unsigned int Flags);
 
+	/*Globals*/
+	void DrawObject(OBJInstance* obj, Buffer& cbNeverChanges, const unsigned int* offset);
+
+	HRESULT CreateDeviceAndSwapChain( IDXGIAdapter* pAdapter, DRIVER_TYPE DriverType, HMODULE Software,
+		unsigned int Flags, const FEATURE_LEVEL* pFeatureLevels, unsigned int FeatureLevels, unsigned int SDKVersion,
+		const SWAP_CHAIN_DESC* pSwapChainDesc, FEATURE_LEVEL* pFeatureLevel);
+
+	HRESULT CreateShaderResourceViewFromFile( LPCSTR pSrcFile, D3DX11_IMAGE_LOAD_INFO* pLoadInfo, ID3DX11ThreadPump* pPump,
+			ShaderResourceView& ppShaderResourceView, HRESULT* pHResult);
+
+	HRESULT CreateShaderAndRenderTargetView(Texture2D& TextRT, ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
+		unsigned int width, unsigned int height);
+
 	/*Clear*/
 	void Release();
 
@@ -72,5 +90,7 @@ private:
 	Device m_device;
 	DeviceContext m_deviceContext;
 	SwapChain m_swapChain;
+#endif
 };
 
+extern RenderManager* GetManager();

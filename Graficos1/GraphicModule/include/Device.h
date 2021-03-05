@@ -1,13 +1,18 @@
 #pragma once
 #include <windows.h>
+
+#if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
+#endif
 
 class Device
 {
 public:
 	Device() = default;
 	~Device() = default;
+
+#if defined(DX11)
 
 	ID3D11Device*& GetDevicePtr();
 
@@ -81,8 +86,8 @@ public:
 		/* [annotation] */
 		__out_opt  ID3D11SamplerState** ppSamplerState);
 
+
 	HRESULT CreateRasterizerState(
-		/* [annotation] */
 		__in  const D3D11_RASTERIZER_DESC* pRasterizerDesc,
 		/* [annotation] */
 		__out_opt  ID3D11RasterizerState** ppRasterizerState);
@@ -99,5 +104,7 @@ public:
 
 private:
 	ID3D11Device* m_pd3dDevice = NULL;
+
+#endif
 };
 

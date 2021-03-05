@@ -1,7 +1,10 @@
 #pragma once
 #include <windows.h>
+
+#if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
+#endif
 
 #include "Descriptors.h"
 
@@ -16,6 +19,8 @@ class DeviceContext
 public:
 	DeviceContext() = default;
 	~DeviceContext() = default;
+
+#if defined(DX11)
 
 	ID3D11DeviceContext*& getDeviceContextPtr();
 
@@ -45,5 +50,7 @@ public:
 	void Release();
 private:
 	ID3D11DeviceContext* m_pImmediateContext = NULL;
+
+#endif
 };
 

@@ -1,7 +1,10 @@
 #pragma once
 #include <windows.h>
+
+#if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
+#endif
 
 #include "Descriptors.h"
 
@@ -12,6 +15,8 @@ public:
 	~SwapChain() = default;
 
 
+#if defined(DX11)
+
 	IDXGISwapChain*& GetSwapChainPtr();
 
 	HRESULT GetBuffer(unsigned int Buffer, REFIID riid, void** ppSurface);
@@ -19,29 +24,11 @@ public:
 	//HRESULT Resize(unsigned int width, unsigned int height);
 	void Present(unsigned int SyncInterval, unsigned int Flags);
 
-	//HRESULT GetBuffer(
-	//	/* [in] */ UINT Buffer,
-	//	/* [annotation][in] */
-	//	__in  REFIID riid,
-	//	/* [annotation][out][in] */
-	//	__out  void** ppSurface);
-
-	//HRESULT ResizeBuffers(
-	//	/* [in] */ UINT BufferCount,
-	//	/* [in] */ UINT Width,
-	//	/* [in] */ UINT Height,
-	//	/* [in] */ DXGI_FORMAT NewFormat,
-	//	/* [in] */ UINT SwapChainFlags);
-
-	//HRESULT Resize(unsigned int width, unsigned int height);
-
-	//void Present(
-	//	/* [in] */ UINT SyncInterval,
-	//	/* [in] */ UINT Flags);
-
 	void Release();
 
 private:
 	IDXGISwapChain* m_pSwapChain = NULL;
+
+#endif
 };
 

@@ -366,29 +366,39 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\Buffer.h" />
+    <ClInclude Include="include\Camara.h" />
     <ClInclude Include="include\DepthStencilView.h" />
     <ClInclude Include="include\Descriptors.h" />
     <ClInclude Include="include\Device.h" />
     <ClInclude Include="include\DeviceContext.h" />
     <ClInclude Include="include\GraphicModule.h" />
+    <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\Mouse.h" />
+    <ClInclude Include="include\OBJInstance.h" />
     <ClInclude Include="include\RenderManager.h" />
     <ClInclude Include="include\RenderTargetView.h" />
     <ClInclude Include="include\ShaderResourceView.h" />
     <ClInclude Include="include\SwapChain.h" />
     <ClInclude Include="include\test.h" />
     <ClInclude Include="include\Texture2D.h" />
+    <ClInclude Include="include\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Buffer.cpp" />
+    <ClCompile Include="src\Camara.cpp" />
     <ClCompile Include="src\DepthStencilView.cpp" />
     <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\DeviceContext.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Mouse.cpp" />
+    <ClCompile Include="src\OBJInstance.cpp" />
     <ClCompile Include="src\RenderManager.cpp" />
     <ClCompile Include="src\RenderTargetView.cpp" />
     <ClCompile Include="src\ShaderResourceView.cpp" />
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />
+    <ClCompile Include="src\Vector.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

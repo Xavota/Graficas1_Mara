@@ -2,8 +2,14 @@
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
+#if defined(DX11)
 #include "imgui_impl_dx11.h"
+#endif
 #include "GraphicModule.h"
+
+#include <chrono>
+//using namespace chrono;
+//using namespace chrono;
 
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
@@ -32,45 +38,65 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
 
-  // Handle UI inputs
-  if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
-    return 1;
+    // Handle UI inputs
+    if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
+        return 1;
 
-  // Handle Window inputs
-  switch (_msg)
-  {
-  case WM_SIZE:
-	  //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
-  {
-	  static bool _first = true;
-	  if (!_first)
-	  {
-		  RECT rc;
-		  GetClientRect(_hwnd, &rc);
-
-		  UINT width = rc.right - rc.left;
-		  UINT height = rc.bottom - rc.top;
-
-          g_Test.Resize(width, height);
-	  }
-	  _first = !_first;
-  }
-  return 0;
-  break;
-
-  case WM_SYSCOMMAND:
-    if ((_wParam & 0xfff0) == SC_KEYMENU)
+    // Handle Window inputs
+    switch (_msg)
     {
-      return 0;
+    case WM_SIZE:
+        //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
+    {
+        static bool _first = true;
+        if (!_first)
+        {
+            RECT rc;
+            GetClientRect(_hwnd, &rc);
+
+            UINT width = rc.right - rc.left;
+            UINT height = rc.bottom - rc.top;
+
+            g_Test.Resize(width, height);
+        }
+        _first = !_first;
     }
+    return 0;
     break;
 
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    break;
+    case WM_SYSCOMMAND:
+        if ((_wParam & 0xfff0) == SC_KEYMENU)
+        {
+            return 0;
+        }
+        break;
 
-  }
-  return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
+	case WM_KEYDOWN: {
+		if (LOWORD(_wParam) == 'D')
+			g_Test.getCamera().move({ 1, 0, 0 });
+		if (LOWORD(_wParam) == 'A')
+            g_Test.getCamera().move({ -1, 0, 0 });
+		if (LOWORD(_wParam) == 'W')
+            g_Test.getCamera().move({ 0, 1, 0 });
+		if (LOWORD(_wParam) == 'S')
+            g_Test.getCamera().move({ 0, -1, 0 });
+		if (LOWORD(_wParam) == 'Q')
+            g_Test.getCamera().move({ 0, 0, 1 });
+		if (LOWORD(_wParam) == 'E')
+			g_Test.getCamera().move({ 0, 0, -1 });
+		if (LOWORD(_wParam) == 9)
+            g_Test.setActivaCameraNum((g_Test.getActivaCameraNum() + 1) % g_Test.getMaxCameraNum());
+			//g_ActualCamera = (g_ActualCamera + 1) % g_CameraCount;
+		//g_Cameras[g_ActualCamera].setIsPerspective(!g_Cameras[g_ActualCamera].getIsPerspective());
+
+		break;
+        }
+    }
+    return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
 
 /**
@@ -82,37 +108,37 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
  */
 HRESULT InitWindow(LONG _width, LONG _height)
 {
-  // Register class
-  WNDCLASSEX wcex;
-  wcex.cbSize = sizeof(WNDCLASSEX);
-  wcex.style = CS_HREDRAW | CS_VREDRAW;
-  wcex.lpfnWndProc = WndProc;
-  wcex.cbClsExtra = 0;
-  wcex.cbWndExtra = 0;
-  wcex.hInstance = nullptr;
-  wcex.hIcon = nullptr;
-  wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-  wcex.lpszMenuName = NULL;
-  wcex.lpszClassName = "TutorialWindowClass";
-  wcex.hIconSm = nullptr;
-  if (!RegisterClassEx(&wcex))
-  {
-    return E_FAIL;
-  }
+    // Register class
+    WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = nullptr;
+    wcex.hIcon = nullptr;
+    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = "TutorialWindowClass";
+    wcex.hIconSm = nullptr;
+    if (!RegisterClassEx(&wcex))
+    {
+        return E_FAIL;
+    }
 
-  // Create window
-  RECT rc = { 0, 0, _width, _height };
-  AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-  g_hwnd = CreateWindow("TutorialWindowClass", "Graficos 1", WS_OVERLAPPEDWINDOW,
-                        CW_USEDEFAULT, CW_USEDEFAULT, _width, _height, NULL, NULL, NULL, NULL);
-  if (!g_hwnd)
-  {
-    return E_FAIL;
-  }
-  ShowWindow(g_hwnd, SW_SHOWNORMAL);
+    // Create window
+    RECT rc = { 0, 0, _width, _height };
+    AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+    g_hwnd = CreateWindow("TutorialWindowClass", "Graficos 1", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, _width, _height, NULL, NULL, NULL, NULL);
+    if (!g_hwnd)
+    {
+        return E_FAIL;
+    }
+    ShowWindow(g_hwnd, SW_SHOWNORMAL);
 
-  return S_OK;
+    return S_OK;
 }
 
 /**
@@ -122,54 +148,54 @@ HRESULT InitWindow(LONG _width, LONG _height)
  */
 HRESULT InitImgUI()
 {
-  // Setup Dear ImGui context
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
 
-  // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
 
-  // Setup Platform/Renderer back ends
-  ImGui_ImplWin32_Init(g_hwnd);
-    #if defined(DX11)
+    // Setup Platform/Renderer back ends
+    ImGui_ImplWin32_Init(g_hwnd);
+#if defined(DX11)
 
-  ImGui_ImplDX11_Init(g_Test.GetDevice(), g_Test.GetDeviceContext());
-  #endif
+    ImGui_ImplDX11_Init(g_Test.GetDevice(), g_Test.GetDeviceContext());
+#endif
 
-  return S_OK;
+    return S_OK;
 }
 
 void UIRender()
 {
-	// Start the Dear ImGui frame
+    // Start the Dear ImGui frame
 #if defined(DX11)
-  ImGui_ImplDX11_NewFrame();
-  #endif
-  ImGui_ImplWin32_NewFrame();
-  ImGui::NewFrame();
+    ImGui_ImplDX11_NewFrame();
+#endif
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
 
-  // example window
-  if (ImGui::Begin("Another Window", nullptr))
-  {
-  }
-  ImGui::End();
+    // example window
+    if (ImGui::Begin("Another Window", nullptr))
+    {
+    }
+    ImGui::End();
 
-  // render UI
-  ImGui::Render();
+    // render UI
+    ImGui::Render();
 #if defined(DX11)
-  ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-  #endif
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+#endif
 }
 
 void Render()
 {
-	g_Test.Render();
+    g_Test.Render();
 #if defined(DX11) || defined(OGL)
-	UIRender();
+    UIRender();
 #endif
 
 #if defined(DX11) || defined(OGL)
-	g_Test.GetSwapChain()->Present(0, 0);
+    g_Test.GetSwapChain()->Present(0, 0);
 #endif
 }
 
@@ -180,54 +206,60 @@ void Render()
  */
 int main()
 {
-  g_Test = GraphicsModule::GetTestObj(g_hwnd);
-  // create the window and console
-  if (FAILED(InitWindow(1280, 720)))
-  {
-    DestroyWindow(g_hwnd);
-    return 0;
-  }
+    // create the window and console
+    if (FAILED(InitWindow(1280, 720)))
+    {
+        DestroyWindow(g_hwnd);
+        return 0;
+	}
 
-  // create Graphic API interface
-  if (FAILED(g_Test.InitDevice(g_hwnd)))
-  {
-    g_Test.CleanupDevice();
-    return 0;
-  }
+	g_Test = GraphicsModule::GetTestObj(g_hwnd);
 
-  // create UI
-  if (FAILED(InitImgUI()))
-  {
+    // create Graphic API interface
+    //if (FAILED(g_Test.InitDevice(g_hwnd)))
+    //{
+       // g_Test.CleanupDevice();
+        //return 0;
+    //}
+
+    // create UI
+    if (FAILED(InitImgUI()))
+    {
 #if defined(DX11)
-    ImGui_ImplDX11_Shutdown();
+        ImGui_ImplDX11_Shutdown();
+#endif
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+        return 0;
+    }
+
+    // main loop
+    MSG msg = { 0 };
+    //auto start = chrono::high_resolution_clock::now();
+    while (WM_QUIT != msg.message)
+    {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            Render();
+            //auto end = high_resolution_clock::now();
+			//g_Test.Update(duration<double>(end - start).count());
+			g_Test.Update(.01f);
+            //start = high_resolution_clock::now();
+        }
+    }
+
+    // clean resources
+#if defined(DX11)
+    ImGui_ImplDX11_Shutdown(),
 #endif
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-    return 0;
-  }
-
-  // main loop
-  MSG msg = { 0 };
-  while (WM_QUIT != msg.message)
-  {
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-    {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
-    else
-    {
-        Render();
-    }
-  }
-
-  // clean resources
-#if defined(DX11)
-  ImGui_ImplDX11_Shutdown(),
-#endif
-  ImGui_ImplWin32_Shutdown();
-  ImGui::DestroyContext();
-  g_Test.CleanupDevice();
-  DestroyWindow(g_hwnd);
-  return (int)msg.wParam;
+    g_Test.CleanupDevice();
+    DestroyWindow(g_hwnd);
+    return (int)msg.wParam;
 }

@@ -10,10 +10,14 @@ public:
 	Texture2D() = default;
 	~Texture2D() = default;
 
+#if defined(DX11)
+
 	inline ID3D11Texture2D*& GetTexturePtr() { return m_texture; }
 	inline void Release() { if (m_texture) m_texture->Release(); }
 
 private:
 	ID3D11Texture2D* m_texture;
+
+#endif
 };
 

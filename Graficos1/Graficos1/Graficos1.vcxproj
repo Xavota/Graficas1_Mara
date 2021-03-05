@@ -317,13 +317,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_dx11.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_demo.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_draw.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_tables.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_demo.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_draw.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_tables.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_widgets.cpp" />
     <ClCompile Include="Graficos1.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

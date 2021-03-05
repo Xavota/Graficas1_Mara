@@ -1,5 +1,12 @@
 #include "RenderManager.h"
+#include <iostream>
+#include <string>
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*Device*/
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if defined(DX11)
 HRESULT RenderManager::CreateRenderTargetView(Texture2D& texture, const RENDER_TARGET_VIEW_DESC* desc, RenderTargetView& rtv)
 {
 	return m_device.CreateRenderTargetView(texture.GetTexturePtr(), reinterpret_cast<const D3D11_RENDER_TARGET_VIEW_DESC*>(desc), &rtv.getPtr());
@@ -54,6 +61,26 @@ HRESULT RenderManager::CreateShaderResourceView(Texture2D& pResource, const SHAD
 /*Device context*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void RenderManager::DrawObject(OBJInstance* obj, Buffer& cbNeverChanges, const unsigned int* offset)
+{
+	UINT stride = sizeof(Vertex);
+
+	IASetVertexBuffers(0, 1, obj->getMesh()->getVertexBuffer(), &stride, offset);
+	IASetIndexBuffer(obj->getMesh()->getIndexBuffer(), FORMAT_R16_UINT, 0);
+
+	//Vector pos1 = obj->getPosition();
+
+	CBChangesEveryFrame cb;
+	//XMMATRIX matd11 = XMMatrixTranslation(pos1.x(), pos1.y(), pos1.z());
+
+	cb.mWorld =  obj->getModelMatrix(); //XMMatrixTranspose(matd11);
+	Color col = obj->getMesh()->getColor();
+	cb.vMeshColor = *reinterpret_cast<XMFLOAT4*>(&col);
+	PSSetShaderResources(0, 1, obj->getTexture());
+	UpdateSubresource(cbNeverChanges, 0, NULL, &cb, 0, 0);
+	DrawIndexed(obj->getMesh()->getIndexCount(), 0, 0);
+}
+
 void RenderManager::UpdateSubresource(Buffer& pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData, unsigned int SrcRowPitch, unsigned int SrcDepthPitch)
 {
 	m_deviceContext.UpdateSubresource(pDstResource, DstSubresource, pDstBox, pSrcData, SrcRowPitch, SrcDepthPitch);
@@ -67,6 +94,13 @@ void RenderManager::DrawIndexed(unsigned int IndexCount, unsigned int StartIndex
 void RenderManager::OMSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView)
 {
 	m_deviceContext.OMSetRenderTargets(NumViews,ppRenderTargetViews, pDepthStencilView);
+}
+
+void RenderManager::ClearAndSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4])
+{
+	ClearRenderTargetView(ppRenderTargetViews, ColorRGBA);
+	ClearDepthStencilView(pDepthStencilView, CLEAR_DEPTH, 1.0f, 0);
+	OMSetRenderTargets(NumViews, ppRenderTargetViews, pDepthStencilView);
 }
 
 void RenderManager::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports)
@@ -168,6 +202,60 @@ void RenderManager::Present(unsigned int SyncInterval, unsigned int Flags)
 	m_swapChain.Present(SyncInterval, Flags);
 }
 
+HRESULT RenderManager::CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, DRIVER_TYPE DriverType, HMODULE Software, unsigned int Flags, 
+		const FEATURE_LEVEL* pFeatureLevels, unsigned int FeatureLevels, unsigned int SDKVersion, const SWAP_CHAIN_DESC* pSwapChainDesc, 
+		FEATURE_LEVEL* pFeatureLevel)
+{
+	return D3D11CreateDeviceAndSwapChain(pAdapter, static_cast<D3D_DRIVER_TYPE>(DriverType), Software, Flags, 
+		reinterpret_cast<const D3D_FEATURE_LEVEL*>(pFeatureLevels), FeatureLevels, SDKVersion, 
+		reinterpret_cast<const DXGI_SWAP_CHAIN_DESC*>(pSwapChainDesc), &m_swapChain.GetSwapChainPtr(), &m_device.GetDevicePtr(), 
+		reinterpret_cast<D3D_FEATURE_LEVEL*>(pFeatureLevel), &m_deviceContext.getDeviceContextPtr());
+}
+
+HRESULT RenderManager::CreateShaderResourceViewFromFile(LPCSTR pSrcFile, D3DX11_IMAGE_LOAD_INFO* pLoadInfo, ID3DX11ThreadPump* pPump, ShaderResourceView& ppShaderResourceView, HRESULT* pHResult)
+{
+	return D3DX11CreateShaderResourceViewFromFile(m_device.GetDevicePtr(), pSrcFile, pLoadInfo, pPump, &ppShaderResourceView.getPtr(), pHResult);
+}
+
+HRESULT RenderManager::CreateShaderAndRenderTargetView(Texture2D& TextRT, ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
+	unsigned int width, unsigned int height)
+{
+	HRESULT hr;
+
+	TEXTURE2D_DESC descTextRT;
+	ZeroMemory(&descTextRT, sizeof(descTextRT));
+	descTextRT.Width = width;
+	descTextRT.Height = height;
+	descTextRT.MipLevels = 1;
+	descTextRT.ArraySize = 1;
+	descTextRT.Format = FORMAT_R8G8B8A8_UNORM;
+	descTextRT.SampleDesc.Count = 1;
+	descTextRT.SampleDesc.Quality = 0;
+	descTextRT.Usage = USAGE_DEFAULT;
+	descTextRT.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
+	descTextRT.CPUAccessFlags = 0;
+	descTextRT.MiscFlags = 0;
+	hr = CreateTexture2D(&descTextRT, NULL, TextRT);
+	if (FAILED(hr))
+		return hr;
+
+	// create the rt Shader resource view 2
+	SHADER_RESOURCE_VIEW_DESC descViewRT;
+	ZeroMemory(&descViewRT, sizeof(descViewRT));
+	descViewRT.Format = FORMAT_R8G8B8A8_UNORM;
+	descViewRT.ViewDimension = SRV_DIMENSION_TEXTURE2D;
+	descViewRT.Texture2D.MostDetailedMip = 0;
+	descViewRT.Texture2D.MipLevels = 1;
+	hr = CreateShaderResourceView(TextRT, &descViewRT, ViewRT);
+	if (FAILED(hr))
+		return hr;
+
+	// Create the render target view 2
+	hr = CreateRenderTargetView(TextRT, NULL, RenderTargetView);
+	if (FAILED(hr))
+		return hr;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Release*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,5 +264,17 @@ void RenderManager::Release()
 {
 	m_device.Release();
 	m_deviceContext.Release();
-	m_swapChain.Release();
+	//m_swapChain.Release();
+}
+
+#endif
+
+extern RenderManager* GetManager()
+{
+	static RenderManager* manager = nullptr;
+	if (nullptr == manager)
+	{
+		manager = new RenderManager();
+	}
+	return manager;
 }

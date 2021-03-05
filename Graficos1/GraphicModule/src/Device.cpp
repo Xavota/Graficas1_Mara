@@ -1,4 +1,8 @@
 #include "Device.h"
+#include <iostream>
+#include <string>
+
+#if defined(DX11)
 
 ID3D11Device*& Device::GetDevicePtr()
 {
@@ -57,10 +61,12 @@ HRESULT Device::CreateRasterizerState(const D3D11_RASTERIZER_DESC* pRasterizerDe
 
 HRESULT Device::CreateShaderResourceView(ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRView)
 {
-    return m_pd3dDevice->CreateShaderResourceView(pResource, pDesc, ppSRView);
+	return m_pd3dDevice->CreateShaderResourceView(pResource, pDesc, ppSRView);
 }
 
 void Device::Release()
 {
     if (m_pd3dDevice) m_pd3dDevice->Release();
 }
+
+#endif
