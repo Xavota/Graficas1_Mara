@@ -2,6 +2,8 @@
 #include "Mouse.h"
 #include <math.h>
 
+namespace GraphicsModule
+{
 Camara::Camara()
 {
     m_eye = { 0,0,0 };
@@ -345,4 +347,5 @@ void Camara::calculateUp()
 {
     m_up = m_front.Cross(m_right);
     m_up.Normalize();
+}
 }

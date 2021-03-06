@@ -1,6 +1,8 @@
 #pragma once
 
 
+namespace GraphicsModule
+{
 class Vector
 {
 public:
@@ -36,4 +38,4 @@ private:
 	float m_y;
 	float m_z;
 };
-
+}

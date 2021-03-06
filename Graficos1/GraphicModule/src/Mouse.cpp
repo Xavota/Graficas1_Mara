@@ -1,5 +1,7 @@
 #include "Mouse.h"
 
+namespace GraphicsModule
+{
 Vector Mouse::m_pos;
 Vector Mouse::m_movement;
 Mouse::~Mouse()
@@ -27,4 +29,5 @@ Vector Mouse::getMouseMovement()
 
 Mouse::Mouse()
 {
+}
 }

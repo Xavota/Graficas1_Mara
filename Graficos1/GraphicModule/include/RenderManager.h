@@ -14,6 +14,8 @@
 
 #include "OBJInstance.h"
 
+namespace GraphicsModule
+{
 class RenderManager
 {
 public:
@@ -80,7 +82,7 @@ public:
 	HRESULT CreateShaderResourceViewFromFile( LPCSTR pSrcFile, D3DX11_IMAGE_LOAD_INFO* pLoadInfo, ID3DX11ThreadPump* pPump,
 			ShaderResourceView& ppShaderResourceView, HRESULT* pHResult);
 
-	HRESULT CreateShaderAndRenderTargetView(Texture2D& TextRT, ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
+	HRESULT CreateShaderAndRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
 		unsigned int width, unsigned int height);
 
 	/*Clear*/
@@ -92,5 +94,6 @@ private:
 	SwapChain m_swapChain;
 #endif
 };
-
 extern RenderManager* GetManager();
+
+}

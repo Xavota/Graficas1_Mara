@@ -3,6 +3,8 @@
 #include "Descriptors.h"
 #include "Buffer.h"
 
+namespace GraphicsModule
+{
 class Mesh
 {
 public:
@@ -36,4 +38,4 @@ private:
 
 	Color m_color;
 };
-
+}

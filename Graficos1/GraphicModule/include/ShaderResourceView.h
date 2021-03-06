@@ -4,6 +4,8 @@
 #include <d3d11.h>
 #endif
 
+namespace GraphicsModule
+{
 class ShaderResourceView
 {
 public:
@@ -20,4 +22,4 @@ private:
 
 #endif
 };
-
+}

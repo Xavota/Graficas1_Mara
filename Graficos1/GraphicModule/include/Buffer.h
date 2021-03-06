@@ -3,7 +3,8 @@
 #if defined(DX11)
 #include <d3d11.h>
 #endif
-
+namespace GraphicsModule
+{
 class Buffer
 {
 public:
@@ -20,4 +21,4 @@ private:
 
 #endif
 };
-
+}

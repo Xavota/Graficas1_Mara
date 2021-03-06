@@ -1,5 +1,8 @@
 #pragma once
 #include "Vector.h"
+
+namespace GraphicsModule
+{
 class Mouse
 {
 public:
@@ -13,4 +16,4 @@ private:
 	static Vector m_pos;
 	static Vector m_movement;
 };
-
+}

@@ -2,6 +2,8 @@
 
 #if defined(DX11)
 
+namespace GraphicsModule
+{
 IDXGISwapChain*& SwapChain::GetSwapChainPtr()
 {
     return m_pSwapChain;
@@ -27,4 +29,5 @@ void SwapChain::Release()
     if (m_pSwapChain) m_pSwapChain->Release();
 }
 
+}
 #endif

@@ -3,6 +3,8 @@
 #include <string>
 
 #if defined(DX11)
+namespace GraphicsModule
+{
 
 ID3D11Device*& Device::GetDevicePtr()
 {
@@ -67,6 +69,7 @@ HRESULT Device::CreateShaderResourceView(ID3D11Resource* pResource, const D3D11_
 void Device::Release()
 {
     if (m_pd3dDevice) m_pd3dDevice->Release();
+}
 }
 
 #endif

@@ -14,6 +14,8 @@
 #include "ShaderResourceView.h"
 #include "Buffer.h"
 
+namespace GraphicsModule
+{
 class DeviceContext
 {
 public:
@@ -53,4 +55,4 @@ private:
 
 #endif
 };
-
+}

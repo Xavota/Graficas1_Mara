@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 
+namespace GraphicsModule
+{
 Vector::Vector()
 {
     /*m_coords = new float[3];
@@ -135,4 +137,5 @@ bool Vector::operator==(Vector other)
 {
 	//return !memcmp(m_coords, other.m_coords, 3 * sizeof(float));
 	return m_x == other.m_x && m_x == other.m_y && m_z == other.m_z;
+}
 }

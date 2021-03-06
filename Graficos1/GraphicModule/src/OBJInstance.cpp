@@ -1,5 +1,7 @@
 #include "OBJInstance.h"
 
+namespace GraphicsModule
+{
 OBJInstance::OBJInstance(Mesh* mesh, Vector pos)
 {
 	m_mesh = mesh;
@@ -14,11 +16,6 @@ OBJInstance::OBJInstance()
 
 OBJInstance::~OBJInstance()
 {
-	/*if (m_mesh != nullptr)
-	{
-		delete m_mesh;
-		m_mesh = nullptr;
-	}*/
 }
 
 #if defined(DX11)
@@ -73,4 +70,5 @@ void OBJInstance::setMesh(Mesh* mesh)
 Mesh* OBJInstance::getMesh()
 {
 	return m_mesh;
+}
 }

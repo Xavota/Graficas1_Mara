@@ -6,6 +6,8 @@
 #include <d3dx11.h>
 #endif
 
+namespace GraphicsModule
+{
 class Device
 {
 public:
@@ -107,4 +109,4 @@ private:
 
 #endif
 };
-
+}

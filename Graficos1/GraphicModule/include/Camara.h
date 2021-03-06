@@ -1,5 +1,8 @@
 #pragma once
 #include "Vector.h"
+
+namespace GraphicsModule
+{
 class Camara
 {
 public:
@@ -80,3 +83,4 @@ private:
 
 	bool m_resized = true;
 };
+}

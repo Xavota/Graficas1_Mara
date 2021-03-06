@@ -8,6 +8,8 @@
 
 #include "Descriptors.h"
 
+namespace GraphicsModule
+{
 class SwapChain
 {
 public:
@@ -31,4 +33,4 @@ private:
 
 #endif
 };
-
+}

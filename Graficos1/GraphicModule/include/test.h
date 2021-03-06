@@ -128,14 +128,8 @@ namespace GraphicsModule
 
 
 
-		ShaderResourceView                  g_pViewRT2;
-		RenderTargetView                    g_pRenderTargetView2;
-
-		ShaderResourceView                  g_pViewRT3;
-		RenderTargetView                    g_pRenderTargetView3;
-
-		ShaderResourceView                  g_pViewRT4;
-		RenderTargetView                    g_pRenderTargetView4;
+        ShaderResourceView                  g_ShaderViews[3];
+        RenderTargetView                    g_RenderTargets[3];
 
     public:
 #if defined(DX11)

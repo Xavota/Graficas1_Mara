@@ -8,6 +8,8 @@
 #endif
 //#include <d3d11.h>
 
+namespace GraphicsModule
+{
 #define MAX_SWAP_CHAIN_BUFFERS        ( 16 )
 #define FLOAT32_MAX	( 3.402823466e+38f )
 
@@ -764,3 +766,4 @@ struct SUBRESOURCE_DATA
 	unsigned int SysMemPitch;
 	unsigned int SysMemSlicePitch;
 };
+}

@@ -318,26 +318,27 @@ namespace GraphicsModule
 
 
 
-		g_ObjInstances = new OBJInstance[4];
+		g_ObjInstances = new OBJInstance[9];
+
 		g_ObjInstances[0].setMesh(&g_Mesh);
-		g_ObjInstances[0].setPosition({ 0,0,4 });
+		g_ObjInstances[0].setPosition({ 0,0,2 });
 		g_ObjInstances[0].setRotation({ 0,0,3.14159265 });
-		g_ObjInstances[0].setSize({ 2,2,2 });
+		g_ObjInstances[0].setSize({ 1,1,1 });
 
 		g_ObjInstances[1].setMesh(&g_Mesh);
-		g_ObjInstances[1].setPosition({ -5,0,3.5 });
+		g_ObjInstances[1].setPosition({ -3,0,2 });
 		g_ObjInstances[1].setRotation({ 0,0,3.14159265 });
 		g_ObjInstances[1].setSize({ 1,1,1 });
 
 		g_ObjInstances[2].setMesh(&g_Mesh);
-		g_ObjInstances[2].setPosition({ 5,0,3.5 });
+		g_ObjInstances[2].setPosition({ 3,0,2 });
 		g_ObjInstances[2].setRotation({ 0,0,3.14159265 });
 		g_ObjInstances[2].setSize({ 1,1,1 });
 
 		g_ObjInstances[3].setMesh(&g_Mesh);
-		g_ObjInstances[3].setPosition({ 0,5,3.75f });
+		g_ObjInstances[3].setPosition({ 0,3,2 });
 		g_ObjInstances[3].setRotation({ 0,0,3.14159265 });
-		g_ObjInstances[3].setSize({ 1.5,1.5,1.5 });
+		g_ObjInstances[3].setSize({ 1,1,1 });
 
 
 
@@ -432,30 +433,25 @@ namespace GraphicsModule
 		g_ObjInstances[0].setTexture(g_pTextureRV);
 
 
-		Texture2D Texture;
-
-		g_RenderManager->CreateShaderAndRenderTargetView(Texture, g_pViewRT2, g_pRenderTargetView2, width, height);
+		g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[0], g_RenderTargets[0], width, height);
 		if (FAILED(hr))
 			return hr;
 
-		g_ObjInstances[1].setTexture(g_pViewRT2);
-		Texture.Release();
+		g_ObjInstances[1].setTexture(g_ShaderViews[0]);
 
 
-		g_RenderManager->CreateShaderAndRenderTargetView(Texture, g_pViewRT3, g_pRenderTargetView3, width, height);
+		g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[1], g_RenderTargets[1], width, height);
 		if (FAILED(hr))
 			return hr;
 
-		g_ObjInstances[2].setTexture(g_pViewRT3);
-		Texture.Release();
+		g_ObjInstances[2].setTexture(g_ShaderViews[1]);
 
 
-		g_RenderManager->CreateShaderAndRenderTargetView(Texture, g_pViewRT4, g_pRenderTargetView4, width, height);
+		g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[2], g_RenderTargets[2], width, height);
 		if (FAILED(hr))
 			return hr;
 
-		g_ObjInstances[3].setTexture(g_pViewRT4);
-		Texture.Release();
+		g_ObjInstances[3].setTexture(g_ShaderViews[2]);
 
 #endif
 		return S_OK;
@@ -504,7 +500,7 @@ namespace GraphicsModule
 		}
 
 		// Rotate cube around the origin
-		//g_World = XMMatrixRotationY(t);
+		g_World = XMMatrixRotationY(t);
 
 
 		// Modify the color
@@ -519,6 +515,14 @@ namespace GraphicsModule
 		g_ObjInstances[1].getMesh()->setColor(g_vMeshColor);
 		g_ObjInstances[2].getMesh()->setColor(g_vMeshColor);
 		g_ObjInstances[3].getMesh()->setColor(g_vMeshColor);
+
+		static Vector rotation_c{0,0,0};
+		rotation_c.setVector(0, t, 3.14159265);
+
+		g_ObjInstances[0].setRotation(rotation_c);
+		g_ObjInstances[1].setRotation(rotation_c);
+		g_ObjInstances[2].setRotation(rotation_c);
+		g_ObjInstances[3].setRotation(rotation_c);
 
 #endif
 	}
@@ -545,18 +549,18 @@ namespace GraphicsModule
 		// Render the cubes
 
 		/*Primer Cubo*/
-		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView2, g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[0], g_pDepthStencilView, g_ClearColor);
 		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
 
 
 		/*Segundo Cubo*/
-		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView3, g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[1], g_pDepthStencilView, g_ClearColor);
 		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
 		g_RenderManager->DrawObject(&g_ObjInstances[1], g_pCBChangesEveryFrame, &offset);
 
 
 		/*Tercer Cubo*/
-		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView4, g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[2], g_pDepthStencilView, g_ClearColor);
 		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
 		g_RenderManager->DrawObject(&g_ObjInstances[1], g_pCBChangesEveryFrame, &offset);
 		g_RenderManager->DrawObject(&g_ObjInstances[2], g_pCBChangesEveryFrame, &offset);
@@ -582,6 +586,8 @@ namespace GraphicsModule
 	  if (g_pVertexShader) g_pVertexShader->Release();
 	  if (g_pPixelShader) g_pPixelShader->Release();
 
+	  g_RenderManager->ClearState();
+
 	  g_pTextureRV.Release();
 
 	  g_pRenderTargetView.Release();
@@ -597,20 +603,21 @@ namespace GraphicsModule
 	  g_pCBChangesEveryFrame.Release();
 
 
-	  g_pViewRT2.Release();
-	  g_pRenderTargetView2.Release();
+	  g_ShaderViews[0].Release();
+	  g_ShaderViews[1].Release();
+	  g_ShaderViews[2].Release();
 
-	  g_pViewRT3.Release();
-	  g_pRenderTargetView3.Release();
-;
-	  g_pViewRT4.Release();
-	  g_pRenderTargetView4.Release();
+	  g_RenderTargets[0].Release();
+	  g_RenderTargets[1].Release();
+	  g_RenderTargets[2].Release();
+
 
 	  g_RenderManager->Release();
 
 #endif
 
 	  delete[] g_ObjInstances;
+	  delete g_RenderManager;
   }
 
   void test::Resize(unsigned int width, unsigned int height)
@@ -624,9 +631,9 @@ namespace GraphicsModule
 #if defined(DX11)
 
 	  g_pRenderTargetView.Release();
-	  g_pRenderTargetView2.Release();
-	  g_pRenderTargetView3.Release();
-	  g_pRenderTargetView4.Release();
+	  g_RenderTargets[0].Release();
+	  g_RenderTargets[1].Release();
+	  g_RenderTargets[2].Release();
 	  g_pDepthStencilView.Release();
 
 
@@ -650,43 +657,40 @@ namespace GraphicsModule
 	  }
 
 
-	  g_pViewRT2.Release();
+	  g_ShaderViews[0].Release();
 
-	  g_RenderManager->CreateShaderAndRenderTargetView(buffer, g_pViewRT2, g_pRenderTargetView2, width, height);
-	  buffer.Release();
+	  g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[0], g_RenderTargets[0], width, height);
 	  if (FAILED(hr))
 	  {
 		  throw std::runtime_error("Swapchain not created successfully");
 	  }
 
-	  g_ObjInstances[1].setTexture(g_pViewRT2);
+	  g_ObjInstances[1].setTexture(g_ShaderViews[0]);
 
 
-	  g_pViewRT3.Release();
+	  g_ShaderViews[1].Release();
 
-	  g_RenderManager->CreateShaderAndRenderTargetView(buffer, g_pViewRT3, g_pRenderTargetView3, width, height);
-	  buffer.Release();
+	  g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[1], g_RenderTargets[1], width, height);
 	  if (FAILED(hr))
 	  {
 		  throw std::runtime_error("Swapchain not created successfully");
 	  }
 
-	  g_ObjInstances[2].setTexture(g_pViewRT3);
+	  g_ObjInstances[2].setTexture(g_ShaderViews[1]);
 
 
-	  g_pViewRT4.Release();
+	  g_ShaderViews[2].Release();
 
-	  g_RenderManager->CreateShaderAndRenderTargetView(buffer, g_pViewRT4, g_pRenderTargetView4, width, height);
-	  buffer.Release();
+	  g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[2], g_RenderTargets[2], width, height);
 	  if (FAILED(hr))
 	  {
 		  throw std::runtime_error("Swapchain not created successfully");
 	  }
 
-	  g_ObjInstances[3].setTexture(g_pViewRT4);
+	  g_ObjInstances[3].setTexture(g_ShaderViews[2]);
 
 
-
+	
 
 	  TEXTURE2D_DESC descDepth = {};
 	  ZeroMemory(&descDepth, sizeof(descDepth));

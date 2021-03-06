@@ -6,7 +6,10 @@
 /*Device*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace GraphicsModule
+{
 #if defined(DX11)
+
 HRESULT RenderManager::CreateRenderTargetView(Texture2D& texture, const RENDER_TARGET_VIEW_DESC* desc, RenderTargetView& rtv)
 {
 	return m_device.CreateRenderTargetView(texture.GetTexturePtr(), reinterpret_cast<const D3D11_RENDER_TARGET_VIEW_DESC*>(desc), &rtv.getPtr());
@@ -61,23 +64,20 @@ HRESULT RenderManager::CreateShaderResourceView(Texture2D& pResource, const SHAD
 /*Device context*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void RenderManager::DrawObject(OBJInstance* obj, Buffer& cbNeverChanges, const unsigned int* offset)
+void RenderManager::DrawObject(OBJInstance* obj, Buffer& cbChangesEveryFrame, const unsigned int* offset)
 {
 	UINT stride = sizeof(Vertex);
 
 	IASetVertexBuffers(0, 1, obj->getMesh()->getVertexBuffer(), &stride, offset);
 	IASetIndexBuffer(obj->getMesh()->getIndexBuffer(), FORMAT_R16_UINT, 0);
 
-	//Vector pos1 = obj->getPosition();
-
 	CBChangesEveryFrame cb;
-	//XMMATRIX matd11 = XMMatrixTranslation(pos1.x(), pos1.y(), pos1.z());
 
-	cb.mWorld =  obj->getModelMatrix(); //XMMatrixTranspose(matd11);
+	cb.mWorld =  obj->getModelMatrix();
 	Color col = obj->getMesh()->getColor();
 	cb.vMeshColor = *reinterpret_cast<XMFLOAT4*>(&col);
 	PSSetShaderResources(0, 1, obj->getTexture());
-	UpdateSubresource(cbNeverChanges, 0, NULL, &cb, 0, 0);
+	UpdateSubresource(cbChangesEveryFrame, 0, NULL, &cb, 0, 0);
 	DrawIndexed(obj->getMesh()->getIndexCount(), 0, 0);
 }
 
@@ -217,9 +217,11 @@ HRESULT RenderManager::CreateShaderResourceViewFromFile(LPCSTR pSrcFile, D3DX11_
 	return D3DX11CreateShaderResourceViewFromFile(m_device.GetDevicePtr(), pSrcFile, pLoadInfo, pPump, &ppShaderResourceView.getPtr(), pHResult);
 }
 
-HRESULT RenderManager::CreateShaderAndRenderTargetView(Texture2D& TextRT, ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
+HRESULT RenderManager::CreateShaderAndRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
 	unsigned int width, unsigned int height)
 {
+	Texture2D TextRT;
+	
 	HRESULT hr;
 
 	TEXTURE2D_DESC descTextRT;
@@ -254,6 +256,8 @@ HRESULT RenderManager::CreateShaderAndRenderTargetView(Texture2D& TextRT, Shader
 	hr = CreateRenderTargetView(TextRT, NULL, RenderTargetView);
 	if (FAILED(hr))
 		return hr;
+
+	TextRT.Release();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,7 +270,6 @@ void RenderManager::Release()
 	m_deviceContext.Release();
 	//m_swapChain.Release();
 }
-
 #endif
 
 extern RenderManager* GetManager()
@@ -277,4 +280,5 @@ extern RenderManager* GetManager()
 		manager = new RenderManager();
 	}
 	return manager;
+}
 }

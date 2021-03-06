@@ -6,6 +6,8 @@
 #include <xnamath.h>
 #endif
 
+namespace GraphicsModule
+{
 class OBJInstance
 {
 public:
@@ -41,4 +43,4 @@ private:
 
 	ShaderResourceView m_texture;
 };
-
+}

@@ -3,6 +3,8 @@
 
 #include "RenderManager.h"
 
+namespace GraphicsModule
+{
 Mesh::Mesh(Vertex* vertices, int verticesCount, unsigned short* indices, int indicesCount)
 {
 	m_vertices = nullptr;
@@ -99,4 +101,5 @@ void Mesh::setIndices(unsigned short* indices, int count)
 
 #endif
 	}
+}
 }
