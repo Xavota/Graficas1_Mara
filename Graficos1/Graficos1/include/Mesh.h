@@ -3,8 +3,7 @@
 #include "Descriptors.h"
 #include "Buffer.h"
 
-namespace GraphicsModule
-{
+
 class Mesh
 {
 public:
@@ -12,11 +11,11 @@ public:
 	Mesh();
 	~Mesh();
 
-	HRESULT setVertex(Vertex* vertices, int count);
+	void setVertex(Vertex* vertices, int count);
 	Vertex* getVertex() { return m_vertices; }
 	int getVertexCount() { return m_vertexCount; }
 
-	HRESULT setIndices(unsigned short* indices, int count);
+	void setIndices(unsigned short* indices, int count);
 	unsigned short* getIndices() { return m_indices; }
 	int getIndexCount() { return m_indicesCount; }
 
@@ -38,4 +37,3 @@ private:
 
 	Color m_color;
 };
-}

@@ -1,8 +1,5 @@
 #pragma once
 
-
-namespace GraphicsModule
-{
 class Vector
 {
 public:
@@ -34,8 +31,7 @@ public:
 	bool operator==(Vector other);
 
 private:
-	float m_x = 0;
-	float m_y = 0;
-	float m_z = 0;
+	float m_x;
+	float m_y;
+	float m_z;
 };
-}

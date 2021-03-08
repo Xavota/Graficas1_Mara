@@ -7,6 +7,15 @@
 #endif
 #include "GraphicModule.h"
 
+#include "Camara.h"
+#include "Mouse.h"
+#include "Mesh.h"
+#include "OBJInstance.h"
+#include "TextureManager.h"
+
+#include "Descriptors.h"
+
+
 #include <chrono>
 //using namespace chrono;
 //using namespace chrono;
@@ -14,6 +23,13 @@
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
 GraphicsModule::test g_Test;
+
+GraphicsModule::Camara* g_Cameras;
+char                                g_activeCamera = 0;
+char                                g_CameraCount = 2;
+
+GraphicsModule::Mesh g_Mesh;
+GraphicsModule::OBJInstance* g_ObjInstances;
 
 /**
  * @brief   Forward declare message handler from imgui_impl_win32.cpp
@@ -55,7 +71,13 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
             GetClientRect(_hwnd, &rc);
 
             UINT width = rc.right - rc.left;
-            UINT height = rc.bottom - rc.top;
+			UINT height = rc.bottom - rc.top;
+
+			for (int i = 0; i < g_CameraCount; i++)
+			{
+				g_Cameras[i].setViewWidth(width);
+				g_Cameras[i].setViewHeight(height);
+			}
 
             g_Test.Resize(width, height);
         }
@@ -77,21 +99,19 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 
 	case WM_KEYDOWN: {
 		if (LOWORD(_wParam) == 'D')
-			g_Test.getCamera().move({ 1, 0, 0 });
+            g_Cameras[g_activeCamera].move({ 1, 0, 0 });
 		if (LOWORD(_wParam) == 'A')
-            g_Test.getCamera().move({ -1, 0, 0 });
+            g_Cameras[g_activeCamera].move({ -1, 0, 0 });
 		if (LOWORD(_wParam) == 'W')
-            g_Test.getCamera().move({ 0, 1, 0 });
+            g_Cameras[g_activeCamera].move({ 0, 1, 0 });
 		if (LOWORD(_wParam) == 'S')
-            g_Test.getCamera().move({ 0, -1, 0 });
+            g_Cameras[g_activeCamera].move({ 0, -1, 0 });
 		if (LOWORD(_wParam) == 'Q')
-            g_Test.getCamera().move({ 0, 0, 1 });
+            g_Cameras[g_activeCamera].move({ 0, 0, 1 });
 		if (LOWORD(_wParam) == 'E')
-			g_Test.getCamera().move({ 0, 0, -1 });
+            g_Cameras[g_activeCamera].move({ 0, 0, -1 });
 		if (LOWORD(_wParam) == 9)
-            g_Test.setActivaCameraNum((g_Test.getActivaCameraNum() + 1) % g_Test.getMaxCameraNum());
-			//g_ActualCamera = (g_ActualCamera + 1) % g_CameraCount;
-		//g_Cameras[g_ActualCamera].setIsPerspective(!g_Cameras[g_ActualCamera].getIsPerspective());
+            g_activeCamera = (g_activeCamera + 1) % g_CameraCount;
 
 		break;
         }
@@ -136,7 +156,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
     {
         return E_FAIL;
     }
-    ShowWindow(g_hwnd, SW_SHOWNORMAL);
+	ShowWindow(g_hwnd, SW_SHOWNORMAL);
 
     return S_OK;
 }
@@ -165,6 +185,91 @@ HRESULT InitImgUI()
     return S_OK;
 }
 
+HRESULT Init(unsigned int width, unsigned int height)
+{
+	g_Cameras = new GraphicsModule::Camara[2];
+	g_Cameras[0].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
+		width, height, 0.01f, 100.0f, true, PIDIV4);
+	g_Cameras[1].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
+		width, height, 0.01f, 100.0f, false, PIDIV4);
+    
+    HRESULT hr;
+
+	hr = g_Mesh.setVertex(new Vertex[24]{
+			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
+			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
+			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
+			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+
+			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
+			{ Vector3{-1.0f, -1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+
+			{ Vector3{-1.0f, -1.0f, 1.0f}, Vector2{0.0f, 0.0f} },
+			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
+			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{1.0f, 1.0f} },
+			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+
+			{ Vector3{1.0f, -1.0f, 1.0f}, Vector2{0.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
+			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 1.0f} },
+			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+
+			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
+			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 1.0f} },
+			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{0.0f, 1.0f} },
+
+			{ Vector3{-1.0f, -1.0f, 1.0f}, Vector2{0.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, 1.0f}, Vector2{1.0f, 0.0f} },
+			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
+			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} } }, 24);
+
+	if (FAILED(hr))
+		return hr;
+
+
+
+
+	// Create index buffer
+	hr = g_Mesh.setIndices(new unsigned short[36]{
+		3,1,0,
+		2,1,3,
+
+		6,4,5,
+		7,4,6,
+
+		11,9,8,
+		10,9,11,
+
+		14,12,13,
+		15,12,14,
+
+		19,17,16,
+		18,17,19,
+
+		22,20,21,
+		23,20,22
+		}, 36
+	);
+
+	if (FAILED(hr))
+		return hr;
+
+	g_ObjInstances = new GraphicsModule::OBJInstance[1];
+
+	g_ObjInstances[0].setMesh(&g_Mesh);
+	g_ObjInstances[0].setPosition({ 3,3,2 });
+	g_ObjInstances[0].setRotation({ 0,0,3.14159265 });
+	g_ObjInstances[0].setSize({ 1,1,1 });
+
+	TextureManager::CreateTextureFromFile("pepe.dds", "Pepe");
+	g_ObjInstances[0].setTexture(TextureManager::GetTexture("Pepe"));
+
+    return S_OK;
+}
+
 void UIRender()
 {
     // Start the Dear ImGui frame
@@ -187,13 +292,54 @@ void UIRender()
 #endif
 }
 
+void Update(float dt)
+{
+    g_Test.Update(dt);
+
+    /*Update the mouse position*/
+    LPPOINT p = new POINT;
+    GetCursorPos(p);
+    GraphicsModule::Mouse::setMousePos({ (float)p->x, -(float)p->y, 0 });
+    delete p;
+
+
+    /*Update the active camera*/
+    g_Cameras[g_activeCamera].Update();
+
+
+    /*Set the new view and projection matrices*/
+    g_Test.GetRenderManager()->UpdateViewMatrix(g_Cameras[g_activeCamera].getViewMatrix());
+    g_Test.GetRenderManager()->UpdateProjectionMatrix(g_Cameras[g_activeCamera].getProjectionMatrix());
+
+
+    static float dtt = 0;
+    dtt += dt;
+
+
+    // Modify the color
+    /*(sinf(t * 1.0f) + 1.0f) * 0.5f;
+      (cosf(t * 3.0f) + 1.0f) * 0.5f;
+      (sinf(t * 5.0f) + 1.0f) * 0.5f;/**/
+    Color g_vMeshColor;
+    g_vMeshColor.r = .7;
+    g_vMeshColor.g = .7;
+    g_vMeshColor.b = .7;/**/
+
+    g_ObjInstances[0].getMesh()->setColor(g_vMeshColor);
+
+    static GraphicsModule::Vector rotation_c{ 0,0,0 };
+    rotation_c.setVector(0, dtt, 3.14159265);
+
+    g_ObjInstances[0].setRotation(rotation_c);
+}
+
 void Render()
 {
     g_Test.Render();
 #if defined(DX11) || defined(OGL)
     UIRender();
 #endif
-
+    GraphicsModule::GetManager()->DrawObject(&g_ObjInstances[0]);
 #if defined(DX11) || defined(OGL)
     g_Test.GetSwapChain()->Present(0, 0);
 #endif
@@ -233,6 +379,18 @@ int main()
         return 0;
     }
 
+    if (FAILED(Init(1280, 720)))
+	{
+		DestroyWindow(g_hwnd);
+#if defined(DX11)
+		ImGui_ImplDX11_Shutdown();
+#endif
+		ImGui_ImplWin32_Shutdown();
+		ImGui::DestroyContext();
+		return 0;
+        
+    }
+
     // main loop
     MSG msg = { 0 };
     //auto start = chrono::high_resolution_clock::now();
@@ -248,7 +406,7 @@ int main()
             Render();
             //auto end = high_resolution_clock::now();
 			//g_Test.Update(duration<double>(end - start).count());
-			g_Test.Update(.01f);
+			Update(.003f);
             //start = high_resolution_clock::now();
         }
     }

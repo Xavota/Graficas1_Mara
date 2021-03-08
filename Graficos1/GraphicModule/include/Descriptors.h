@@ -8,8 +8,7 @@
 #endif
 //#include <d3d11.h>
 
-namespace GraphicsModule
-{
+
 #define MAX_SWAP_CHAIN_BUFFERS        ( 16 )
 #define FLOAT32_MAX	( 3.402823466e+38f )
 
@@ -25,6 +24,33 @@ namespace GraphicsModule
 #define USAGE_READ_ONLY                ( 1L << (4 + 4) )
 #define USAGE_DISCARD_ON_PRESENT       ( 1L << (5 + 4) )
 #define USAGE_UNORDERED_ACCESS         ( 1L << (6 + 4) )
+
+
+#define PI               3.141592654f
+#define _2PI              6.283185307f
+#define _1DIVPI           0.318309886f
+#define _1DIV2PI          0.159154943f
+#define PIDIV2           1.570796327f
+#define PIDIV4           0.785398163f
+
+#define SELECT_0         0x00000000
+#define SELECT_1         0xFFFFFFFF
+
+#define PERMUTE_0X       0x00010203
+#define PERMUTE_0Y       0x04050607
+#define PERMUTE_0Z       0x08090A0B
+#define PERMUTE_0W       0x0C0D0E0F
+#define PERMUTE_1X       0x10111213
+#define PERMUTE_1Y       0x14151617
+#define PERMUTE_1Z       0x18191A1B
+#define PERMUTE_1W       0x1C1D1E1F
+
+#define CRMASK_CR6       0x000000F0
+#define CRMASK_CR6TRUE   0x00000080
+#define CRMASK_CR6FALSE  0x00000020
+#define CRMASK_CR6BOUNDS XM_CRMASK_CR6FALSE
+
+#define CACHE_LINE_SIZE  64
 
 enum FORMAT
 {
@@ -364,6 +390,20 @@ struct CBChangesEveryFrame
 #endif
 };
 
+struct CBNeverChanges
+{
+#if defined(DX11)
+	XMMATRIX mView;
+#endif
+};
+
+struct CBChangeOnResize
+{
+#if defined(DX11)
+	XMMATRIX mProjection;
+#endif
+};
+
 struct Vector4
 {
 	float x;
@@ -403,7 +443,63 @@ struct MATRIX
 		};
 		float m[4][4];
 	};
+
+	MATRIX() {};
+	MATRIX(Vector4 R0, Vector4 R1, Vector4 R2, Vector4 R3) {
+		r[0] = R0; r[1] = R1; r[2] = R2; r[3] = R3;
+	}
+	MATRIX(float m00, float m01, float m02, float m03,
+		float m10, float m11, float m12, float m13,
+		float m20, float m21, float m22, float m23,
+		float m30, float m31, float m32, float m33)
+	{
+		_11 = m00; _12 = m01; _13 = m02; _14 = m03;
+		_21 = m10; _22 = m11; _23 = m12; _24 = m13;
+		_31 = m20; _32 = m21; _33 = m22; _34 = m23;
+		_41 = m30; _42 = m31; _43 = m32; _44 = m33;
+	}
+	MATRIX(const float* pArray)
+	{
+		memset(m, 0, 4 * 4 * sizeof(float));
+		memcpy(m, pArray, 4 * 4 * sizeof(float));
+	}
+
+	float  operator() (UINT Row, UINT Column) const { return m[Row][Column]; }
+	float& operator() (UINT Row, UINT Column) { return m[Row][Column]; }
+
 };
+
+/*MATRIX MatrixRotationY
+(
+	float Angle
+)
+{
+	MATRIX M;
+
+	FLOAT fSinAngle = sinf(Angle);
+	FLOAT fCosAngle = cosf(Angle);
+
+	M.m[0][0] = fCosAngle;
+	M.m[0][1] = 0.0f;
+	M.m[0][2] = -fSinAngle;
+	M.m[0][3] = 0.0f;
+
+	M.m[1][0] = 0.0f;
+	M.m[1][1] = 1.0f;
+	M.m[1][2] = 0.0f;
+	M.m[1][3] = 0.0f;
+
+	M.m[2][0] = fSinAngle;
+	M.m[2][1] = 0.0f;
+	M.m[2][2] = fCosAngle;
+	M.m[2][3] = 0.0f;
+
+	M.m[3][0] = 0.0f;
+	M.m[3][1] = 0.0f;
+	M.m[3][2] = 0.0f;
+	M.m[3][3] = 1.0f;
+	return M;
+}*/
 
 struct Color
 {
@@ -411,6 +507,20 @@ struct Color
 	float g;
 	float b;
 	float a;
+};
+
+struct NeverChangesDesc
+{
+#if defined(DX11)
+	MATRIX mView;
+#endif
+};
+
+struct ChangeOnResizeDesc
+{
+#if defined(DX11)
+	MATRIX mProjection;
+#endif
 };
 
 struct ChangesEveryFrameDesc
@@ -766,4 +876,3 @@ struct SUBRESOURCE_DATA
 	unsigned int SysMemPitch;
 	unsigned int SysMemSlicePitch;
 };
-}

@@ -3,8 +3,7 @@
 
 #include "RenderManager.h"
 
-namespace GraphicsModule
-{
+
 Mesh::Mesh(Vertex* vertices, int verticesCount, unsigned short* indices, int indicesCount)
 {
 	m_vertices = nullptr;
@@ -35,7 +34,7 @@ Mesh::~Mesh()
 	}
 }
 
-HRESULT Mesh::setVertex(Vertex* vertices, int count)
+void Mesh::setVertex(Vertex* vertices, int count)
 {
 	if (m_vertices != nullptr) {
 		delete m_vertices;
@@ -63,13 +62,13 @@ HRESULT Mesh::setVertex(Vertex* vertices, int count)
 		InitData.pSysMem = vertices;
 		HRESULT hr = renderManager->CreateBuffer(&bd, &InitData, m_pVertexBuffer);/**/
 		if (FAILED(hr))
-			return hr;
+			throw std::runtime_error("No se pudo crear el vertex buffer");
 
 #endif
 	}
 }
 
-HRESULT Mesh::setIndices(unsigned short* indices, int count)
+void Mesh::setIndices(unsigned short* indices, int count)
 {
 	if (m_indices != nullptr) {
 		delete m_indices;
@@ -97,9 +96,8 @@ HRESULT Mesh::setIndices(unsigned short* indices, int count)
 		InitData.pSysMem = indices;
 		HRESULT hr = renderManager->CreateBuffer(&bd, &InitData, g_pIndexBuffer);/**/
 		if (FAILED(hr))
-		 	return hr;
+		 	throw std::runtime_error("No se pudo crear el index buffer");
 
 #endif
 	}
-}
 }

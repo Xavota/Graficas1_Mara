@@ -237,7 +237,7 @@ namespace GraphicsModule
 
 
 		// Create vertex buffer
-		g_Mesh.setVertex(new Vertex[24]{
+		/*hr = g_Mesh.setVertex(new Vertex[24]{
 			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
 			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
 			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
@@ -268,16 +268,6 @@ namespace GraphicsModule
 			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
 			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} } }, 24);
 
-		BUFFER_DESC bd;
-		ZeroMemory(&bd, sizeof(bd));
-		bd.Usage = USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(SimpleVertex) * 24;
-		bd.BindFlags = BIND_VERTEX_BUFFER;
-		bd.CPUAccessFlags = 0;
-		SUBRESOURCE_DATA InitData;
-		ZeroMemory(&InitData, sizeof(InitData));
-		InitData.pSysMem = g_Mesh.getVertex();
-		hr = g_RenderManager->CreateBuffer(&bd, &InitData, g_pVertexBuffer);/**/
 		if (FAILED(hr))
 		    return hr;
 
@@ -285,7 +275,7 @@ namespace GraphicsModule
 
 
 		// Create index buffer
-		g_Mesh.setIndices(new unsigned short[36]{
+		hr = g_Mesh.setIndices(new unsigned short[36]{
 		    3,1,0,
 		    2,1,3,
 
@@ -306,19 +296,13 @@ namespace GraphicsModule
 		    }, 36
 		);
 
-		bd.Usage = USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(unsigned short) * g_Mesh.getIndexCount();
-		bd.BindFlags = BIND_INDEX_BUFFER;
-		bd.CPUAccessFlags = 0;
-		InitData.pSysMem = g_Mesh.getIndices();
-		hr = g_RenderManager->CreateBuffer(&bd, &InitData, g_pIndexBuffer);/**/
 		if (FAILED(hr))
-		    return hr;
+		    return hr;*/
 
 
 
 
-		g_ObjInstances = new OBJInstance[9];
+		/*g_ObjInstances = new OBJInstance[4];
 
 		g_ObjInstances[0].setMesh(&g_Mesh);
 		g_ObjInstances[0].setPosition({ 0,0,2 });
@@ -338,7 +322,7 @@ namespace GraphicsModule
 		g_ObjInstances[3].setMesh(&g_Mesh);
 		g_ObjInstances[3].setPosition({ 0,3,2 });
 		g_ObjInstances[3].setRotation({ 0,0,3.14159265 });
-		g_ObjInstances[3].setSize({ 1,1,1 });
+		g_ObjInstances[3].setSize({ 1,1,1 });*/
 
 
 
@@ -350,21 +334,23 @@ namespace GraphicsModule
 
 
 
+		BUFFER_DESC bd;
+		ZeroMemory(&bd, sizeof(bd));
 		bd.Usage = USAGE_DEFAULT;
 		bd.ByteWidth = sizeof(CBNeverChanges);
 		bd.BindFlags = BIND_CONSTANT_BUFFER;
 		bd.CPUAccessFlags = 0;
-		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_pCBNeverChanges);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetNeverChangesBuffer());
 		if (FAILED(hr))
 		  return hr;
 
 		bd.ByteWidth = sizeof(CBChangeOnResize);
-		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_pCBChangeOnResize);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetChangeOnResizeBuffer());
 		if (FAILED(hr))
 		  return hr;
 
 		bd.ByteWidth = sizeof(CBChangesEveryFrame);
-		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_pCBChangesEveryFrame);/**/
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetChangesEveryFrameBuffer());/**/
 		if (FAILED(hr))
 		  return hr;
 
@@ -390,26 +376,6 @@ namespace GraphicsModule
 		// Initialize the world matrices
 		g_World = XMMatrixIdentity();
 
-		g_Cameras = new Camara[2];
-		g_Cameras[0].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
-			width, height, 0.01f, 100.0f, true, XM_PIDIV4);
-		g_Cameras[1].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
-			width, height, 0.01f, 100.0f, false, XM_PIDIV4);
-
-		// Initialize the view matrix
-		g_View = XMMATRIX(g_Cameras[g_activeCamera].getViewMatrix());
-
-		CBNeverChanges cbNeverChanges;
-		cbNeverChanges.mView = XMMatrixTranspose(g_View);
-		g_RenderManager->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
-
-		// Initialize the projection matrix
-		g_Projection = XMMATRIX(g_Cameras[g_activeCamera].getProjectionMatrix());
-
-		CBChangeOnResize cbChangesOnResize;
-		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-		g_RenderManager->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
-
 
 
 
@@ -426,32 +392,34 @@ namespace GraphicsModule
 
 		/*Load textures*/
 
-		hr = g_RenderManager->CreateShaderResourceViewFromFile("cheems2.dds", NULL, NULL, g_pTextureRV, NULL);
-		if (FAILED(hr))
-			return hr;
+		//hr = g_RenderManager->CreateShaderResourceViewFromFile("cheems2.dds", NULL, NULL, g_pTextureRV, NULL);
+		//TextureManager::CreateTextureFromFile("cheems2.dds", "Cheems");
+		//if (FAILED(hr))
+		//	return hr;
 
-		g_ObjInstances[0].setTexture(g_pTextureRV);
+		//g_ObjInstances[0].setTexture(g_pTextureRV);
+		//g_ObjInstances[0].setTexture(TextureManager::GetTexture("Cheems"));
 
 
-		g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[0], g_RenderTargets[0], width, height);
+		/*g_RenderManager->CreateShaderAsRenderTargetView(g_ShaderViews[0], g_RenderTargets[0], width, height);
 		if (FAILED(hr))
 			return hr;
 
 		g_ObjInstances[1].setTexture(g_ShaderViews[0]);
 
 
-		g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[1], g_RenderTargets[1], width, height);
+		g_RenderManager->CreateShaderAsRenderTargetView(g_ShaderViews[1], g_RenderTargets[1], width, height);
 		if (FAILED(hr))
 			return hr;
 
 		g_ObjInstances[2].setTexture(g_ShaderViews[1]);
 
 
-		g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[2], g_RenderTargets[2], width, height);
+		g_RenderManager->CreateShaderAsRenderTargetView(g_ShaderViews[2], g_RenderTargets[2], width, height);
 		if (FAILED(hr))
 			return hr;
 
-		g_ObjInstances[3].setTexture(g_ShaderViews[2]);
+		g_ObjInstances[3].setTexture(g_ShaderViews[2]);*/
 
 #endif
 		return S_OK;
@@ -460,69 +428,31 @@ namespace GraphicsModule
 	void test::Update(float dt)
 	{
 #if defined(DX11)
-
-		/*Update the mouse position*/
-		LPPOINT p = new POINT;
-		GetCursorPos(p);
-		Mouse::setMousePos({ (float)p->x, -(float)p->y, 0 });
-		delete p;
-
-
-		/*Update the active camera*/
-		g_Cameras[g_activeCamera].Update();
-
-
-		/*Set the new view and projection matrices*/
-		g_View = XMMATRIX(g_Cameras[g_activeCamera].getViewMatrix());
-		CBNeverChanges cbNeverChanges;
-		cbNeverChanges.mView = XMMatrixTranspose(g_View);
-		g_RenderManager->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
-
-		g_Projection = XMMATRIX(g_Cameras[g_activeCamera].getProjectionMatrix());
-		CBChangeOnResize cbChangesOnResize;
-		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-		g_RenderManager->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
-
-
-		// Update our time
-		static float t = 0.0f;
-		if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
-		{
-			  t += (float)XM_PI * 0.0125f;
-		}
-		else
-		{
-			  static DWORD dwTimeStart = 0;
-			  DWORD dwTimeCur = GetTickCount();
-			  if (dwTimeStart == 0)
-				  dwTimeStart = dwTimeCur;
-			  t = (dwTimeCur - dwTimeStart) / 1000.0f;
-		}
-
-		// Rotate cube around the origin
-		g_World = XMMatrixRotationY(t);
+		static float dtt = 0;
+		dtt += dt;
 
 
 		// Modify the color
 		/*(sinf(t * 1.0f) + 1.0f) * 0.5f;
 		  (cosf(t * 3.0f) + 1.0f) * 0.5f;
 		  (sinf(t * 5.0f) + 1.0f) * 0.5f;/**/
+		g_vMeshColor;
 		g_vMeshColor.r = .7;
 		g_vMeshColor.g = .7;
 		g_vMeshColor.b = .7;/**/
 
-		g_ObjInstances[0].getMesh()->setColor(g_vMeshColor);
+		/*g_ObjInstances[0].getMesh()->setColor(g_vMeshColor);
 		g_ObjInstances[1].getMesh()->setColor(g_vMeshColor);
 		g_ObjInstances[2].getMesh()->setColor(g_vMeshColor);
-		g_ObjInstances[3].getMesh()->setColor(g_vMeshColor);
+		g_ObjInstances[3].getMesh()->setColor(g_vMeshColor);/**/
 
-		static Vector rotation_c{0,0,0};
-		rotation_c.setVector(0, t, 3.14159265);
+		static Vector rotation_c{ 0,0,0 };
+		rotation_c.setVector(0, dtt, 3.14159265);
 
-		g_ObjInstances[0].setRotation(rotation_c);
+		/*g_ObjInstances[0].setRotation(rotation_c);
 		g_ObjInstances[1].setRotation(rotation_c);
 		g_ObjInstances[2].setRotation(rotation_c);
-		g_ObjInstances[3].setRotation(rotation_c);
+		g_ObjInstances[3].setRotation(rotation_c);/**/
 
 #endif
 	}
@@ -531,47 +461,46 @@ namespace GraphicsModule
 	{
 #if defined(DX11)
 
-		UINT offset = 0;
-
 		// Set the input layout
 		g_RenderManager->IASetInputLayout(g_pVertexLayout);
 		g_RenderManager->RSSetState(g_Rasterizer);
 
 		g_RenderManager->VSSetShader(g_pVertexShader, NULL, 0);
-		g_RenderManager->VSSetConstantBuffers(0, 1, g_pCBNeverChanges);
-		g_RenderManager->VSSetConstantBuffers(1, 1, g_pCBChangeOnResize);
-		g_RenderManager->VSSetConstantBuffers(2, 1, g_pCBChangesEveryFrame);
+		g_RenderManager->VSSetConstantBuffers(0, 1, g_RenderManager->GetNeverChangesBuffer());
+		g_RenderManager->VSSetConstantBuffers(1, 1, g_RenderManager->GetChangeOnResizeBuffer());
+		g_RenderManager->VSSetConstantBuffers(2, 1, g_RenderManager->GetChangesEveryFrameBuffer());
+
 		g_RenderManager->PSSetShader(g_pPixelShader, NULL, 0);
-		g_RenderManager->PSSetConstantBuffers(2, 1, g_pCBChangesEveryFrame);
+		g_RenderManager->PSSetConstantBuffers(2, 1, g_RenderManager->GetChangesEveryFrameBuffer());
 		g_RenderManager->PSSetSamplers(0, 1, &g_pSamplerLinear);
 
 
 		// Render the cubes
 
 		/*Primer Cubo*/
-		g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[0], g_pDepthStencilView, g_ClearColor);
-		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
+		/*g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[0], g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->DrawObject(&g_ObjInstances[0]);
 
 
 		/*Segundo Cubo*/
-		g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[1], g_pDepthStencilView, g_ClearColor);
-		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
-		g_RenderManager->DrawObject(&g_ObjInstances[1], g_pCBChangesEveryFrame, &offset);
+		/*g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[1], g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->DrawObject(&g_ObjInstances[0]);
+		g_RenderManager->DrawObject(&g_ObjInstances[1]);
 
 
 		/*Tercer Cubo*/
-		g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[2], g_pDepthStencilView, g_ClearColor);
-		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
-		g_RenderManager->DrawObject(&g_ObjInstances[1], g_pCBChangesEveryFrame, &offset);
-		g_RenderManager->DrawObject(&g_ObjInstances[2], g_pCBChangesEveryFrame, &offset);
+		/*g_RenderManager->ClearAndSetRenderTargets(1, g_RenderTargets[2], g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->DrawObject(&g_ObjInstances[0]);
+		g_RenderManager->DrawObject(&g_ObjInstances[1]);
+		g_RenderManager->DrawObject(&g_ObjInstances[2]);
 
 
 		/*Cuarto Cubo*/
 		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView, g_pDepthStencilView, g_ClearColor);
-		g_RenderManager->DrawObject(&g_ObjInstances[0], g_pCBChangesEveryFrame, &offset);
-		g_RenderManager->DrawObject(&g_ObjInstances[1], g_pCBChangesEveryFrame, &offset);
-		g_RenderManager->DrawObject(&g_ObjInstances[2], g_pCBChangesEveryFrame, &offset);
-		g_RenderManager->DrawObject(&g_ObjInstances[3], g_pCBChangesEveryFrame, &offset);
+		/*g_RenderManager->DrawObject(&g_ObjInstances[0]);
+		g_RenderManager->DrawObject(&g_ObjInstances[1]);
+		g_RenderManager->DrawObject(&g_ObjInstances[2]);
+		g_RenderManager->DrawObject(&g_ObjInstances[3]);*/
 
 #endif
 	}
@@ -595,12 +524,12 @@ namespace GraphicsModule
 	  g_pDepthStencilView.Release();
 	  g_pDepthStencilSRV.Release();
 
-	  g_pVertexBuffer.Release();
-	  g_pIndexBuffer.Release();
+	  /*g_pVertexBuffer.Release();
+	  g_pIndexBuffer.Release();/**/
 
-	  g_pCBNeverChanges.Release();
+	  /*g_pCBNeverChanges.Release();
 	  g_pCBChangeOnResize.Release();
-	  g_pCBChangesEveryFrame.Release();
+	  g_pCBChangesEveryFrame.Release();*/
 
 
 	  g_ShaderViews[0].Release();
@@ -616,17 +545,12 @@ namespace GraphicsModule
 
 #endif
 
-	  delete[] g_ObjInstances;
+	  //delete[] g_ObjInstances;
 	  delete g_RenderManager;
   }
 
   void test::Resize(unsigned int width, unsigned int height)
   {
-	  for (int i = 0; i < g_CameraCount; i++)
-	  {
-		  g_Cameras[i].setViewWidth(width);
-		  g_Cameras[i].setViewHeight(height);
-	  }
 
 #if defined(DX11)
 
@@ -659,35 +583,35 @@ namespace GraphicsModule
 
 	  g_ShaderViews[0].Release();
 
-	  g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[0], g_RenderTargets[0], width, height);
+	  g_RenderManager->CreateShaderAsRenderTargetView(g_ShaderViews[0], g_RenderTargets[0], width, height);
 	  if (FAILED(hr))
 	  {
 		  throw std::runtime_error("Swapchain not created successfully");
 	  }
 
-	  g_ObjInstances[1].setTexture(g_ShaderViews[0]);
+	  //g_ObjInstances[1].setTexture(g_ShaderViews[0]);
 
 
 	  g_ShaderViews[1].Release();
 
-	  g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[1], g_RenderTargets[1], width, height);
+	  g_RenderManager->CreateShaderAsRenderTargetView(g_ShaderViews[1], g_RenderTargets[1], width, height);
 	  if (FAILED(hr))
 	  {
 		  throw std::runtime_error("Swapchain not created successfully");
 	  }
 
-	  g_ObjInstances[2].setTexture(g_ShaderViews[1]);
+	  //g_ObjInstances[2].setTexture(g_ShaderViews[1]);
 
 
 	  g_ShaderViews[2].Release();
 
-	  g_RenderManager->CreateShaderAndRenderTargetView(g_ShaderViews[2], g_RenderTargets[2], width, height);
+	  g_RenderManager->CreateShaderAsRenderTargetView(g_ShaderViews[2], g_RenderTargets[2], width, height);
 	  if (FAILED(hr))
 	  {
 		  throw std::runtime_error("Swapchain not created successfully");
 	  }
 
-	  g_ObjInstances[3].setTexture(g_ShaderViews[2]);
+	  //g_ObjInstances[3].setTexture(g_ShaderViews[2]);
 
 
 	

@@ -64,11 +64,11 @@ HRESULT RenderManager::CreateShaderResourceView(Texture2D& pResource, const SHAD
 /*Device context*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void RenderManager::DrawObject(OBJInstance* obj, Buffer& cbChangesEveryFrame, const unsigned int* offset)
+void RenderManager::DrawObject(OBJInstance* obj)
 {
 	UINT stride = sizeof(Vertex);
 
-	IASetVertexBuffers(0, 1, obj->getMesh()->getVertexBuffer(), &stride, offset);
+	IASetVertexBuffers(0, 1, obj->getMesh()->getVertexBuffer(), &stride, &offset);
 	IASetIndexBuffer(obj->getMesh()->getIndexBuffer(), FORMAT_R16_UINT, 0);
 
 	CBChangesEveryFrame cb;
@@ -77,7 +77,7 @@ void RenderManager::DrawObject(OBJInstance* obj, Buffer& cbChangesEveryFrame, co
 	Color col = obj->getMesh()->getColor();
 	cb.vMeshColor = *reinterpret_cast<XMFLOAT4*>(&col);
 	PSSetShaderResources(0, 1, obj->getTexture());
-	UpdateSubresource(cbChangesEveryFrame, 0, NULL, &cb, 0, 0);
+	UpdateSubresource(m_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
 	DrawIndexed(obj->getMesh()->getIndexCount(), 0, 0);
 }
 
@@ -217,7 +217,7 @@ HRESULT RenderManager::CreateShaderResourceViewFromFile(LPCSTR pSrcFile, D3DX11_
 	return D3DX11CreateShaderResourceViewFromFile(m_device.GetDevicePtr(), pSrcFile, pLoadInfo, pPump, &ppShaderResourceView.getPtr(), pHResult);
 }
 
-HRESULT RenderManager::CreateShaderAndRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
+HRESULT RenderManager::CreateShaderAsRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
 	unsigned int width, unsigned int height)
 {
 	Texture2D TextRT;
@@ -260,6 +260,26 @@ HRESULT RenderManager::CreateShaderAndRenderTargetView(ShaderResourceView& ViewR
 	TextRT.Release();
 }
 
+void RenderManager::UpdateViewMatrix(MATRIX view)
+{
+	XMMATRIX g_View = *reinterpret_cast<XMMATRIX*>(&view);
+	CBNeverChanges cbNeverChanges;
+	cbNeverChanges.mView = XMMatrixTranspose(g_View);
+	UpdateSubresource(m_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
+}
+
+void RenderManager::UpdateProjectionMatrix(MATRIX projection)
+{
+	XMMATRIX g_Projection = *reinterpret_cast<XMMATRIX*>(&projection);
+	CBChangeOnResize cbChangesOnResize;
+	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+	UpdateSubresource(m_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
+}
+
+void RenderManager::UpdateWorld(MATRIX model, Color color)
+{
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Release*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,7 +288,11 @@ void RenderManager::Release()
 {
 	m_device.Release();
 	m_deviceContext.Release();
-	//m_swapChain.Release();
+	m_swapChain.Release();
+
+	m_pCBNeverChanges.Release();
+	m_pCBChangeOnResize.Release();
+	m_pCBChangesEveryFrame.Release();
 }
 #endif
 

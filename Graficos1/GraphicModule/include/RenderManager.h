@@ -14,6 +14,7 @@
 
 #include "OBJInstance.h"
 
+
 namespace GraphicsModule
 {
 class RenderManager
@@ -73,7 +74,7 @@ public:
 	void Present( unsigned int SyncInterval, unsigned int Flags);
 
 	/*Globals*/
-	void DrawObject(OBJInstance* obj, Buffer& cbNeverChanges, const unsigned int* offset);
+	void DrawObject(OBJInstance* obj);
 
 	HRESULT CreateDeviceAndSwapChain( IDXGIAdapter* pAdapter, DRIVER_TYPE DriverType, HMODULE Software,
 		unsigned int Flags, const FEATURE_LEVEL* pFeatureLevels, unsigned int FeatureLevels, unsigned int SDKVersion,
@@ -82,16 +83,31 @@ public:
 	HRESULT CreateShaderResourceViewFromFile( LPCSTR pSrcFile, D3DX11_IMAGE_LOAD_INFO* pLoadInfo, ID3DX11ThreadPump* pPump,
 			ShaderResourceView& ppShaderResourceView, HRESULT* pHResult);
 
-	HRESULT CreateShaderAndRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
+	HRESULT CreateShaderAsRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
 		unsigned int width, unsigned int height);
+
+	void UpdateViewMatrix(MATRIX view);
+	void UpdateProjectionMatrix(MATRIX projection);
+	void UpdateWorld(MATRIX model, Color color);
+
+	Buffer& GetNeverChangesBuffer() { return m_pCBNeverChanges; }
+	Buffer& GetChangeOnResizeBuffer() { return m_pCBChangeOnResize; }
+	Buffer& GetChangesEveryFrameBuffer() { return m_pCBChangesEveryFrame; }
 
 	/*Clear*/
 	void Release();
 
 private:
-	Device m_device;
-	DeviceContext m_deviceContext;
-	SwapChain m_swapChain;
+	Device									m_device;
+	DeviceContext							m_deviceContext;
+	SwapChain								m_swapChain;
+
+
+	Buffer									m_pCBNeverChanges;
+	Buffer									m_pCBChangeOnResize;
+	Buffer									m_pCBChangesEveryFrame;
+
+	UINT									offset = 0;
 #endif
 };
 extern RenderManager* GetManager();

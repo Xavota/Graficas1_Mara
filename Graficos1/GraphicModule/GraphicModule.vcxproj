@@ -381,6 +381,7 @@
     <ClInclude Include="include\SwapChain.h" />
     <ClInclude Include="include\test.h" />
     <ClInclude Include="include\Texture2D.h" />
+    <ClInclude Include="include\TextureManager.h" />
     <ClInclude Include="include\Vector.h" />
   </ItemGroup>
   <ItemGroup>
@@ -398,6 +399,7 @@
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />
+    <ClCompile Include="src\TextureManager.cpp" />
     <ClCompile Include="src\Vector.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
