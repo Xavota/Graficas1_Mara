@@ -26,19 +26,19 @@ HRESULT Device::CreateDepthStencilView(ID3D11Resource* pResource, const D3D11_DE
     return m_pd3dDevice->CreateDepthStencilView(pResource, pDesc, ppDepthStencilView);
 }
 
-HRESULT Device::CreateVertexShader(__in  const void* pShaderBytecode, __in  SIZE_T BytecodeLength, __in_opt  ID3D11ClassLinkage* pClassLinkage, __out_opt  ID3D11VertexShader** ppVertexShader)
+HRESULT Device::CreateVertexShader(__in  const void* pShaderBytecode, __in  SIZE_T BytecodeLength, __in_opt  ID3D11ClassLinkage* pClassLinkage, VertexShader& ppVertexShader)
 {
-    return m_pd3dDevice->CreateVertexShader(pShaderBytecode, BytecodeLength, pClassLinkage, ppVertexShader);
+    return m_pd3dDevice->CreateVertexShader(pShaderBytecode, BytecodeLength, pClassLinkage, &ppVertexShader.getVertexShader());
 }
 
 HRESULT Device::CreateInputLayout(const D3D11_INPUT_ELEMENT_DESC* pInputElementDescs,
                                   __in_range(0, D3D11_1_IA_VERTEX_INPUT_STRUCTURE_ELEMENT_COUNT)UINT NumElements, 
                                   const void* pShaderBytecodeWithInputSignature, 
                                   SIZE_T BytecodeLength, 
-                                  ID3D11InputLayout** ppInputLayout)
+                                  InputLayout& ppInputLayout)
 {
     return m_pd3dDevice->CreateInputLayout(pInputElementDescs, NumElements, pShaderBytecodeWithInputSignature,
-                                           BytecodeLength, ppInputLayout);
+                                           BytecodeLength, &ppInputLayout.getInputLayout());
 }
 
 HRESULT Device::CreatePixelShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, ID3D11PixelShader** ppPixelShader)

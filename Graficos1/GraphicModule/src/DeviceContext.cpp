@@ -29,9 +29,9 @@ void DeviceContext::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pV
 	m_pImmediateContext->RSSetViewports(NumViewports, reinterpret_cast<const D3D11_VIEWPORT*>(pViewports));
 }
 
-void DeviceContext::IASetInputLayout(ID3D11InputLayout* pInputLayout)
+void DeviceContext::IASetInputLayout(InputLayout& pInputLayout)
 {
-	m_pImmediateContext->IASetInputLayout(pInputLayout);
+	m_pImmediateContext->IASetInputLayout(pInputLayout.getInputLayout());
 }
 
 void DeviceContext::IASetVertexBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppVertexBuffers, const unsigned int* pStrides, const unsigned int* pOffsets)
@@ -59,9 +59,9 @@ void DeviceContext::ClearDepthStencilView(DepthStencilView pDepthStencilView, un
 	m_pImmediateContext->ClearDepthStencilView(pDepthStencilView.getStencilViewPtr(), ClearFlags, Depth, Stencil);
 }
 
-void DeviceContext::VSSetShader(ID3D11VertexShader* pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
+void DeviceContext::VSSetShader(VertexShader& pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
 {
-	m_pImmediateContext->VSSetShader(pVertexShader, ppClassInstances, NumClassInstances);
+	m_pImmediateContext->VSSetShader(pVertexShader.getVertexShader(), ppClassInstances, NumClassInstances);
 }
 
 void DeviceContext::VSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers)

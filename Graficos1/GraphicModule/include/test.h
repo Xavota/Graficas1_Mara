@@ -15,6 +15,8 @@
 #include "DepthStencilView.h"
 #include "ShaderResourceView.h"
 #include "RenderTargetView.h"
+#include "VertexShader.h"
+#include "InputLayout.h"
 
 //#include "Camara.h"
 //#include "Mouse.h"
@@ -24,16 +26,15 @@
 
 namespace GraphicsModule
 {
-	struct SimpleVertex
+
+	struct DirLight
 	{
-#if defined(DX11)
-		XMFLOAT3 Pos;
-		XMFLOAT2 Tex;
-#endif
+		XMFLOAT4 DIR;
 	};
 
     class test
-    {
+	{
+		DirLight g_dirLightDesc;
 #if defined(DX11)
         //D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
         //D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -48,9 +49,9 @@ namespace GraphicsModule
         ID3D11ShaderResourceView*           g_pDepthStencilSRV = NULL;
         /**/
 
-        ID3D11VertexShader*                 g_pVertexShader = NULL;
+        //ID3D11VertexShader*                 g_pVertexShader = NULL;
         ID3D11PixelShader*                  g_pPixelShader = NULL;
-        ID3D11InputLayout*                  g_pVertexLayout = NULL;
+        //ID3D11InputLayout*                  g_pVertexLayout = NULL;
 
         /*ID3D11Buffer*                     g_pVertexBuffer = NULL;
         ID3D11Buffer*                       g_pIndexBuffer = NULL;
@@ -86,9 +87,16 @@ namespace GraphicsModule
         ShaderResourceView                  g_pDepthStencilSRV;
         /**/
 
+        VertexShader                        g_pVertexShader;
+
+        InputLayout                         g_pVertexLayout;
+        /**/
+
 		ShaderResourceView                  g_pTextureRV;
         /**/
 
+        Buffer                              g_DirLightBuffer;
+        /**/
 
 		Color                               g_vMeshColor;
         /**/
@@ -132,6 +140,11 @@ namespace GraphicsModule
 		char getMaxCameraNum() { return g_CameraCount; }*/
 
         inline RenderManager* GetRenderManager() { return g_RenderManager; }
+
+        inline void SetDirLight(XMFLOAT4 dir) { g_dirLightDesc.DIR = dir; }
+
+    private:
+        HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11Device* pD3DDevice, InputLayout& pInputLayout);
     };
 
     extern test& GetTestObj(HWND _hwnd);

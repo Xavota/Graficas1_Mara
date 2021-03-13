@@ -372,6 +372,7 @@
     <ClInclude Include="include\Device.h" />
     <ClInclude Include="include\DeviceContext.h" />
     <ClInclude Include="include\GraphicModule.h" />
+    <ClInclude Include="include\InputLayout.h" />
     <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\Mouse.h" />
     <ClInclude Include="include\OBJInstance.h" />
@@ -383,6 +384,7 @@
     <ClInclude Include="include\Texture2D.h" />
     <ClInclude Include="include\TextureManager.h" />
     <ClInclude Include="include\Vector.h" />
+    <ClInclude Include="include\VertexShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Buffer.cpp" />
@@ -390,6 +392,7 @@
     <ClCompile Include="src\DepthStencilView.cpp" />
     <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\DeviceContext.cpp" />
+    <ClCompile Include="src\InputLayout.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
     <ClCompile Include="src\OBJInstance.cpp" />
@@ -401,6 +404,7 @@
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\TextureManager.cpp" />
     <ClCompile Include="src\Vector.cpp" />
+    <ClCompile Include="src\VertexShader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

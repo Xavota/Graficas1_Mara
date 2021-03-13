@@ -13,6 +13,8 @@
 #include "DepthStencilView.h"
 #include "ShaderResourceView.h"
 #include "Buffer.h"
+#include "VertexShader.h"
+#include "InputLayout.h"
 
 namespace GraphicsModule
 {
@@ -32,14 +34,14 @@ public:
 	void DrawIndexed(unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation);
 	void OMSetRenderTargets(unsigned int NumViews, RenderTargetView ppRenderTargetViews, DepthStencilView pDepthStencilView);
 	void RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports);
-	void IASetInputLayout(ID3D11InputLayout* pInputLayout);
+	void IASetInputLayout(InputLayout& pInputLayout);
 	void IASetVertexBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppVertexBuffers,
 		const unsigned int* pStrides, const unsigned int* pOffsets);
 	void IASetIndexBuffer(Buffer pIndexBuffer, FORMAT Format, unsigned int Offset);
 	void IASetPrimitiveTopology(PRIMITIVE_TOPOLOGY Topology);
 	void ClearRenderTargetView(RenderTargetView pRenderTargetView, const float ColorRGBA[4]);
 	void ClearDepthStencilView(DepthStencilView pDepthStencilView, unsigned int ClearFlags, float Depth, unsigned char Stencil);
-	void VSSetShader(ID3D11VertexShader* pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
+	void VSSetShader(VertexShader& pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void VSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
 	void PSSetShader(ID3D11PixelShader* pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void PSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);

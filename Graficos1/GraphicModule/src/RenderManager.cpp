@@ -25,12 +25,12 @@ HRESULT RenderManager::CreateDepthStencilView(Texture2D& pResource, const DEPTH_
 	return m_device.CreateDepthStencilView(pResource.GetTexturePtr(), reinterpret_cast<const D3D11_DEPTH_STENCIL_VIEW_DESC*>(pDesc), &ppDepthStencilView.getStencilViewPtr());
 }
 
-HRESULT RenderManager::CreateVertexShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, ID3D11VertexShader** ppVertexShader)
+HRESULT RenderManager::CreateVertexShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, VertexShader& ppVertexShader)
 {
 	return m_device.CreateVertexShader(pShaderBytecode, BytecodeLength, pClassLinkage, ppVertexShader);
 }
 
-HRESULT RenderManager::CreateInputLayout(const INPUT_ELEMENT_DESC* pInputElementDescs, UINT NumElements, const void* pShaderBytecodeWithInputSignature, SIZE_T BytecodeLength, ID3D11InputLayout** ppInputLayout)
+HRESULT RenderManager::CreateInputLayout(const INPUT_ELEMENT_DESC* pInputElementDescs, UINT NumElements, const void* pShaderBytecodeWithInputSignature, SIZE_T BytecodeLength, InputLayout& ppInputLayout)
 {
 	return m_device.CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(pInputElementDescs), NumElements, pShaderBytecodeWithInputSignature, BytecodeLength, ppInputLayout);
 }
@@ -108,7 +108,7 @@ void RenderManager::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pV
 	m_deviceContext.RSSetViewports(NumViewports, pViewports);
 }
 
-void RenderManager::IASetInputLayout(ID3D11InputLayout* pInputLayout)
+void RenderManager::IASetInputLayout(InputLayout& pInputLayout)
 {
 	m_deviceContext.IASetInputLayout(pInputLayout);
 }
@@ -138,7 +138,7 @@ void RenderManager::ClearDepthStencilView(DepthStencilView& pDepthStencilView, u
 	m_deviceContext.ClearDepthStencilView(pDepthStencilView, ClearFlags, Depth, Stencil);
 }
 
-void RenderManager::VSSetShader(ID3D11VertexShader* pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
+void RenderManager::VSSetShader(VertexShader& pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
 {
 	m_deviceContext.VSSetShader(pVertexShader, ppClassInstances, NumClassInstances);
 }

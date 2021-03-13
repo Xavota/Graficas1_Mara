@@ -427,6 +427,7 @@ struct Vertex
 {
 	Vector3 Pos;
 	Vector2 Tex;
+	Vector3 Normales;
 };
 
 struct MATRIX

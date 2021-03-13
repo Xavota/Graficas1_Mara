@@ -6,6 +6,9 @@
 #include <d3dx11.h>
 #endif
 
+#include "VertexShader.h"
+#include "InputLayout.h"
+
 namespace GraphicsModule
 {
 class Device
@@ -48,9 +51,7 @@ public:
 		/* [annotation] */
 		__in  SIZE_T BytecodeLength,
 		/* [annotation] */
-		__in_opt  ID3D11ClassLinkage* pClassLinkage,
-		/* [annotation] */
-		__out_opt  ID3D11VertexShader** ppVertexShader);
+		__in_opt  ID3D11ClassLinkage* pClassLinkage, VertexShader& ppVertexShader);
 
 	HRESULT CreateInputLayout(
 		/* [annotation] */
@@ -60,9 +61,7 @@ public:
 		/* [annotation] */
 		__in  const void* pShaderBytecodeWithInputSignature,
 		/* [annotation] */
-		__in  SIZE_T BytecodeLength,
-		/* [annotation] */
-		__out_opt  ID3D11InputLayout** ppInputLayout);
+		__in  SIZE_T BytecodeLength, InputLayout& ppInputLayout);
 
 	HRESULT CreatePixelShader(
 		/* [annotation] */

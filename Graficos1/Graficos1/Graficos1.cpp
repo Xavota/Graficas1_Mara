@@ -196,35 +196,35 @@ HRESULT Init(unsigned int width, unsigned int height)
     HRESULT hr;
 
 	hr = g_Mesh.setVertex(new Vertex[24]{
-			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
-			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
-			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
-			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+			{ Vector3{-1.0f, 1.0f, -1.0f},  Vector2{0.0f, 0.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
+			{ Vector3{1.0f, 1.0f, -1.0f},   Vector2{1.0f, 0.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
+			{ Vector3{1.0f, 1.0f, 1.0f},    Vector2{1.0f, 1.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
+			{ Vector3{-1.0f, 1.0f, 1.0f},   Vector2{0.0f, 1.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
 
-			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
-			{ Vector3{1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
-			{ Vector3{1.0f, -1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
-			{ Vector3{-1.0f, -1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{0.0f, 0.0f},    Vector3{0.0f, -1.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, -1.0f},  Vector2{1.0f, 0.0f},    Vector3{0.0f, -1.0f, 0.0f} },
+			{ Vector3{1.0f, -1.0f, 1.0f},   Vector2{1.0f, 1.0f},    Vector3{0.0f, -1.0f, 0.0f} },
+			{ Vector3{-1.0f, -1.0f, 1.0f},  Vector2{0.0f, 1.0f},    Vector3{0.0f, -1.0f, 0.0f} },
 
-			{ Vector3{-1.0f, -1.0f, 1.0f}, Vector2{0.0f, 0.0f} },
-			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
-			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{1.0f, 1.0f} },
-			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+			{ Vector3{-1.0f, -1.0f, 1.0f},  Vector2{0.0f, 0.0f},    Vector3{-1.0f, 0.0f, 0.0f} },
+			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f},    Vector3{-1.0f, 0.0f, 0.0f} },
+			{ Vector3{-1.0f, 1.0f, -1.0f},  Vector2{1.0f, 1.0f},    Vector3{-1.0f, 0.0f, 0.0f} },
+			{ Vector3{-1.0f, 1.0f, 1.0f},   Vector2{0.0f, 1.0f},    Vector3{-1.0f, 0.0f, 0.0f} },
 
-			{ Vector3{1.0f, -1.0f, 1.0f}, Vector2{0.0f, 0.0f} },
-			{ Vector3{1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
-			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 1.0f} },
-			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} },
+			{ Vector3{1.0f, -1.0f, 1.0f},   Vector2{0.0f, 0.0f},    Vector3{1.0f, 0.0f, 0.0f}  },
+			{ Vector3{1.0f, -1.0f, -1.0f},  Vector2{1.0f, 0.0f},    Vector3{1.0f, 0.0f, 0.0f}  },
+			{ Vector3{1.0f, 1.0f, -1.0f},   Vector2{1.0f, 1.0f},    Vector3{1.0f, 0.0f, 0.0f}  },
+			{ Vector3{1.0f, 1.0f, 1.0f},    Vector2{0.0f, 1.0f},    Vector3{1.0f, 0.0f, 0.0f}  },
 
-			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{0.0f, 0.0f} },
-			{ Vector3{1.0f, -1.0f, -1.0f}, Vector2{1.0f, 0.0f} },
-			{ Vector3{1.0f, 1.0f, -1.0f}, Vector2{1.0f, 1.0f} },
-			{ Vector3{-1.0f, 1.0f, -1.0f}, Vector2{0.0f, 1.0f} },
+			{ Vector3{-1.0f, -1.0f, -1.0f}, Vector2{0.0f, 0.0f},    Vector3{0.0f, 0.0f, -1.0f} },
+			{ Vector3{1.0f, -1.0f, -1.0f},  Vector2{1.0f, 0.0f},    Vector3{0.0f, 0.0f, -1.0f} },
+			{ Vector3{1.0f, 1.0f, -1.0f},   Vector2{1.0f, 1.0f},    Vector3{0.0f, 0.0f, -1.0f} },
+			{ Vector3{-1.0f, 1.0f, -1.0f},  Vector2{0.0f, 1.0f},    Vector3{0.0f, 0.0f, -1.0f} },
 
-			{ Vector3{-1.0f, -1.0f, 1.0f}, Vector2{0.0f, 0.0f} },
-			{ Vector3{1.0f, -1.0f, 1.0f}, Vector2{1.0f, 0.0f} },
-			{ Vector3{1.0f, 1.0f, 1.0f}, Vector2{1.0f, 1.0f} },
-			{ Vector3{-1.0f, 1.0f, 1.0f}, Vector2{0.0f, 1.0f} } }, 24);
+			{ Vector3{-1.0f, -1.0f, 1.0f},  Vector2{0.0f, 0.0f},    Vector3{0.0f, 0.0f, 1.0f}  },
+			{ Vector3{1.0f, -1.0f, 1.0f},   Vector2{1.0f, 0.0f},    Vector3{0.0f, 0.0f, 1.0f}  },
+			{ Vector3{1.0f, 1.0f, 1.0f},    Vector2{1.0f, 1.0f},    Vector3{0.0f, 0.0f, 1.0f}  },
+			{ Vector3{-1.0f, 1.0f, 1.0f},   Vector2{0.0f, 1.0f},    Vector3{0.0f, 0.0f, 1.0f}  } }, 24);
 
 	if (FAILED(hr))
 		return hr;
@@ -260,7 +260,7 @@ HRESULT Init(unsigned int width, unsigned int height)
 	g_ObjInstances = new GraphicsModule::OBJInstance[1];
 
 	g_ObjInstances[0].setMesh(&g_Mesh);
-	g_ObjInstances[0].setPosition({ 3,3,2 });
+	g_ObjInstances[0].setPosition({ 0,0,2 });
 	g_ObjInstances[0].setRotation({ 0,0,3.14159265 });
 	g_ObjInstances[0].setSize({ 1,1,1 });
 
@@ -281,7 +281,12 @@ void UIRender()
 
     // example window
     if (ImGui::Begin("Another Window", nullptr))
-    {
+	{
+		static float dir[3]{};
+		if (ImGui::DragFloat3("Direccion de la luz :)", dir, 0.001f, -1.0f, 1.0f))
+		{
+			g_Test.SetDirLight(XMFLOAT4(dir[0], dir[1], dir[2], 0));
+		}
     }
     ImGui::End();
 
@@ -335,11 +340,11 @@ void Update(float dt)
 
 void Render()
 {
-    g_Test.Render();
+	g_Test.Render();
+	GraphicsModule::GetManager()->DrawObject(&g_ObjInstances[0]);
 #if defined(DX11) || defined(OGL)
     UIRender();
 #endif
-    GraphicsModule::GetManager()->DrawObject(&g_ObjInstances[0]);
 #if defined(DX11) || defined(OGL)
     g_Test.GetSwapChain()->Present(0, 0);
 #endif
