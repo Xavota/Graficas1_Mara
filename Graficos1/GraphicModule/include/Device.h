@@ -7,7 +7,9 @@
 #endif
 
 #include "VertexShader.h"
+#include "PixelShader.h"
 #include "InputLayout.h"
+#include "SamplerState.h"
 
 namespace GraphicsModule
 {
@@ -71,7 +73,7 @@ public:
 		/* [annotation] */
 		__in_opt  ID3D11ClassLinkage* pClassLinkage,
 		/* [annotation] */
-		__out_opt  ID3D11PixelShader** ppPixelShader);
+		__out_opt  PixelShader& ppPixelShader);
 
 	HRESULT CreateBuffer(
 		/* [annotation] */
@@ -85,7 +87,7 @@ public:
 		/* [annotation] */
 		__in  const D3D11_SAMPLER_DESC* pSamplerDesc,
 		/* [annotation] */
-		__out_opt  ID3D11SamplerState** ppSamplerState);
+		__out_opt  SamplerState& ppSamplerState);
 
 
 	HRESULT CreateRasterizerState(

@@ -14,7 +14,9 @@
 #include "ShaderResourceView.h"
 #include "Buffer.h"
 #include "VertexShader.h"
+#include "PixelShader.h"
 #include "InputLayout.h"
+#include "SamplerState.h"
 
 namespace GraphicsModule
 {
@@ -43,10 +45,10 @@ public:
 	void ClearDepthStencilView(DepthStencilView pDepthStencilView, unsigned int ClearFlags, float Depth, unsigned char Stencil);
 	void VSSetShader(VertexShader& pVertexShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void VSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
-	void PSSetShader(ID3D11PixelShader* pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
+	void PSSetShader(PixelShader pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void PSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
 	void PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, ShaderResourceView ppShaderResourceViews);
-	void PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, ID3D11SamplerState* const* ppSamplers);
+	void PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers);
 	void RSSetState(ID3D11RasterizerState* pRasterizerState);
 	void Flush();
 	void ClearState();

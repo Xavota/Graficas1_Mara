@@ -35,7 +35,7 @@ HRESULT RenderManager::CreateInputLayout(const INPUT_ELEMENT_DESC* pInputElement
 	return m_device.CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(pInputElementDescs), NumElements, pShaderBytecodeWithInputSignature, BytecodeLength, ppInputLayout);
 }
 
-HRESULT RenderManager::CreatePixelShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, ID3D11PixelShader** ppPixelShader)
+HRESULT RenderManager::CreatePixelShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, PixelShader& ppPixelShader)
 {
 	return m_device.CreatePixelShader(pShaderBytecode, BytecodeLength, pClassLinkage, ppPixelShader);
 }
@@ -45,7 +45,7 @@ HRESULT RenderManager::CreateBuffer(const BUFFER_DESC* pDesc, const SUBRESOURCE_
 	return m_device.CreateBuffer(reinterpret_cast<const D3D11_BUFFER_DESC*>(pDesc), reinterpret_cast<const D3D11_SUBRESOURCE_DATA*>(pInitialData), &ppBuffer.getBufferPtr());
 }
 
-HRESULT RenderManager::CreateSamplerState(const SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState)
+HRESULT RenderManager::CreateSamplerState(const SAMPLER_DESC* pSamplerDesc, SamplerState& ppSamplerState)
 {
 	return m_device.CreateSamplerState(reinterpret_cast<const D3D11_SAMPLER_DESC*>(pSamplerDesc), ppSamplerState);
 }
@@ -68,8 +68,8 @@ void RenderManager::DrawObject(OBJInstance* obj)
 {
 	UINT stride = sizeof(Vertex);
 
-	IASetVertexBuffers(0, 1, obj->getMesh()->getVertexBuffer(), &stride, &offset);
-	IASetIndexBuffer(obj->getMesh()->getIndexBuffer(), FORMAT_R16_UINT, 0);
+	IASetVertexBuffers(obj->getMesh()->getNumOfMesh(), 1, obj->getMesh()->getVertexBuffer(), &stride, &offset);
+	IASetIndexBuffer(obj->getMesh()->getIndexBuffer(), FORMAT_R32_UINT, offset);
 
 	CBChangesEveryFrame cb;
 
@@ -148,7 +148,7 @@ void RenderManager::VSSetConstantBuffers(unsigned int StartSlot, unsigned int Nu
 	m_deviceContext.VSSetConstantBuffers(StartSlot, NumBuffers, ppConstantBuffers);
 }
 
-void RenderManager::PSSetShader(ID3D11PixelShader* pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
+void RenderManager::PSSetShader(PixelShader pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
 {
 	m_deviceContext.PSSetShader(pPixelShader, ppClassInstances, NumClassInstances);
 }
@@ -163,7 +163,7 @@ void RenderManager::PSSetShaderResources(unsigned int StartSlot, unsigned int Nu
 	m_deviceContext.PSSetShaderResources(StartSlot, NumViews, ppShaderResourceViews);
 }
 
-void RenderManager::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, ID3D11SamplerState* const* ppSamplers)
+void RenderManager::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers)
 {
 	m_deviceContext.PSSetSamplers(StartSlot, NumSamplers, ppSamplers);
 }

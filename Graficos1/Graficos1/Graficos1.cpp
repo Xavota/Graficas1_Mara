@@ -1,3 +1,5 @@
+#pragma comment(lib, "ComDlg32.lib")
+
 #include <windows.h>
 
 #include "imgui.h"
@@ -5,6 +7,11 @@
 #if defined(DX11)
 #include "imgui_impl_dx11.h"
 #endif
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include "GraphicModule.h"
 
 #include "Camara.h"
@@ -15,9 +22,13 @@
 
 #include "Descriptors.h"
 
+#include <string.h>
+#include <iostream>
+#include <vector>
+#include <list>
 
 #include <chrono>
-//using namespace chrono;
+using namespace std;
 //using namespace chrono;
 
 // -----------------Global var-----------------------------------------------------------------
@@ -28,8 +39,8 @@ GraphicsModule::Camara* g_Cameras;
 char                                g_activeCamera = 0;
 char                                g_CameraCount = 2;
 
-GraphicsModule::Mesh g_Mesh;
-GraphicsModule::OBJInstance* g_ObjInstances;
+vector<GraphicsModule::Mesh> g_Mesh;
+vector<GraphicsModule::OBJInstance> g_ObjInstances;
 
 /**
  * @brief   Forward declare message handler from imgui_impl_win32.cpp
@@ -185,17 +196,196 @@ HRESULT InitImgUI()
     return S_OK;
 }
 
-HRESULT Init(unsigned int width, unsigned int height)
+string OpenFileGetName(HWND owner = NULL)
 {
+
+	// common dialog box structure, setting all fields to 0 is important
+	OPENFILENAME ofn = { 0 };
+	TCHAR szFile[260] = { 0 };
+
+	// Initialize remaining fields of OPENFILENAME structure
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = owner;
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = ("All\0*.*\0Text\0*.TXT\0");
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+	if (GetOpenFileName(&ofn) == TRUE)
+	{
+		return szFile;
+	}
+    return "";
+}
+
+HRESULT Init(unsigned int width, unsigned int height)
+{    
 	g_Cameras = new GraphicsModule::Camara[2];
 	g_Cameras[0].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
 		width, height, 0.01f, 100.0f, true, PIDIV4);
 	g_Cameras[1].Init({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
 		width, height, 0.01f, 100.0f, false, PIDIV4);
     
-    HRESULT hr;
+    
 
-	hr = g_Mesh.setVertex(new Vertex[24]{
+    return S_OK;
+}
+
+void LoadMesh(const aiScene* scene, aiMesh** _mesh, unsigned int _numMeshes)
+{
+	for (int i = 0; i < scene->mNumMaterials; i++)
+	{
+		
+        for (int j = 1; j < aiTextureType_UNKNOWN; ++j)
+        {
+            cout << scene->mMaterials[i]->GetTextureCount((aiTextureType)j) << endl;
+        }
+	}
+    
+    for (int i = 0; i < scene->mNumTextures; i++)
+    {
+        cout << scene->mTextures[i]->mFilename.C_Str() << endl;
+    }
+
+	HRESULT hr;
+    unsigned int indexCount = 0;
+	for (int i = 0; i < _numMeshes; ++i)
+	{
+        cout << i << ", " << _mesh[i]->mNumVertices << endl;
+        indexCount += _mesh[i]->mNumVertices;
+    }
+
+    vector<Vertex> vertices;
+    int k = 0;
+	for (int i = 0; i < _numMeshes; ++i)
+    {
+        for (int j = 0; j < _mesh[i]->mNumVertices; ++j)
+		{
+            Vertex v;
+            if (_mesh[i]->HasPositions())
+            {
+                v.Pos.x = _mesh[i]->mVertices[j].x;
+                v.Pos.y = _mesh[i]->mVertices[j].y;
+                v.Pos.z = _mesh[i]->mVertices[j].z;/**/
+            }
+			else
+			    v.Pos = Vector3{};
+			if (_mesh[i]->HasTextureCoords(0))
+            {
+				v.Tex.x = _mesh[i]->mTextureCoords[0][j].x;
+				v.Tex.y = 1 - _mesh[i]->mTextureCoords[0][j].y;/**/
+            }
+            else
+				v.Tex = Vector2{};
+			if (_mesh[i]->HasNormals())
+            {
+				v.Normales.x = _mesh[i]->mNormals[j].x;
+				v.Normales.y = _mesh[i]->mNormals[j].y;
+				v.Normales.z = _mesh[i]->mNormals[j].z;/**/
+            }
+			else
+				v.Normales = Vector3{};
+
+            vertices.push_back(v);
+            ++k;
+        }
+    }
+
+	for (int i = 0; i < _numMeshes; ++i)
+	{
+		for (int j = 0; j < _mesh[i]->mNumVertices; ++j)
+		{
+            for (int l = 1; l < _mesh[i]->mMaterialIndex; ++l)
+            {
+			    if (_mesh[i]->HasTextureCoords(l))
+			    {
+			    	cout << "i: " << i << "j: " << j << "l: " << l << endl;
+                    cout << _mesh[i]->mTextureCoords[l][j].x << ", " << _mesh[i]->mTextureCoords[l][j].y << ", " << _mesh[i]->mTextureCoords[l][j].z << endl;
+			    }
+            }
+		}
+	}
+
+    g_Mesh.push_back(GraphicsModule::Mesh(g_Mesh.size()));
+
+    hr = g_Mesh[g_Mesh.size() - 1].setVertex(vertices);
+    //delete[] vertices;
+
+    /*unsigned int indexCount2 = 0;
+
+    for (int i = 0; i < _numMeshes; ++i)
+    {
+		for (int j = 0; j < _mesh[i]->mNumFaces; ++j)
+		{
+			indexCount2 += _mesh[i]->mFaces[j].mNumIndices;
+		}
+    }
+
+    unsigned short* indices = new unsigned short[indexCount2];
+    unsigned int l = 0;
+	for (int i = 0; i < _numMeshes; ++i)
+	{
+		for (int j = 0; j < _mesh[i]->mNumFaces; ++j)
+		{
+            for (int k = 0; k < _mesh[i]->mFaces[j].mNumIndices; ++k)
+            {
+			    indices[l++] = _mesh[i]->mFaces[j].mIndices[k];
+            }
+		}
+	}/**/
+
+	vector<unsigned int> indices;
+    size_t vertexCount = vertices.size();
+    for (int i = 0; i < vertexCount; ++i)
+    {
+        indices.push_back(i);
+    }/**/
+
+    hr = g_Mesh[g_Mesh.size() - 1].setIndices(indices);
+    indices.clear();/**/
+    vertices.clear();
+
+	/*unsigned short indexCount = 0;
+	for (int i = 1; i < 2; ++i)
+	{
+		indexCount += _mesh[i]->mNumVertices;
+	}
+	Vertex* vertices = new Vertex[indexCount];
+	for (int i = 1; i < 2; ++i)
+	{
+		for (int j = 0; j < _mesh[i]->mNumVertices; ++j)
+		{
+			if (_mesh[i]->HasPositions())
+				vertices[j].Pos = *reinterpret_cast<Vector3*>(&_mesh[i]->mVertices[j]);
+			else
+				vertices[j].Pos = Vector3{};
+			if (_mesh[i]->HasTextureCoords(0))
+				vertices[j].Tex = Vector2{ _mesh[i]->mTextureCoords[0][j].x, _mesh[i]->mTextureCoords[0][j].y };
+			else
+				vertices[j].Tex = Vector2{};
+			if (_mesh[i]->HasNormals())
+				vertices[j].Normales = *reinterpret_cast<Vector3*>(&_mesh[i]->mNormals[j]);
+			else
+				vertices[j].Normales = Vector3{};
+		}
+	}
+
+	hr = g_Mesh.setVertex(vertices, indexCount);
+
+	unsigned short* indices = new unsigned short[indexCount];
+	for (int i = 0; i < indexCount; ++i)
+	{
+		indices[i] = i;
+	}
+
+	hr = g_Mesh.setIndices(indices, indexCount);/**/
+
+
+	/*hr = g_Mesh.setVertex(new Vertex[24]{
 			{ Vector3{-1.0f, 1.0f, -1.0f},  Vector2{0.0f, 0.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
 			{ Vector3{1.0f, 1.0f, -1.0f},   Vector2{1.0f, 0.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
 			{ Vector3{1.0f, 1.0f, 1.0f},    Vector2{1.0f, 1.0f},    Vector3{0.0f, 1.0f, 0.0f}  },
@@ -224,16 +414,16 @@ HRESULT Init(unsigned int width, unsigned int height)
 			{ Vector3{-1.0f, -1.0f, 1.0f},  Vector2{0.0f, 0.0f},    Vector3{0.0f, 0.0f, 1.0f}  },
 			{ Vector3{1.0f, -1.0f, 1.0f},   Vector2{1.0f, 0.0f},    Vector3{0.0f, 0.0f, 1.0f}  },
 			{ Vector3{1.0f, 1.0f, 1.0f},    Vector2{1.0f, 1.0f},    Vector3{0.0f, 0.0f, 1.0f}  },
-			{ Vector3{-1.0f, 1.0f, 1.0f},   Vector2{0.0f, 1.0f},    Vector3{0.0f, 0.0f, 1.0f}  } }, 24);
+			{ Vector3{-1.0f, 1.0f, 1.0f},   Vector2{0.0f, 1.0f},    Vector3{0.0f, 0.0f, 1.0f}  } }, 24);*/
 
-	if (FAILED(hr))
-		return hr;
+	//if (FAILED(hr))
+		//return hr;
 
 
 
 
 	// Create index buffer
-	hr = g_Mesh.setIndices(new unsigned short[36]{
+	/*hr = g_Mesh.setIndices(new unsigned short[36]{
 		3,1,0,
 		2,1,3,
 
@@ -252,22 +442,39 @@ HRESULT Init(unsigned int width, unsigned int height)
 		22,20,21,
 		23,20,22
 		}, 36
-	);
+	);*/
 
-	if (FAILED(hr))
-		return hr;
+	//if (FAILED(hr))
+		//return hr;
 
-	g_ObjInstances = new GraphicsModule::OBJInstance[1];
+	//g_ObjInstances = new GraphicsModule::OBJInstance[1];
+    g_ObjInstances.push_back(GraphicsModule::OBJInstance());
+    size_t lastOBJ = g_ObjInstances.size() - 1;
 
-	g_ObjInstances[0].setMesh(&g_Mesh);
-	g_ObjInstances[0].setPosition({ 0,0,2 });
-	g_ObjInstances[0].setRotation({ 0,0,3.14159265 });
-	g_ObjInstances[0].setSize({ 1,1,1 });
+	g_ObjInstances[lastOBJ].setMesh(&g_Mesh[g_Mesh.size() - 1]);
+	g_ObjInstances[lastOBJ].setPosition({ 0,0,0 });
+	g_ObjInstances[lastOBJ].setRotation({ 0,0,0 });
+	g_ObjInstances[lastOBJ].setSize({ 1,1,1 });
 
-	TextureManager::CreateTextureFromFile("pepe.dds", "Pepe");
-	g_ObjInstances[0].setTexture(TextureManager::GetTexture("Pepe"));
+	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Escritorio/Grafics/Backups 3parcial/3.- Assimp/Graficos1/bin/Models/base_albedo.jpg", "Texture");
+	g_ObjInstances[lastOBJ].setTexture(TextureManager::GetTexture("Texture"));
+}
 
-    return S_OK;
+void OpenMesh()
+{
+    string fileName = OpenFileGetName();
+
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(fileName, NULL);
+    if (!scene)
+    {
+        cout << importer.GetErrorString() << endl;
+        return;
+    }
+    //cout << "Archivo " << fileName << " importado con exito" << endl;
+
+	LoadMesh(scene, scene->mMeshes, scene->mNumMeshes);
+    //aiReleaseImport(scene);
 }
 
 void UIRender()
@@ -283,11 +490,58 @@ void UIRender()
     if (ImGui::Begin("Another Window", nullptr))
 	{
 		static float dir[3]{};
-		if (ImGui::DragFloat3("Direccion de la luz :)", dir, 0.001f, -1.0f, 1.0f))
+		ImGui::Text("Light Direction:");
+		if (ImGui::DragFloat3("Dir", dir, 0.001f, -1.0f, 1.0f))
 		{
 			g_Test.SetDirLight(XMFLOAT4(dir[0], dir[1], dir[2], 0));
 		}
+        ImGui::Separator();
+        if (ImGui::Button("Open Mesh", ImVec2(100, 30)))
+        {
+            OpenMesh();
+        }
+        if (ImGui::CollapsingHeader("Meshes"))
+		{
+			size_t countOBJs = g_ObjInstances.size();
+			for (int i = 0; i < countOBJs; i++)
+			{
+			    if (ImGui::CollapsingHeader(to_string(i).c_str()))
+			    {
+			    	if (ImGui::CollapsingHeader("Transform"))
+			    	{
+			    		float pos[3]{ g_ObjInstances[i].getPosition().x(), g_ObjInstances[i].getPosition().y(), g_ObjInstances[i].getPosition().z() };
+			    		if (ImGui::DragFloat3(("Position" + to_string(i)).c_str(), pos, 0.01f))
+			    		{
+			    			g_ObjInstances[i].setPosition({ pos[0], pos[1], pos[2] });
+						}
+						float rot[3]{ g_ObjInstances[i].getRotation().x() * (180 / 3.1415f), g_ObjInstances[i].getRotation().y() * (180 / 3.1415f), g_ObjInstances[i].getRotation().z() * (180 / 3.1415f) };
+			    		if (ImGui::DragFloat3(("Rotation" + to_string(i)).c_str(), rot, 0.1f, 360, -360))
+			    		{
+			    			g_ObjInstances[i].setRotation({ rot[0] * (3.1415f / 180), rot[1] * (3.1415f / 180), rot[2] * (3.1415f / 180) });
+			    		}
+			    		float scale[3]{ g_ObjInstances[i].getSize().x(), g_ObjInstances[i].getSize().y(), g_ObjInstances[i].getSize().z() };
+			    		if (ImGui::DragFloat3(("Scale" + to_string(i)).c_str(), scale, 0.01f))
+			    		{
+			    			g_ObjInstances[i].setSize({ scale[0], scale[1], scale[2] });
+			    		}
+			    	}
+			    	if (ImGui::CollapsingHeader("Info"))
+			    	{
+			    		float my_tex_w = 256;
+			    		float my_tex_h = 256;
+			    		ImTextureID my_tex_id = g_ObjInstances[i].getTexture().getPtr();
+			    		ImVec2 pos = ImGui::GetCursorScreenPos();
+			    		ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+			    		ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+			    		ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+			    		ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+			    		ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+			    	}
+                }
+            }
+        }
     }
+    //ImGui::ShowDemoWindow();
     ImGui::End();
 
     // render UI
@@ -309,7 +563,7 @@ void Update(float dt)
 
 
     /*Update the active camera*/
-    g_Cameras[g_activeCamera].Update();
+    //g_Cameras[g_activeCamera].Update();
 
 
     /*Set the new view and projection matrices*/
@@ -330,18 +584,27 @@ void Update(float dt)
     g_vMeshColor.g = .7;
     g_vMeshColor.b = .7;/**/
 
-    g_ObjInstances[0].getMesh()->setColor(g_vMeshColor);
+    size_t countOBJs = g_ObjInstances.size();
+    for (int i = 0; i < countOBJs; i++)
+    {
+        g_ObjInstances[i].getMesh()->setColor(g_vMeshColor);
+    }
 
     static GraphicsModule::Vector rotation_c{ 0,0,0 };
     rotation_c.setVector(0, dtt, 3.14159265);
 
-    g_ObjInstances[0].setRotation(rotation_c);
+    //if (g_ObjInstances != nullptr)
+        //g_ObjInstances[0].setRotation(rotation_c);
 }
 
 void Render()
 {
 	g_Test.Render();
-	GraphicsModule::GetManager()->DrawObject(&g_ObjInstances[0]);
+	size_t countOBJs = g_ObjInstances.size();
+	for (int i = 0; i < countOBJs; i++)
+	{
+	    GraphicsModule::GetManager()->DrawObject(&g_ObjInstances[i]);
+    }
 #if defined(DX11) || defined(OGL)
     UIRender();
 #endif

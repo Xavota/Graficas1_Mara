@@ -5,62 +5,58 @@
 
 namespace GraphicsModule
 {
-Mesh::Mesh(Vertex* vertices, int verticesCount, unsigned short* indices, int indicesCount)
+Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, unsigned int numOfMesh)
 {
-	m_vertices = nullptr;
-	m_indices = nullptr;
-	setVertex(vertices, verticesCount);
-	setIndices(indices, indicesCount);
+	m_numOfMesh = numOfMesh;
+	//m_vertices = nullptr;
+	//m_indices = nullptr;
+	setVertex(vertices);
+	setIndices(indices);
 }
 
-Mesh::Mesh()
+Mesh::Mesh(unsigned int numOfMesh)
 {
-	m_vertices = nullptr;
-	m_indices = nullptr;
-	setVertex(nullptr, 0);
-	setIndices(nullptr, 0);
+	m_numOfMesh = numOfMesh;
+	//m_vertices = nullptr;
+	//m_indices = nullptr;
 }
 
 Mesh::~Mesh()
 {
-	if (m_vertices != nullptr) {
-		delete m_vertices;
-		m_vertices = nullptr;
-		m_vertexCount = 0;
-	}
-	if (m_indices != nullptr) {
-		delete m_indices;
-		m_indices = nullptr;
-		m_indicesCount = 0;
-	}
+	m_vertices.clear();
+	m_indices.clear();
 }
 
-HRESULT Mesh::setVertex(Vertex* vertices, int count)
+HRESULT Mesh::setVertex(vector<Vertex> vertices)
 {
-	if (m_vertices != nullptr) {
-		delete m_vertices;
-		m_vertices = nullptr;
-		m_vertexCount = 0;
+	if (m_vertices.size() != 0) {
+		m_vertices.clear();
 	}
-	if (vertices != nullptr)
+	if (vertices.size() != 0)
 	{
-		m_vertices = new Vertex[count];
-		memcpy(m_vertices, vertices, count * sizeof(Vertex));
-		m_vertexCount = count; 
+		//m_vertices = new Vertex[count];
+		//memcpy(m_vertices, vertices, count * sizeof(Vertex));
+		m_vertices = vertices;
+		/*for (int i = 0; i < vertices.size(); ++i)
+		{
+			m_vertices.push_back(vertices[i]);
+		}*/
 		
 #if defined(DX11)
+
+		m_pVertexBuffer.Release();
 
 		RenderManager* renderManager = GetManager();
 
 		BUFFER_DESC bd;
 		ZeroMemory(&bd, sizeof(bd));
 		bd.Usage = USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(Vertex) * count;
+		bd.ByteWidth = sizeof(Vertex) * m_vertices.size();
 		bd.BindFlags = BIND_VERTEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 		SUBRESOURCE_DATA InitData;
 		ZeroMemory(&InitData, sizeof(InitData));
-		InitData.pSysMem = vertices;
+		InitData.pSysMem = m_vertices.data();
 		HRESULT hr = renderManager->CreateBuffer(&bd, &InitData, m_pVertexBuffer);/**/
 		if (FAILED(hr))
 			return hr;
@@ -69,32 +65,33 @@ HRESULT Mesh::setVertex(Vertex* vertices, int count)
 	}
 }
 
-HRESULT Mesh::setIndices(unsigned short* indices, int count)
+HRESULT Mesh::setIndices(vector<unsigned int> indices)
 {
-	if (m_indices != nullptr) {
-		delete m_indices;
-		m_indices = nullptr;
-		m_indicesCount = 0;
+	if (m_indices.size() != 0) {
+		m_indices.clear();
 	}
-	if (indices != nullptr)
+	if (indices.size() != 0)
 	{
-		m_indices = new unsigned short[count];
-		memcpy(m_indices, indices, count * sizeof(unsigned short));
-		m_indicesCount = count;
+		//m_indices = new unsigned int[count];
+		//memcpy(m_indices, indices, count * sizeof(unsigned int));
+		m_indices = indices;
+		m_indicesCount = m_indices.size();
 
 		RenderManager* renderManager = GetManager();
 
 #if defined(DX11)
 
+		g_pIndexBuffer.Release();
+
 		BUFFER_DESC bd;
 		ZeroMemory(&bd, sizeof(bd));
 		bd.Usage = USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(unsigned short) * count;
+		bd.ByteWidth = sizeof(unsigned int) * m_indices.size();
 		bd.BindFlags = BIND_INDEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 		SUBRESOURCE_DATA InitData;
 		ZeroMemory(&InitData, sizeof(InitData));
-		InitData.pSysMem = indices;
+		InitData.pSysMem = m_indices.data();
 		HRESULT hr = renderManager->CreateBuffer(&bd, &InitData, g_pIndexBuffer);/**/
 		if (FAILED(hr))
 		 	return hr;

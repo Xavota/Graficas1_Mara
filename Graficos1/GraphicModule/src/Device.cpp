@@ -41,9 +41,9 @@ HRESULT Device::CreateInputLayout(const D3D11_INPUT_ELEMENT_DESC* pInputElementD
                                            BytecodeLength, &ppInputLayout.getInputLayout());
 }
 
-HRESULT Device::CreatePixelShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, ID3D11PixelShader** ppPixelShader)
+HRESULT Device::CreatePixelShader(const void* pShaderBytecode, SIZE_T BytecodeLength, ID3D11ClassLinkage* pClassLinkage, PixelShader& ppPixelShader)
 {
-    return m_pd3dDevice->CreatePixelShader(pShaderBytecode, BytecodeLength, pClassLinkage, ppPixelShader);
+    return m_pd3dDevice->CreatePixelShader(pShaderBytecode, BytecodeLength, pClassLinkage, &ppPixelShader.getPixelShader());
 }
 
 HRESULT Device::CreateBuffer(const D3D11_BUFFER_DESC* pDesc, const D3D11_SUBRESOURCE_DATA* pInitialData, ID3D11Buffer** ppBuffer)
@@ -51,9 +51,9 @@ HRESULT Device::CreateBuffer(const D3D11_BUFFER_DESC* pDesc, const D3D11_SUBRESO
     return m_pd3dDevice->CreateBuffer(pDesc, pInitialData, ppBuffer);
 }
 
-HRESULT Device::CreateSamplerState(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState)
+HRESULT Device::CreateSamplerState(const D3D11_SAMPLER_DESC* pSamplerDesc, SamplerState& ppSamplerState)
 {
-    return m_pd3dDevice->CreateSamplerState(pSamplerDesc, ppSamplerState);
+    return m_pd3dDevice->CreateSamplerState(pSamplerDesc, &ppSamplerState.getSamplerState());
 }
 
 HRESULT Device::CreateRasterizerState(const D3D11_RASTERIZER_DESC* pRasterizerDesc, ID3D11RasterizerState** ppRasterizerState)

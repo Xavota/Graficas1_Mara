@@ -50,7 +50,7 @@ namespace GraphicsModule
         /**/
 
         //ID3D11VertexShader*                 g_pVertexShader = NULL;
-        ID3D11PixelShader*                  g_pPixelShader = NULL;
+        //ID3D11PixelShader*                   g_pPixelShader = NULL;
         //ID3D11InputLayout*                  g_pVertexLayout = NULL;
 
         /*ID3D11Buffer*                     g_pVertexBuffer = NULL;
@@ -61,7 +61,7 @@ namespace GraphicsModule
         /**/
 
         //ID3D11ShaderResourceView*         g_pTextureRV = NULL;
-        ID3D11SamplerState*                 g_pSamplerLinear = NULL;
+        //ID3D11SamplerState*                 g_pSamplerLinear = NULL;
         XMMATRIX                            g_World;
 
         /*ID3D11Buffer*                     g_pVertexBuffer2 = NULL;
@@ -87,12 +87,13 @@ namespace GraphicsModule
         ShaderResourceView                  g_pDepthStencilSRV;
         /**/
 
-        VertexShader                        g_pVertexShader;
-
+		VertexShader                        g_pVertexShader;
+		PixelShader                         g_pPixelShader;
         InputLayout                         g_pVertexLayout;
         /**/
 
 		ShaderResourceView                  g_pTextureRV;
+		SamplerState                        g_pSamplerLinear;
         /**/
 
         Buffer                              g_DirLightBuffer;

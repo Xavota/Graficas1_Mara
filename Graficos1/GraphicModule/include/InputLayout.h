@@ -3,7 +3,8 @@
 #include <d3d11.h>
 #endif
 
-
+namespace GraphicsModule
+{
 class InputLayout
 {
 public:
@@ -20,4 +21,4 @@ private:
 	ID3D11InputLayout* m_inputLayout;
 #endif
 };
-
+}

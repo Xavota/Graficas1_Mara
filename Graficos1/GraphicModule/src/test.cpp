@@ -277,7 +277,7 @@ namespace GraphicsModule
 		}
 
 		// Create the pixel shader
-		hr = g_RenderManager->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
+		hr = g_RenderManager->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, g_pPixelShader);
 		pPSBlob->Release();
 		if (FAILED(hr))
 			return hr;
@@ -429,7 +429,7 @@ namespace GraphicsModule
 		sampDesc.ComparisonFunc = COMPARISON_NEVER;
 		sampDesc.MinLOD = 0;
 		sampDesc.MaxLOD = FLOAT32_MAX;
-		hr = g_RenderManager->CreateSamplerState(&sampDesc, &g_pSamplerLinear);/**/
+		hr = g_RenderManager->CreateSamplerState(&sampDesc, g_pSamplerLinear);/**/
 		if (FAILED(hr))
 		  return hr;
 
@@ -538,7 +538,7 @@ namespace GraphicsModule
 
 		g_RenderManager->PSSetShader(g_pPixelShader, NULL, 0);
 		g_RenderManager->PSSetConstantBuffers(2, 1, g_RenderManager->GetChangesEveryFrameBuffer());
-		g_RenderManager->PSSetSamplers(0, 1, &g_pSamplerLinear);
+		g_RenderManager->PSSetSamplers(0, 1, g_pSamplerLinear);
 
 
 		// Render the cubes
@@ -575,11 +575,11 @@ namespace GraphicsModule
   {
 #if defined(DX11)
 
-	  if (g_pSamplerLinear) g_pSamplerLinear->Release();
+	  g_pSamplerLinear.Release();
 
 	  g_pVertexLayout.Release();
 	  g_pVertexShader.Release();
-	  if (g_pPixelShader) g_pPixelShader->Release();
+	  g_pPixelShader.Release();
 
 	  g_RenderManager->ClearState();
 

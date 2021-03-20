@@ -69,9 +69,9 @@ void DeviceContext::VSSetConstantBuffers(unsigned int StartSlot, unsigned int Nu
 	m_pImmediateContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ppConstantBuffers.getBufferPtr());
 }
 
-void DeviceContext::PSSetShader(ID3D11PixelShader* pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
+void DeviceContext::PSSetShader(PixelShader pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances)
 {
-	m_pImmediateContext->PSSetShader(pPixelShader, ppClassInstances, NumClassInstances);
+	m_pImmediateContext->PSSetShader(pPixelShader.getPixelShader(), ppClassInstances, NumClassInstances);
 }
 
 void DeviceContext::PSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers)
@@ -84,9 +84,9 @@ void DeviceContext::PSSetShaderResources(unsigned int StartSlot, unsigned int Nu
 	m_pImmediateContext->PSSetShaderResources(StartSlot, NumViews, &ppShaderResourceViews.getPtr());
 }
 
-void DeviceContext::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, ID3D11SamplerState* const* ppSamplers)
+void DeviceContext::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers)
 {
-	m_pImmediateContext->PSSetSamplers(StartSlot, NumSamplers, ppSamplers);
+	m_pImmediateContext->PSSetSamplers(StartSlot, NumSamplers, &ppSamplers.getSamplerState());
 }
 
 void DeviceContext::RSSetState(ID3D11RasterizerState* pRasterizerState)
