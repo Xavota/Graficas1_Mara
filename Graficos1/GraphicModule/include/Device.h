@@ -102,12 +102,12 @@ public:
 		__in_opt  const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc,
 		/* [annotation] */
 		__out_opt  ID3D11ShaderResourceView** ppSRView);
-
+#endif
 	void Release();
 
 private:
+#if defined(DX11)
 	ID3D11Device* m_pd3dDevice = NULL;
-
 #endif
 };
 }

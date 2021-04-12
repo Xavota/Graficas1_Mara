@@ -13,31 +13,49 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{c9c6e3ad-d35f-47a9-bfbe-480ce0f1ef41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\OGL">
+      <UniqueIdentifier>{5437d8d2-be82-4a23-b316-2de08ecef883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\DX11">
+      <UniqueIdentifier>{1a89f8f9-104a-4594-8fb8-2379dee4005e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graficos1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_demo.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_widgets.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_win32.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_dx11.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>imgui\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_glfw.cpp">
+      <Filter>imgui\OGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\imgui-1.8\backends\imgui_impl_opengl3.cpp">
+      <Filter>imgui\OGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Externals\OpenGL\GLAD\src\glad.c">
+      <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

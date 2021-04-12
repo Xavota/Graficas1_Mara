@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+using std::string;
+
 #include "Descriptors.h"
 
 #include "Device.h"
@@ -18,6 +21,15 @@
 #include "SamplerState.h"
 
 #include "OBJInstance.h"
+
+#if defined(DX11)
+#include <d3dcompiler.h>
+#elif defined(OGL)
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+#endif
+
+#include "Shader.h"
 
 
 namespace GraphicsModule
@@ -90,28 +102,89 @@ public:
 	HRESULT CreateShaderAsRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
 		unsigned int width, unsigned int height);
 
+	HRESULT CreateDevices(unsigned int width, unsigned int height, HWND _hwnd,
+						  const DRIVER_TYPE* driverTypes, unsigned int numDriverTypes, unsigned int Flags,
+						  const FEATURE_LEVEL* pFeatureLevels, unsigned int numFeatureLevels, FEATURE_LEVEL* pFeatureLevel);
+
+	HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+	HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, InputLayout& pInputLayout);
+
+	HRESULT CompileShaders(const char* vsFileName, LPCSTR vsEntryPoint, LPCSTR vsShaderModel, const char* psFileName, LPCSTR psEntryPoint, LPCSTR psShaderModel);
+
+#elif defined(OGL)
+	void CompileShaders(const char* vsFileName, const char* psFileName);
+
+	void ShaderSetBool(const string name, bool value);
+	void ShaderSetInt(const string name, int value);
+	void ShaderSetFloat(const string name, int value);
+	void ShaderSetUint(const string name, unsigned int value);
+
+	void ShaderSetBool2(const string name, bool value1, bool value2);
+	void ShaderSetInt2(const string name, int value1, int value2);
+	void ShaderSetFloat2(const string name, float value1, float value2);
+	void ShaderSetUint2(const string name, unsigned int value1, unsigned int value2);
+
+	void ShaderSetBool3(const string name, bool value1, bool value2, bool value3);
+	void ShaderSetInt3(const string name, int value1, int value2, int value3);
+	void ShaderSetFloat3(const string name, float value1, float value2, float value3);
+	void ShaderSetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3);
+
+	void ShaderSetBool4(const string name, bool value1, bool value2, bool value3, bool value4);
+	void ShaderSetInt4(const string name, int value1, int value2, int value3, int value4);
+	void ShaderSetFloat4(const string name, float value1, float value2, float value3, float value4);
+	void ShaderSetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4);/**/
+
+	void ShaderSetMat4(const string name, glm::mat4 value);
+
+	Shader& getShader() { return m_shader; }
+#endif
+
+	void setViewport(unsigned int width, unsigned int height);
+
 	void UpdateViewMatrix(MATRIX view);
 	void UpdateProjectionMatrix(MATRIX projection);
-	void UpdateWorld(MATRIX model, Color color);
+	void UpdateModelMatrix(MATRIX model);
+	void UpdateLightDirection(Vector4 dir);
 
+#if defined(DX11)
 	Buffer& GetNeverChangesBuffer() { return m_pCBNeverChanges; }
 	Buffer& GetChangeOnResizeBuffer() { return m_pCBChangeOnResize; }
 	Buffer& GetChangesEveryFrameBuffer() { return m_pCBChangesEveryFrame; }
+	Buffer& GetLightDirectionBuffer() { return m_DirLightBuffer; }
 
+	VertexShader& GetVertexShader() { return m_vertexShader; }
+	PixelShader& GetPixelShader() { return m_pixelShader; }
+	InputLayout& GetInputLayout() { return m_inputLayout; }
+#endif
+     
+#if defined(OGL)
+	GLFWwindow*& getOGLWindow() { return m_window; }
+	void setOGLWindow(GLFWwindow* window) { m_window = window; }
+#endif
 	/*Clear*/
 	void Release();
 
+
 private:
+#if defined(DX11)
 	Device									m_device;
 	DeviceContext							m_deviceContext;
 	SwapChain								m_swapChain;
 
+	VertexShader							m_vertexShader;
+	PixelShader								m_pixelShader;
+	InputLayout								m_inputLayout;
+#elif defined(OGL)
+	GLFWwindow* m_window;
+#endif
 
+	Shader m_shader;
+public:
+#if defined(DX11)
 	Buffer									m_pCBNeverChanges;
 	Buffer									m_pCBChangeOnResize;
 	Buffer									m_pCBChangesEveryFrame;
-
-	UINT									offset = 0;
+	Buffer									m_DirLightBuffer;
 #endif
 };
 extern RenderManager* GetManager();

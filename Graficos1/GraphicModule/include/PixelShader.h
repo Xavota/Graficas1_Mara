@@ -13,8 +13,13 @@ public:
 
 #if defined(DX11)
 	inline ID3D11PixelShader*& getPixelShader() { return m_pixelShader; }
-	void Release() { if (m_pixelShader) m_pixelShader->Release(); }
-#endif
+#endif           
+	void Release() 
+	{ 
+#if defined(DX11)
+		if (m_pixelShader) m_pixelShader->Release();
+#endif           
+	}
 
 private:
 #if defined(DX11)

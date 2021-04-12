@@ -12,13 +12,18 @@ public:
 	~Buffer() = default;
 
 #if defined(DX11)
-
 	inline ID3D11Buffer*& getBufferPtr() { return m_Buffer; }
-	inline void Release() { if (m_Buffer) m_Buffer->Release(); }
+#endif
+	inline void Release() 
+	{ 
+#if defined(DX11)
+		if (m_Buffer) m_Buffer->Release(); 
+#endif
+	}
 
 private:
-	ID3D11Buffer* m_Buffer;
-
+#if defined(DX11)
+	ID3D11Buffer* m_Buffer = nullptr;
 #endif
 };
 }

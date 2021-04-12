@@ -1,9 +1,9 @@
 #include "DeviceContext.h"
 
-#if defined(DX11)
 
 namespace GraphicsModule
 {
+#if defined(DX11)
 ID3D11DeviceContext*& DeviceContext::getDeviceContextPtr()
 {
 	return m_pImmediateContext;
@@ -103,11 +103,12 @@ void DeviceContext::ClearState()
 {
 	if (m_pImmediateContext) m_pImmediateContext->ClearState();
 }
+#endif
 
 void DeviceContext::Release()
 {
+#if defined(DX11)
 	if (m_pImmediateContext) m_pImmediateContext->Release();
-}
-}
-
 #endif
+}
+}

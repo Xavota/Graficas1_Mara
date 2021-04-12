@@ -13,13 +13,18 @@ public:
 	~DepthStencilView() = default;
 
 #if defined(DX11)
-
 	ID3D11DepthStencilView*& getStencilViewPtr() { return m_depthStencilView; }
-	void Release() { if ( m_depthStencilView ) m_depthStencilView->Release(); }
+#endif
+	void Release() 
+	{
+#if defined(DX11)
+		if ( m_depthStencilView ) m_depthStencilView->Release(); 
+#endif
+	}
 
 private:
+#if defined(DX11)
 	ID3D11DepthStencilView* m_depthStencilView;
-
 #endif
 };
 }

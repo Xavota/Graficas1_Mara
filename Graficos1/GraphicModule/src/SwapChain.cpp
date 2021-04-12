@@ -1,9 +1,9 @@
 #include "SwapChain.h"
 
-#if defined(DX11)
 
 namespace GraphicsModule
 {
+#if defined(DX11)
 IDXGISwapChain*& SwapChain::GetSwapChainPtr()
 {
     return m_pSwapChain;
@@ -23,11 +23,13 @@ void SwapChain::Present(unsigned int SyncInterval, unsigned int Flags)
 {
     m_pSwapChain->Present(SyncInterval, Flags);
 }
+#endif
 
 void SwapChain::Release()
 {
-    if (m_pSwapChain) m_pSwapChain->Release();
+#if defined(DX11)
+	if (m_pSwapChain) m_pSwapChain->Release();
+#endif           
 }
 
 }
-#endif

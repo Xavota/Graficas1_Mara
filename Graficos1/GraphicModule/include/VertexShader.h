@@ -13,8 +13,13 @@ public:
 
 #if defined(DX11)
 	inline ID3D11VertexShader*& getVertexShader() { return m_vertexShader; }
-	void Release() { if (m_vertexShader) m_vertexShader->Release(); }
 #endif
+	void Release()
+	{
+#if defined(DX11)
+		if (m_vertexShader) m_vertexShader->Release(); 
+#endif            
+	}
 
 private:
 #if defined(DX11)

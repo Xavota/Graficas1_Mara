@@ -83,5 +83,7 @@ private:
 	float *m_viewMatrix;
 
 	bool m_resized = true;
+
+	float m_velocity = .3f;
 };
 }

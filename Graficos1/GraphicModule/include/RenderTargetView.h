@@ -13,13 +13,18 @@ public:
 	~RenderTargetView() = default;
 
 #if defined(DX11)
-
 	ID3D11RenderTargetView*& getPtr() { return m_renderTargetView; }
-	void Release() { if (m_renderTargetView) m_renderTargetView->Release(); }
+#endif           
+	void Release() 
+	{
+#if defined(DX11)
+		if (m_renderTargetView) m_renderTargetView->Release(); 
+#endif            
+	}
 
 private:
+#if defined(DX11)    
 	ID3D11RenderTargetView* m_renderTargetView;
-
 #endif
 };
 }

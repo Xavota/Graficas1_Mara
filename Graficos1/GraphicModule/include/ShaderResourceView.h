@@ -13,13 +13,18 @@ public:
 	~ShaderResourceView() = default;
 
 #if defined(DX11)
-
 	ID3D11ShaderResourceView*& getPtr() { return m_shaderResourceView; }
-	void Release() { if (m_shaderResourceView) m_shaderResourceView->Release(); }
+#endif           
+	void Release() 
+	{
+#if defined(DX11)
+		if (m_shaderResourceView) m_shaderResourceView->Release();
+#endif           
+	}
 
 private:
+#if defined(DX11)
 	ID3D11ShaderResourceView* m_shaderResourceView;
-
 #endif
 };
 }

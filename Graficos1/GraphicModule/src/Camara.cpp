@@ -309,26 +309,34 @@ float* Camara::getPerspectiveMatrix(float FovAngleY, float AspectRatio, float Ne
 void Camara::move(Vector moved)
 {
     Vector realMove = Vector(0, 0, 0);
-    realMove += m_right * moved.x();
-    realMove += m_front * moved.y();
-    realMove += m_up * moved.z();
+    realMove += m_right * moved.x() * m_velocity;
+    realMove += m_front * moved.y() * m_velocity;
+    realMove += m_up * moved.z() * m_velocity;
     setEyePos(getEyePos() + realMove);
     setLookAt(getLookAt() + realMove);
 }
 
 void Camara::rotate(Vector rotation)
 {
-    m_lookAt += rotation / 100;
-    float rad = (m_lookAt - m_eye).Lenght();
+	float rad = (m_lookAt - m_eye).Lenght();
+	//float yaw = atan(rotation.x() / rad);
+	//float pitch = atan(rotation.y() / rad);
+	//Vector dir;
+	//dir.setVector(cos(yaw) * cos(pitch), sin(pitch), sin(yaw) * cos(pitch));
+    //m_lookAt += rotation / 100;
+	m_lookAt = m_front + (m_right * rotation.x()) * .003f + m_up * rotation.y() * .003f;
+	m_lookAt.Normalize();
+	m_lookAt = m_eye + m_lookAt;
+	//m_lookAt = dir.getNormalized() * rad + m_eye;
 	calculateFront();
 	calculateRight();
 	calculateUp();
-    m_lookAt = m_eye + m_front * rad;
 }
 
 void Camara::Update()
 {
-    rotate(Mouse::getMouseMovement());
+	if (Mouse::isPressed())
+		rotate(Mouse::getMouseMovement());
 }
 
 void Camara::calculateFront()

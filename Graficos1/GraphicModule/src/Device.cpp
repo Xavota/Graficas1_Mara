@@ -2,9 +2,9 @@
 #include <iostream>
 #include <string>
 
-#if defined(DX11)
 namespace GraphicsModule
 {
+#if defined(DX11)
 
 ID3D11Device*& Device::GetDevicePtr()
 {
@@ -66,10 +66,12 @@ HRESULT Device::CreateShaderResourceView(ID3D11Resource* pResource, const D3D11_
 	return m_pd3dDevice->CreateShaderResourceView(pResource, pDesc, ppSRView);
 }
 
+#endif
+
 void Device::Release()
 {
+#if defined(DX11)
     if (m_pd3dDevice) m_pd3dDevice->Release();
-}
-}
-
 #endif
+}
+}

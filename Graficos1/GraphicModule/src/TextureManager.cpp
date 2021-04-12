@@ -3,23 +3,44 @@
 #include <string>
 #include <iostream>
 
-map<string, GraphicsModule::ShaderResourceView> TextureManager::m_textures;
-GraphicsModule::ShaderResourceView& TextureManager::GetTexture(string name)
+namespace GraphicsModule
 {
-	return m_textures[name];
+map<string, Texture> TextureManager::m_textures;
+Texture& TextureManager::GetTexture(string name)
+{
+	if (m_textures.find(name) != m_textures.end())
+	{
+		return m_textures[name];
+	}
+	std::cout << "Textura no existente: " << name << std::endl;
+	std::cout << "Procure cargar una textura con este nombre usando" << endl;
+	cout << "\tTextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name)" << std::endl;
+	cout << "\tTextureManager::CreateTextureFromBuffer(Texture2D buffer, string name)" << std::endl;
+	Texture t;
+	return t;
 }
 
-void TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name)
+bool TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name)
 {
 	if (m_textures.find(name) != m_textures.end())
 	{
 		std::cout << "Nombre de textura ya existente: " << name << std::endl;
-		return;
+		return false;
 	}
-	m_textures.insert(make_pair(name, GraphicsModule::ShaderResourceView()));
-	if (FAILED(GraphicsModule::GetManager()->CreateShaderResourceViewFromFile(pSrcFile, NULL, NULL, m_textures[name], NULL)))
+	m_textures.insert(make_pair(name, Texture()));
+	return m_textures[name].CreateTextureFromFile(pSrcFile);
+}
+
+#if defined(DX11)
+bool TextureManager::CreateTextureFromBuffer(Texture2D buffer, string name)
+{
+	if (m_textures.find(name) != m_textures.end())
 	{
-		std::cout << "Textura no vailda: " << pSrcFile << std::endl;
-		return;
+		std::cout << "Nombre de textura ya existente: " << name << std::endl;
+		return false;
 	}
+	m_textures.insert(make_pair(name, Texture()));
+	return m_textures[name].CreateTextureFromBuffer(buffer);
+}
+#endif
 }

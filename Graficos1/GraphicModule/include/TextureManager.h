@@ -1,22 +1,27 @@
 #pragma once
-#include "ShaderResourceView.h"
+#include "Texture.h"
 
 #include <string>
 #include <map>
 using std::map;
 using std::string;
 
+namespace GraphicsModule
+{
 class TextureManager
 {
 public:
 	TextureManager() = default;
 	~TextureManager() = default;
 
-	static GraphicsModule::ShaderResourceView& GetTexture(string name);
+	static Texture& GetTexture(string name);
 
-	static void CreateTextureFromFile(LPCSTR pSrcFile, string name);
+	static bool CreateTextureFromFile(LPCSTR pSrcFile, string name);
+#if defined(DX11)
+	static bool CreateTextureFromBuffer(Texture2D buffer, string name);
+#endif
 
 private:
-	static map<string, GraphicsModule::ShaderResourceView> m_textures;
+	static map<string, Texture> m_textures;
 };
-
+}

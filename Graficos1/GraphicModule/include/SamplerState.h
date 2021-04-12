@@ -13,8 +13,13 @@ public:
 
 #if defined(DX11)
 	inline ID3D11SamplerState*& getSamplerState() { return m_samplerState; }
-	void Release() { if (m_samplerState) m_samplerState->Release(); }
 #endif
+	void Release()
+	{
+#if defined(DX11)
+		if (m_samplerState) m_samplerState->Release(); 
+#endif           
+	}
 
 private:
 #if defined(DX11)

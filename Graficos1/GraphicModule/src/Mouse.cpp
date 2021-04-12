@@ -4,6 +4,9 @@ namespace GraphicsModule
 {
 Vector Mouse::m_pos;
 Vector Mouse::m_movement;
+
+bool Mouse::m_pressed = false;
+
 Mouse::~Mouse()
 {
 }

@@ -5,6 +5,10 @@
 
 #include <xnamath.h>
 
+#elif defined(OGL)
+
+#include <glm/gtc/matrix_transform.hpp>
+
 #endif
 //#include <d3d11.h>
 
@@ -382,25 +386,30 @@ enum CREATE_DEVICE_FLAG
 	CREATE_DEVICE_BGRA_SUPPORT = 0x20
 };
 
-struct CBChangesEveryFrame
+struct ModelMat
 {
 #if defined(DX11)
-	XMMATRIX mWorld;
-	XMFLOAT4 vMeshColor;
+	XMMATRIX model;
+#elif defined(OGL)
+	glm::mat4 model;
 #endif
 };
 
-struct CBNeverChanges
+struct ViewMat
 {
 #if defined(DX11)
-	XMMATRIX mView;
+	XMMATRIX view;
+#elif defined(OGL)
+	glm::mat4 view;
 #endif
 };
 
-struct CBChangeOnResize
+struct ProjectionMat
 {
 #if defined(DX11)
-	XMMATRIX mProjection;
+	XMMATRIX projection;
+#elif defined(OGL)
+	glm::mat4 projection;
 #endif
 };
 
@@ -528,6 +537,11 @@ struct ChangesEveryFrameDesc
 {
 	MATRIX mWorld;
 	Color vMeshColor;
+};
+
+struct DirLight
+{
+	Vector4 DIR;
 };
 
 struct SAMPLE_DESC

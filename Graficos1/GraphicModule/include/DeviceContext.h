@@ -52,11 +52,11 @@ public:
 	void RSSetState(ID3D11RasterizerState* pRasterizerState);
 	void Flush();
 	void ClearState();
-
+#endif
 	void Release();
 private:
+#if defined(DX11)
 	ID3D11DeviceContext* m_pImmediateContext = NULL;
-
 #endif
 };
 }
