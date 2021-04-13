@@ -288,8 +288,7 @@ HRESULT RenderManager::CreateDevices(unsigned int width, unsigned int height, HW
 		if (SUCCEEDED(hr))
 			break;
 	}
-	if (FAILED(hr))
-		return hr;
+	return hr;
 }
 
 HRESULT RenderManager::CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)

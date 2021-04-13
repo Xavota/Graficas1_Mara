@@ -165,7 +165,7 @@ namespace GraphicsModule
 	void test::Update(float dt)
 	{
 		/*Update viewport*/
-		int width, height;
+		int width = 0, height = 0;
 #if defined(DX11)
 		RECT rc;
 		GetClientRect(m_hwnd, &rc);
