@@ -15,7 +15,7 @@ Requisitos:
     + Includes:
         * $(DEVLIBS)imgui-1.8\
         * $(DEVLIBS)imgui-1.8\backends\
-- Free Image
+- Free Image 3.18.0
     + Includes:
         * $(DEVLIBS)FreeImage\Source
     + Libs: 
