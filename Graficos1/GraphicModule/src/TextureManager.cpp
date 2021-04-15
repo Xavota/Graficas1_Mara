@@ -20,27 +20,37 @@ Texture& TextureManager::GetTexture(string name)
 	return t;
 }
 
-bool TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name)
+eSTATUS TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name, unsigned int Flags)
 {
 	if (m_textures.find(name) != m_textures.end())
 	{
 		std::cout << "Nombre de textura ya existente: " << name << std::endl;
-		return false;
+		return REPITED;
 	}
 	m_textures.insert(make_pair(name, Texture()));
-	return m_textures[name].CreateTextureFromFile(pSrcFile);
+	if (!m_textures[name].CreateTextureFromFile(pSrcFile, Flags))
+	{
+		m_textures.erase(name);
+		return FAIL;
+	}
+	return OK;
 }
 
 #if defined(DX11)
-bool TextureManager::CreateTextureFromBuffer(Texture2D buffer, string name)
+eSTATUS TextureManager::CreateTextureFromBuffer(Texture2D buffer, string name)
 {
 	if (m_textures.find(name) != m_textures.end())
 	{
 		std::cout << "Nombre de textura ya existente: " << name << std::endl;
-		return false;
+		return REPITED;
 	}
 	m_textures.insert(make_pair(name, Texture()));
-	return m_textures[name].CreateTextureFromBuffer(buffer);
+	if (!m_textures[name].CreateTextureFromBuffer(buffer))
+	{
+		m_textures.erase(name);
+		return FAIL;
+	}
+	return OK;
 }
 #endif
 }

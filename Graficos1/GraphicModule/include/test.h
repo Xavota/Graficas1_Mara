@@ -39,10 +39,6 @@ namespace GraphicsModule
 
 		float                               g_ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 		RenderManager* g_RenderManager;
-#if !defined(OGL)
-		HWND                                m_hwnd;
-		/**/
-#endif
 #if defined(DX11)
 		DRIVER_TYPE                         g_driverType = DRIVER_TYPE_NULL;
 		FEATURE_LEVEL                       g_featureLevel = FEATURE_LEVEL_11_0;
@@ -54,17 +50,12 @@ namespace GraphicsModule
 
 		SamplerState                        g_pSamplerLinear;
 		/**/
-		/**/
 #endif
 
 
 
     public:
-#if defined(DX11)
-	    HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
-#endif
-
-        HRESULT InitDevice(HWND _hwnd);
+        HRESULT InitDevice();
 
         void Resize(unsigned int width, unsigned int height);
 
@@ -95,5 +86,5 @@ namespace GraphicsModule
 #endif
     };
 
-    extern test& GetTestObj(HWND _hwnd);
+    extern test& GetTestObj();
 }

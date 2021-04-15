@@ -64,27 +64,14 @@ HRESULT RenderManager::CreateShaderResourceView(Texture2D& pResource, const SHAD
 /*Device context*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void RenderManager::DrawObject(OBJInstance* obj)
-{
-	/*UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-
-	IASetVertexBuffers(0, 1, obj->getMesh()->getVertexBuffer(), &stride, &offset);
-	IASetIndexBuffer(obj->getMesh()->getIndexBuffer(), FORMAT_R32_UINT, offset);
-
-	CBChangesEveryFrame cb;
-
-	cb.mWorld =  obj->getModelMatrix();
-	Color col = obj->getMesh()->getColor();
-	cb.vMeshColor = *reinterpret_cast<XMFLOAT4*>(&col);
-	PSSetShaderResources(0, 1, obj->getTexture());
-	UpdateSubresource(m_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
-	DrawIndexed(obj->getMesh()->getIndexCount(), 0, 0);*/
-}
-
 void RenderManager::UpdateSubresource(Buffer& pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData, unsigned int SrcRowPitch, unsigned int SrcDepthPitch)
 {
 	m_deviceContext.UpdateSubresource(pDstResource, DstSubresource, pDstBox, pSrcData, SrcRowPitch, SrcDepthPitch);
+}
+
+void RenderManager::UpdateTexture2D(Texture2D& image, const void* data, unsigned int rowSize)
+{
+	m_deviceContext.UpdateTexture2D(image, data, rowSize);
 }
 
 void RenderManager::DrawIndexed(unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation)
@@ -260,7 +247,7 @@ HRESULT RenderManager::CreateShaderAsRenderTargetView(ShaderResourceView& ViewRT
 
 	TextRT.Release();
 }
-HRESULT RenderManager::CreateDevices(unsigned int width, unsigned int height, HWND _hwnd, 
+HRESULT RenderManager::CreateDevices(unsigned int width, unsigned int height, 
 									 const DRIVER_TYPE* driverTypes, unsigned int numDriverTypes, unsigned int Flags, 
 									 const FEATURE_LEVEL* pFeatureLevels, unsigned int numFeatureLevels, FEATURE_LEVEL* pFeatureLevel)
 {
@@ -275,7 +262,7 @@ HRESULT RenderManager::CreateDevices(unsigned int width, unsigned int height, HW
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
 	sd.BufferUsage = USAGE_RENDER_TARGET_OUTPUT;
-	sd.OutputWindow = _hwnd;
+	sd.OutputWindow = m_hwnd;
 	sd.SampleDesc.Count = 1;
 	sd.SampleDesc.Quality = 0;
 	sd.Windowed = TRUE;
@@ -553,6 +540,7 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 	ViewMat cbNeverChanges;
 	cbNeverChanges.view = XMMatrixTranspose(g_View);
 	UpdateSubresource(m_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
+	VSSetConstantBuffers(0, 1, m_pCBNeverChanges);
 #elif defined(OGL)
 	m_shader.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14, 
 											 view._21, view._22, view._23, view._24, 
@@ -568,6 +556,7 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 	ProjectionMat cbChangesOnResize;
 	cbChangesOnResize.projection = XMMatrixTranspose(g_Projection);
 	UpdateSubresource(m_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
+	VSSetConstantBuffers(1, 1, m_pCBChangeOnResize);
 #elif defined(OGL)
 	m_shader.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14, 
 											 projection._21, projection._22, projection._23, projection._24, 
@@ -581,8 +570,10 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 #if defined(DX11)
 	XMMATRIX g_Model = *reinterpret_cast<XMMATRIX*>(&model);
 	ModelMat modl;
-	modl.model = XMMatrixTranspose(g_Model);
+	modl.model = g_Model;
 	UpdateSubresource(m_pCBChangesEveryFrame, 0, NULL, &modl, 0, 0);
+	VSSetConstantBuffers(2, 1, m_pCBChangesEveryFrame);
+	PSSetConstantBuffers(2, 1, m_pCBChangesEveryFrame);
 #elif defined(OGL)
 	m_shader.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
 										model._21, model._22, model._23, model._24,
@@ -597,6 +588,7 @@ void RenderManager::UpdateLightDirection(Vector4 dir)
 	DirLight dirDesc;
 	dirDesc.DIR = dir;
 	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
+	VSSetConstantBuffers(3, 1, m_DirLightBuffer);
 #elif defined(OGL)
 	m_shader.SetFloat4("lightDir", dir.x, dir.y, dir.z, dir.w);
 #endif

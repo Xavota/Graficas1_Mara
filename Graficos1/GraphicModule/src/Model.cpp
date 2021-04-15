@@ -8,7 +8,7 @@ void Model::AddMeshes(vector<Mesh> meshes)
 	m_modelMeshes = meshes;
 }
 
-void Model::LoadModel(const aiScene* scene, string fileName)
+bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat)
 {
 	m_filePath = fileName;
 	bool point = false;
@@ -64,11 +64,12 @@ void Model::LoadModel(const aiScene* scene, string fileName)
 	completePath.Append("/../../Textures/M_");
 	completePath.Append(m_name.c_str());
 	completePath.Append("_Albedo.jpg");
-	if (TextureManager::CreateTextureFromFile(completePath.C_Str(), m_name))
+	eSTATUS stat = TextureManager::CreateTextureFromFile(completePath.C_Str(), m_name, Flags);
+	if (stat == OK || stat == REPITED)
 	{
 		setTexture(TextureManager::GetTexture(m_name));
 	}
-	else
+	else if (stat == FAIL)
 	{
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
@@ -89,6 +90,7 @@ void Model::LoadModel(const aiScene* scene, string fileName)
 				v.Pos.x = scene->mMeshes[i]->mVertices[j].x;
 				v.Pos.y = scene->mMeshes[i]->mVertices[j].y;
 				v.Pos.z = scene->mMeshes[i]->mVertices[j].z;
+				v.Pos = mat * Vector4{v.Pos.x, v.Pos.y, v.Pos.z, 1.0f};
 			}
 			else
 			{
@@ -100,11 +102,8 @@ void Model::LoadModel(const aiScene* scene, string fileName)
 				if (scene->mMeshes[i]->HasTextureCoords(k))
 				{
 					v.Tex.x = scene->mMeshes[i]->mTextureCoords[k][j].x;
-#if defined(DX11)
-					v.Tex.y = 1 - scene->mMeshes[i]->mTextureCoords[k][j].y;
-#elif defined(OGL)
 					v.Tex.y = scene->mMeshes[i]->mTextureCoords[k][j].y;
-#endif
+
 				}
 			}
 
@@ -113,6 +112,7 @@ void Model::LoadModel(const aiScene* scene, string fileName)
 				v.Normales.x = scene->mMeshes[i]->mNormals[j].x;
 				v.Normales.y = scene->mMeshes[i]->mNormals[j].y;
 				v.Normales.z = scene->mMeshes[i]->mNormals[j].z;
+				v.Normales = mat * Vector4{v.Normales.x, v.Normales.y, v.Normales.z, 0.0f};
 			}
 			else
 			{
@@ -141,6 +141,24 @@ void Model::LoadModel(const aiScene* scene, string fileName)
 
 		m_modelMeshes[m_modelMeshes.size() - 1].setMaterialID(scene->mMeshes[i]->mMaterialIndex);
 	}
+
+#if !defined(OGL)
+	if (Flags & MODEL_LOAD_FORMAT_TRIANGLES)
+		m_topology = PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	if (Flags & MODEL_LOAD_FORMAT_WIREFRAME)
+		m_topology = PRIMITIVE_TOPOLOGY_LINELIST;
+	if (Flags & MODEL_LOAD_FORMAT_POINTS)
+		m_topology = PRIMITIVE_TOPOLOGY_POINTLIST;
+#else
+	if (Flags & MODEL_LOAD_FORMAT_TRIANGLES)
+		m_topology = GL_FILL;
+	if (Flags & MODEL_LOAD_FORMAT_WIREFRAME)
+		m_topology = GL_LINE;
+	if (Flags & MODEL_LOAD_FORMAT_POINTS)
+		m_topology = GL_POINT;
+#endif
+
+	return true;
 }
 
 void Model::Draw(RenderManager* renderManager)
@@ -150,8 +168,13 @@ void Model::Draw(RenderManager* renderManager)
 		//Texture
 		//renderManager->PSSetShaderResources(0, 1, m_textures[m_modelMeshes[i].getMaterialID()].getBuffer());
 #if defined(DX11)
+		/*Set primitive topology*/
+		renderManager->IASetPrimitiveTopology(m_topology);
+
 		renderManager->PSSetShaderResources(0, 1, m_textures[0].getBuffer());
 #elif defined(OGL)
+		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
+
 		glBindTexture(GL_TEXTURE_2D, m_textures[0].getID());
 #endif
 

@@ -4,15 +4,8 @@
 
 namespace GraphicsModule
 {
-bool Texture::CreateTextureFromFile(LPCSTR pSrcFile)
+bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags)
 {
-#if defined(DX11)
-	if (FAILED(GetManager()->CreateShaderResourceViewFromFile(pSrcFile, NULL, NULL, m_texture, NULL)))
-	{
-		std::cout << "Textura no vailda: " << pSrcFile << std::endl;
-		return false;
-	}
-#elif defined(OGL)
 	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	//pointer to the image, once loaded
@@ -21,8 +14,6 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile)
 	BYTE* bits(0);
 	//image width and height
 	unsigned int width(0), height(0);
-	//OpenGL's image ID to map to
-	GLuint gl_texID;
 
 	//check the file signature and deduce its format
 	fif = FreeImage_GetFileType(pSrcFile, 0);
@@ -35,7 +26,11 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile)
 
 	//check that the plugin has reading capabilities and load the file
 	if (FreeImage_FIFSupportsReading(fif))
+	{
 		dib = FreeImage_Load(fif, pSrcFile);
+		dib = FreeImage_ConvertTo32Bits(dib);
+	}
+
 	//if the image failed to load, return failure
 	if (!dib)
 		return false;
@@ -48,21 +43,66 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile)
 	//if this somehow one of these failed (they shouldn't), return failure
 	if ((bits == 0) || (width == 0) || (height == 0))
 		return false;
+#if defined(DX11)
+	Texture2D tex;
+	TEXTURE2D_DESC texD;
+	ZeroMemory(&texD, sizeof(texD));
+	texD.Width = width;
+	texD.Height = height;
+	texD.MipLevels = 1;
+	texD.ArraySize = 1;
+	if (Flags & MODEL_LOAD_FORMAT_RGBA)
+		texD.Format = FORMAT_R8G8B8A8_UNORM;
+	else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+		texD.Format = FORMAT_B8G8R8A8_UNORM;
+	texD.SampleDesc.Count = 1;
+	texD.SampleDesc.Quality = 0;
+	texD.Usage = USAGE_DEFAULT;
+	texD.BindFlags = BIND_SHADER_RESOURCE;
+	texD.CPUAccessFlags = 0;
+	texD.MiscFlags = 0;
+	
+	if (FAILED(GetManager()->CreateTexture2D(&texD, NULL, tex)))
+	{
+		return false;
+	}
+	GetManager()->UpdateTexture2D(tex, bits, FreeImage_GetPitch(dib));
 
-	//generate an OpenGL texture ID for this texture
+	SHADER_RESOURCE_VIEW_DESC srvd;
+	ZeroMemory(&srvd, sizeof(srvd));
+	if (Flags & MODEL_LOAD_FORMAT_RGBA)
+		srvd.Format = FORMAT_R8G8B8A8_UNORM;
+	else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+		srvd.Format = FORMAT_B8G8R8A8_UNORM;
+	srvd.ViewDimension = SRV_DIMENSION_TEXTURE2D;
+	srvd.Texture2D.MipLevels = 1; // same as orig texture
+	GetManager()->CreateShaderResourceView(tex, &srvd, m_texture);
+	tex.Release();
+
+	
+#elif defined(OGL)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//OpenGL's image ID to map to
+	GLuint gl_texID;
+	//generate an OpenGL texture ID for this texture	
 	glGenTextures(1, &gl_texID);
 	//store the texture ID mapping
 	m_ID = gl_texID;
 	//bind to the new texture ID
 	glBindTexture(GL_TEXTURE_2D, gl_texID);
 	//store the texture data for OpenGL use
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-		0, GL_BGR, GL_UNSIGNED_BYTE, bits);
+	if (Flags & MODEL_LOAD_FORMAT_RGBA)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+	else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, bits);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
+#endif           
 	//Free FreeImage's copy of the data
 	FreeImage_Unload(dib);
-#endif           
 	return true;
 }
 

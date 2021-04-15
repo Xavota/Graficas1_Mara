@@ -12,6 +12,11 @@
 #endif
 //#include <d3d11.h>
 
+#define MODEL_LOAD_FORMAT_TRIANGLES 0X1
+#define MODEL_LOAD_FORMAT_WIREFRAME 0X2
+#define MODEL_LOAD_FORMAT_POINTS 0X4
+#define MODEL_LOAD_FORMAT_RGBA 0X8
+#define MODEL_LOAD_FORMAT_BGRA 0X10
 
 #define MAX_SWAP_CHAIN_BUFFERS        ( 16 )
 #define FLOAT32_MAX	( 3.402823466e+38f )
@@ -476,6 +481,15 @@ struct MATRIX
 
 	float  operator() (UINT Row, UINT Column) const { return m[Row][Column]; }
 	float& operator() (UINT Row, UINT Column) { return m[Row][Column]; }
+
+	Vector3 operator* (Vector4 vec)
+	{
+		Vector3 vecR;
+		vecR.x = _11 * vec.x + _12 * vec.y + _13 * vec.z + _14 * vec.w;
+		vecR.y = _21 * vec.x + _22 * vec.y + _23 * vec.z + _24 * vec.w;
+		vecR.z = _31 * vec.x + _32 * vec.y + _33 * vec.z + _34 * vec.w;
+		return vecR;
+	}
 
 };
 

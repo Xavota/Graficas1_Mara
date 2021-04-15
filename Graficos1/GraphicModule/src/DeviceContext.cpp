@@ -9,9 +9,14 @@ ID3D11DeviceContext*& DeviceContext::getDeviceContextPtr()
 	return m_pImmediateContext;
 }
 
-void DeviceContext::UpdateSubresource(Buffer pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData, unsigned int SrcRowPitch, unsigned int SrcDepthPitch)
+void DeviceContext::UpdateSubresource(Buffer& pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData, unsigned int SrcRowPitch, unsigned int SrcDepthPitch)
 {
 	m_pImmediateContext->UpdateSubresource(pDstResource.getBufferPtr(), DstSubresource, reinterpret_cast<const D3D11_BOX*>(pDstBox), pSrcData, SrcRowPitch, SrcDepthPitch);
+}
+
+void DeviceContext::UpdateTexture2D(Texture2D& texture, const void* data, unsigned int rowSize)
+{
+	m_pImmediateContext->UpdateSubresource(texture.GetTexturePtr(), 0, NULL, data, rowSize, 0);
 }
 
 void DeviceContext::DrawIndexed(unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation)

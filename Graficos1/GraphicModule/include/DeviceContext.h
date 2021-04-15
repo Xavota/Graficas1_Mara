@@ -31,8 +31,9 @@ public:
 	ID3D11DeviceContext*& getDeviceContextPtr();
 
 
-	void UpdateSubresource(Buffer pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData,
+	void UpdateSubresource(Buffer& pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData,
 		unsigned int SrcRowPitch, unsigned int SrcDepthPitch);
+	void UpdateTexture2D(Texture2D& texture, const void* data, unsigned int rowSize);
 	void DrawIndexed(unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation);
 	void OMSetRenderTargets(unsigned int NumViews, RenderTargetView ppRenderTargetViews, DepthStencilView pDepthStencilView);
 	void RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports);

@@ -22,7 +22,7 @@ public:
 	~Model() = default;
 
 	void AddMeshes(vector<Mesh> meshes);
-	void LoadModel(const class aiScene* scene, string fileName);
+	bool LoadModel(const class aiScene* scene, string fileName, unsigned int Flags, MATRIX mat);
 	void Draw(class RenderManager* renderManager);
 
 	Texture& getTexture(unsigned int index) { return m_textures[index]; }
@@ -40,5 +40,10 @@ public:
 
 	string m_filePath;
 	string m_name;
+#if !defined(OGL)
+	PRIMITIVE_TOPOLOGY m_topology;
+#else
+	unsigned int m_topology;
+#endif
 };
 }

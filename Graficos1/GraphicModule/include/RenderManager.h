@@ -62,6 +62,7 @@ public:
 	/*Device context functions*/
 	void UpdateSubresource( Buffer& pDstResource, unsigned int DstSubresource, const BOX* pDstBox, const void* pSrcData,
 							unsigned int SrcRowPitch, unsigned int SrcDepthPitch );
+	void UpdateTexture2D( Texture2D& image, const void* data, unsigned int rowSize);
 	void DrawIndexed( unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation );
 	void OMSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView);
 	void ClearAndSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4]);
@@ -90,8 +91,6 @@ public:
 	void Present( unsigned int SyncInterval, unsigned int Flags);
 
 	/*Globals*/
-	void DrawObject(OBJInstance* obj);
-
 	HRESULT CreateDeviceAndSwapChain( IDXGIAdapter* pAdapter, DRIVER_TYPE DriverType, HMODULE Software,
 		unsigned int Flags, const FEATURE_LEVEL* pFeatureLevels, unsigned int FeatureLevels, unsigned int SDKVersion,
 		const SWAP_CHAIN_DESC* pSwapChainDesc, FEATURE_LEVEL* pFeatureLevel);
@@ -102,7 +101,7 @@ public:
 	HRESULT CreateShaderAsRenderTargetView(ShaderResourceView& ViewRT, RenderTargetView& RenderTargetView,
 		unsigned int width, unsigned int height);
 
-	HRESULT CreateDevices(unsigned int width, unsigned int height, HWND _hwnd,
+	HRESULT CreateDevices(unsigned int width, unsigned int height,
 						  const DRIVER_TYPE* driverTypes, unsigned int numDriverTypes, unsigned int Flags,
 						  const FEATURE_LEVEL* pFeatureLevels, unsigned int numFeatureLevels, FEATURE_LEVEL* pFeatureLevel);
 
@@ -156,10 +155,12 @@ public:
 	PixelShader& GetPixelShader() { return m_pixelShader; }
 	InputLayout& GetInputLayout() { return m_inputLayout; }
 #endif
-     
-#if defined(OGL)
-	GLFWwindow*& getOGLWindow() { return m_window; }
-	void setOGLWindow(GLFWwindow* window) { m_window = window; }
+#if !defined(OGL)
+	HWND& GetWindow() { return m_hwnd; }
+	void SetWindow(HWND window) { m_hwnd = window; }
+#else
+	GLFWwindow*& GetWindow() { return m_window; }
+	void SetWindow(GLFWwindow* window) { m_window = window; }
 #endif
 	/*Clear*/
 	void Release();
@@ -174,7 +175,10 @@ private:
 	VertexShader							m_vertexShader;
 	PixelShader								m_pixelShader;
 	InputLayout								m_inputLayout;
-#elif defined(OGL)
+#endif
+#if !defined(OGL)
+	HWND m_hwnd;
+#else
 	GLFWwindow* m_window;
 #endif
 

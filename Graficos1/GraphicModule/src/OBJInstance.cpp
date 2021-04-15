@@ -38,16 +38,38 @@ glm::mat4 OBJInstance::getModelMatrix()
 	res = glm::rotate(res, glm::radians(m_rot.y() * 180 / 3.1415f), glm::vec3(0, 1, 0));
 	res = glm::rotate(res, glm::radians(m_rot.z() * 180 / 3.1415f), glm::vec3(0, 0, 1));
 
-	//glm::mat4 res = scale * translation;
-	//res = rotation * res;
+	return res;
+}
+#endif
+
+#if defined(DX11)
+XMMATRIX OBJInstance::getModelMatrix(Vector size, Vector pos, Vector rot)
+{
+	XMMATRIX scale = XMMatrixScaling(size.x(), size.y(), size.z());
+	XMMATRIX translation = XMMatrixTranslation(pos.x(), pos.y(), pos.z());
+	XMMATRIX rotation = XMMatrixRotationRollPitchYaw(rot.x(), rot.y(),rot.z());
+
+	XMMATRIX res = XMMatrixMultiply(scale, translation);
+	res = XMMatrixMultiplyTranspose(rotation, res);
+
+	return res;
+}
+#elif defined(OGL)
+glm::mat4 OBJInstance::getModelMatrix(Vector size, Vector pos, Vector rot)
+{
+	glm::mat4 res = glm::scale(glm::mat4(1.0f), glm::vec3(size.x(), size.y(), size.z()));
+	res = glm::translate(res, glm::vec3(pos.x(), pos.y(), pos.z()));
+	res = glm::rotate(res, glm::radians(rot.x() * 180 / 3.1415f), glm::vec3(1, 0, 0));
+	res = glm::rotate(res, glm::radians(rot.y() * 180 / 3.1415f), glm::vec3(0, 1, 0));
+	res = glm::rotate(res, glm::radians(rot.z() * 180 / 3.1415f), glm::vec3(0, 0, 1));
 
 	return res;
 }
 #endif
 
-void OBJInstance::LoadModel(const aiScene* scene, string fileName)
+bool OBJInstance::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat)
 {
-	m_OBJModel.LoadModel(scene, fileName);
+	return m_OBJModel.LoadModel(scene, fileName, Flags, mat);
 }
 
 void OBJInstance::setSize(Vector size)
@@ -85,10 +107,10 @@ void OBJInstance::Draw(RenderManager* renderManager)
 #if defined(DX11)
 	ModelMat cb;
 	cb.model = getModelMatrix();
-	renderManager->UpdateSubresource(renderManager->m_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
+	renderManager->UpdateModelMatrix(MATRIX((float*)&cb.model));
 #elif defined(OGL)
 	glm::mat4 mat = getModelMatrix();
-	renderManager->UpdateModelMatrix(MATRIX(&mat[0][0]));
+	renderManager->UpdateModelMatrix(MATRIX((float*)&mat));
 #endif           
 
 	m_OBJModel.Draw(renderManager);

@@ -31,7 +31,13 @@ public:
 	glm::mat4 getModelMatrix();
 #endif
 
-	void LoadModel(const aiScene* scene, string fileName);
+#if defined(DX11)
+	static XMMATRIX getModelMatrix(Vector size, Vector pos, Vector rot);
+#elif defined(OGL)
+	static glm::mat4 getModelMatrix(Vector size, Vector pos, Vector rot);
+#endif
+
+	bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat);
 
 	void setSize(Vector size);
 	Vector getSize();

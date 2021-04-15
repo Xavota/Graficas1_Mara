@@ -8,6 +8,12 @@ using std::string;
 
 namespace GraphicsModule
 {
+enum eSTATUS
+{
+	FAIL = 0,
+	REPITED = 1,
+	OK = 2
+};
 class TextureManager
 {
 public:
@@ -16,9 +22,9 @@ public:
 
 	static Texture& GetTexture(string name);
 
-	static bool CreateTextureFromFile(LPCSTR pSrcFile, string name);
+	static eSTATUS CreateTextureFromFile(LPCSTR pSrcFile, string name, unsigned int Flags);
 #if defined(DX11)
-	static bool CreateTextureFromBuffer(Texture2D buffer, string name);
+	static eSTATUS CreateTextureFromBuffer(Texture2D buffer, string name);
 #endif
 
 private:

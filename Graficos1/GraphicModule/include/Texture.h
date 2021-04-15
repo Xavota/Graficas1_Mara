@@ -12,7 +12,7 @@ public:
 	Texture() = default;
 	~Texture() = default;
 
-	bool CreateTextureFromFile(LPCSTR pSrcFile);
+	bool CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags);
 #if defined(DX11)
 	bool CreateTextureFromBuffer(Texture2D buffer);
 
