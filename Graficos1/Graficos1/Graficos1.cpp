@@ -63,6 +63,25 @@ bool								g_SelectingLoadMode = false;
  */
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 
+void Resize(unsigned int width, unsigned int height)
+{
+
+	for (int i = 0; i < g_Cameras.size(); i++)
+	{
+		g_Cameras[i].setViewWidth(width);
+		g_Cameras[i].setViewHeight(height);
+	}
+
+	g_Test.Resize(width, height);
+}
+
+#if defined(OGL)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	Resize(width, height);
+}
+#endif
+
 /**
  * @brief   Message bomb.
  * @param   #HWND: A handle to the window.
@@ -87,20 +106,14 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     {
         static bool _first = true;
         if (!_first)
-        {
-            RECT rc;
-            GetClientRect(_hwnd, &rc);
-
-            UINT width = rc.right - rc.left;
-			UINT height = rc.bottom - rc.top;
-
-			for (int i = 0; i < g_Cameras.size(); i++)
-			{
-				g_Cameras[i].setViewWidth(width);
-				g_Cameras[i].setViewHeight(height);
-			}
-
-            g_Test.Resize(width, height);
+		{
+			/*Update viewport*/
+			int width = 0, height = 0;
+			RECT rc;
+			GetClientRect(GraphicsModule::GetManager()->GetWindow(), &rc);
+			width = rc.right - rc.left;
+			height = rc.bottom - rc.top;
+			Resize(width, height);
         }
         _first = !_first;
     }
@@ -241,6 +254,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+
+	glfwSetFramebufferSizeCallback(GraphicsModule::GetManager()->GetWindow(), framebuffer_size_callback);
 #endif
 
     return S_OK;
