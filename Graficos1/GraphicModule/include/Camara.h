@@ -53,6 +53,10 @@ public:
 	static float* getOrtograficMatrix(float ViewWidth, float ViewHeight, float NearZ, float FarZ);
 	static float* getPerspectiveMatrix(float FovAngleY, float AspectRatio, float NearZ, float FarZ);
 
+	Vector GetUpVector() { return m_up; }
+	Vector GetRightVector() { return m_right; }
+	Vector GetFrontVector() { return m_front; }
+
 private:
 	void calculateRight();
 	void calculateFront();

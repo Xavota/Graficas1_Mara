@@ -80,6 +80,26 @@ namespace GraphicsModule
 			g_RenderManager->UpdateLightDirection(dir);
 		}
 
+		inline void SetViewLight(Vector4 dir)
+		{
+			g_RenderManager->ShaderSetFloat4("viewDir", dir.x, dir.y, dir.z, dir.w);
+		}
+
+		inline void SetAmbientLight(float ambient)
+		{
+			g_RenderManager->ShaderSetFloat("ambientStrength", ambient);
+		}
+
+		inline void SetSpecularStrength(float specularStrength)
+		{
+			g_RenderManager->ShaderSetFloat("specularStrength", specularStrength);
+		}
+
+		inline void SetLightScatering(float scatering)
+		{
+			g_RenderManager->ShaderSetFloat("scatering", scatering);
+		}
+
     private:
 #if defined(DX11)
         HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11Device* pD3DDevice, InputLayout& pInputLayout);

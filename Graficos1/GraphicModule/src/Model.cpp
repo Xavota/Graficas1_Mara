@@ -173,6 +173,7 @@ void Model::Draw(RenderManager* renderManager)
 
 		renderManager->PSSetShaderResources(0, 1, m_textures[0].getBuffer());
 #elif defined(OGL)
+		/*Set primitive topology*/
 		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
 
 		glBindTexture(GL_TEXTURE_2D, m_textures[0].getID());

@@ -25,17 +25,21 @@ public:
 	OBJInstance();
 	~OBJInstance();
 
-#if defined(DX11)
+/*#if defined(DX11)
 	XMMATRIX getModelMatrix();
 #elif defined(OGL)
 	glm::mat4 getModelMatrix();
-#endif
+#endif*/
 
-#if defined(DX11)
+	MATRIX getModelMatrix();
+
+/*#if defined(DX11)
 	static XMMATRIX getModelMatrix(Vector size, Vector pos, Vector rot);
 #elif defined(OGL)
 	static glm::mat4 getModelMatrix(Vector size, Vector pos, Vector rot);
-#endif
+#endif*/
+
+	static MATRIX getModelMatrix(Vector size, Vector pos, Vector rot);
 
 	bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat);
 

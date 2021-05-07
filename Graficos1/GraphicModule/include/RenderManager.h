@@ -115,7 +115,7 @@ public:
 
 	void ShaderSetBool(const string name, bool value);
 	void ShaderSetInt(const string name, int value);
-	void ShaderSetFloat(const string name, int value);
+	void ShaderSetFloat(const string name, float value);
 	void ShaderSetUint(const string name, unsigned int value);
 
 	void ShaderSetBool2(const string name, bool value1, bool value2);

@@ -3,10 +3,8 @@
 #include <windows.h>
 
 #include "imgui.h"
-#if !defined(OGL)
-#include "imgui_impl_win32.h"
-#endif
 #if defined(DX11)
+#include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #elif defined(OGL)
 #include "imgui_impl_glfw.h"
@@ -51,6 +49,19 @@ vector<GraphicsModule::OBJInstance> g_ObjInstances;
 
 bool								g_SelectingLoadMode = false;
 
+
+void Resize(unsigned int width, unsigned int height)
+{
+	for (int i = 0; i < g_Cameras.size(); i++)
+	{
+		g_Cameras[i].setViewWidth(width);
+		g_Cameras[i].setViewHeight(height);
+	}
+
+	g_Test.Resize(width, height);
+}
+
+#if !defined(OGL)
 /**
  * @brief   Forward declare message handler from imgui_impl_win32.cpp
  * @param   #HWND: A handle to the window.
@@ -63,25 +74,6 @@ bool								g_SelectingLoadMode = false;
  */
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 
-void Resize(unsigned int width, unsigned int height)
-{
-
-	for (int i = 0; i < g_Cameras.size(); i++)
-	{
-		g_Cameras[i].setViewWidth(width);
-		g_Cameras[i].setViewHeight(height);
-	}
-
-	g_Test.Resize(width, height);
-}
-
-#if defined(OGL)
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	Resize(width, height);
-}
-#endif
-
 /**
  * @brief   Message bomb.
  * @param   #HWND: A handle to the window.
@@ -90,7 +82,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
  * @param   #LPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
  * @return  #LRESULT: The return value is the result of the message processing and depends on the message sent..
  */
- #if !defined(OGL)
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
 
@@ -115,7 +106,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 			height = rc.bottom - rc.top;
 			Resize(width, height);
         }
-        _first = !_first;
+        _first = false;
     }
     return 0;
     break;
@@ -157,11 +148,16 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 		GraphicsModule::Mouse::setPressed(false);
 		break;
     }
+
+	LPPOINT p = new POINT;
+	GetCursorPos(p);
+	GraphicsModule::Mouse::setMousePos({ (float)p->x, -(float)p->y, 0 });
+	delete p;
+
     return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
-#endif
 
-#if defined(OGL)
+#else 
 void processInputs(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -189,13 +185,18 @@ void processInputs(GLFWwindow* window)
 	if (glfwGetMouseButton(window, 1) == GLFW_RELEASE)
 		GraphicsModule::Mouse::setPressed(false);
 }
-#endif
-#if defined(OGL)
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	GraphicsModule::Mouse::setMousePos({ (float)xpos, -(float)ypos, 0 });
 }
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	Resize(width, height);
+}
 #endif
+
 /**
  * @brief   Set the style for the main window and init it.
  * @param   #unsigned int: First window width.
@@ -256,10 +257,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	}
 
 	glfwSetFramebufferSizeCallback(GraphicsModule::GetManager()->GetWindow(), framebuffer_size_callback);
+	glfwSetCursorPosCallback(GraphicsModule::GetManager()->GetWindow(), mouse_callback);
+
 #endif
 
     return S_OK;
 }
+
+
+
 
 /**
  * @brief   Init the UI.
@@ -277,10 +283,8 @@ HRESULT InitImgUI()
 
     // Setup Platform/Renderer back ends
 #if defined(DX11)
-
 	ImGui_ImplDX11_Init(g_Test.GetDevice(), g_Test.GetDeviceContext());
 	ImGui_ImplWin32_Init(GraphicsModule::GetManager()->GetWindow());
-
 #elif defined(OGL)
 	ImGui_ImplGlfw_InitForOpenGL(GraphicsModule::GetManager()->GetWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 130");
@@ -323,10 +327,6 @@ HRESULT Init(unsigned int width, unsigned int height)
 		width, height, 0.01f, 100.0f, false, PIDIV4));
 
 	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA);
-    
-#if defined(OGL)
-	glfwSetCursorPosCallback(GraphicsModule::GetManager()->GetWindow(), mouse_callback);
-#endif
     
     return S_OK;
 }
@@ -378,7 +378,8 @@ bool TryLoadMesh(string fileName)
 
 void UIRender()
 {
-    // Start the Dear ImGui frame
+#if defined(DX11) || defined(OGL)
+    
 #if defined(DX11)
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();	
@@ -386,18 +387,37 @@ void UIRender()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 #endif
+
     ImGui::NewFrame();
 	static string fileName;
-    // example window
+
 	if (!g_SelectingLoadMode)
 	{
 		if (ImGui::Begin("Models", nullptr))
 		{
+			static float ambient = .1;
+			static float specular = .1;
+			static float scatering = 32;
 			static float dir[3]{ 0.0f, -0.5f, 1.0f };
+			ImGui::Text("Ambient light:");
+			if (ImGui::DragFloat("Ambient", &ambient, 0.001f, 0.0f, 1.0f))
+			{
+				g_Test.SetAmbientLight(ambient);
+			}
 			ImGui::Text("Light Direction:");
 			if (ImGui::DragFloat3("Dir", dir, 0.001f, -1.0f, 1.0f))
 			{
 				g_Test.SetDirLight(Vector4{dir[0], dir[1], dir[2], 0});
+			}
+			ImGui::Text("Specular strenght:");
+			if (ImGui::DragFloat("Specular", &specular, 0.001f, 0.0f, 1.0f))
+			{
+				g_Test.SetSpecularStrength(specular);
+			}
+			ImGui::Text("Scatering:");
+			if (ImGui::DragFloat("Scatering", &scatering, 0.5f, 1.0f, 256.0f))
+			{
+				g_Test.SetLightScatering(scatering);
 			}
 		    ImGui::Separator();
 		    if (ImGui::Button("Open Mesh", ImVec2(100, 30)))
@@ -524,26 +544,27 @@ void UIRender()
 					Flags |= MODEL_LOAD_FORMAT_POINTS;
 				}
 				float piOver180 = 3.1415 / 180;
-#if defined(DX11)
-				XMMATRIX mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
-				OpenMesh(fileName, Flags, MATRIX((float*)&mat));
-#elif defined(OGL)
-				glm::mat4 mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
-				OpenMesh(fileName, Flags, MATRIX((float*)&mat));
-#endif
+
+				auto mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
+				OpenMesh(fileName, Flags, mat);
+
 				g_SelectingLoadMode = false;
 			}
 		}
 	}/**/
+
     //ImGui::ShowDemoWindow();
     ImGui::End();
 
     // render UI
     ImGui::Render();
+
 #if defined(DX11)
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 #elif defined(OGL)
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
+
 #endif
 }
 
@@ -551,17 +572,12 @@ void Update(float dt)
 {
     g_Test.Update(dt);
 
-    /*Update the mouse position*/
-#if defined(DX11)
-    LPPOINT p = new POINT;
-    GetCursorPos(p);
-    GraphicsModule::Mouse::setMousePos({ (float)p->x, -(float)p->y, 0 });
-    delete p;
-#endif
-
 
     /*Update the active camera*/
     g_Cameras[g_activeCamera].Update();
+
+	GraphicsModule::Vector dir = g_Cameras[g_activeCamera].GetFrontVector();
+	g_Test.SetViewLight(Vector4{dir.x(), dir.y(), dir.z(), 0.0f});
 
 
     /*Set the new view and projection matrices*/
@@ -571,7 +587,6 @@ void Update(float dt)
 
 void Render()
 {
-#if defined(DX11) || defined(OGL)
 	g_Test.Clear();
 
 	size_t countOBJs = g_ObjInstances.size();
@@ -583,7 +598,6 @@ void Render()
 	UIRender();
 
 	g_Test.Display();
-#endif
 }
 
 

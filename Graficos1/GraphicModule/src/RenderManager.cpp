@@ -440,7 +440,7 @@ void RenderManager::ShaderSetInt(const string name, int value)
 	m_shader.SetInt(name, value);
 }
 
-void RenderManager::ShaderSetFloat(const string name, int value)
+void RenderManager::ShaderSetFloat(const string name, float value)
 {
 	m_shader.SetFloat(name, value);
 }
