@@ -176,6 +176,9 @@ void Model::Draw(RenderManager* renderManager)
 		/*Set primitive topology*/
 		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
 
+		renderManager->ShaderSetFloat("mat1.diffuse", 0);
+
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_textures[0].getID());
 #endif
 

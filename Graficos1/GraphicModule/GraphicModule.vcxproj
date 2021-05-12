@@ -539,6 +539,7 @@
     <ClInclude Include="include\Descriptors.h" />
     <ClInclude Include="include\Device.h" />
     <ClInclude Include="include\DeviceContext.h" />
+    <ClInclude Include="include\Effect.h" />
     <ClInclude Include="include\GraphicModule.h" />
     <ClInclude Include="include\Input.h" />
     <ClInclude Include="include\InputLayout.h" />
@@ -546,6 +547,7 @@
     <ClInclude Include="include\Model.h" />
     <ClInclude Include="include\Mouse.h" />
     <ClInclude Include="include\OBJInstance.h" />
+    <ClInclude Include="include\Pass.h" />
     <ClInclude Include="include\PixelShader.h" />
     <ClInclude Include="include\RenderManager.h" />
     <ClInclude Include="include\RenderTargetView.h" />
@@ -553,6 +555,7 @@
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\ShaderResourceView.h" />
     <ClInclude Include="include\SwapChain.h" />
+    <ClInclude Include="include\Technique.h" />
     <ClInclude Include="include\test.h" />
     <ClInclude Include="include\Texture.h" />
     <ClInclude Include="include\Texture2D.h" />
@@ -566,12 +569,14 @@
     <ClCompile Include="src\DepthStencilView.cpp" />
     <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\DeviceContext.cpp" />
+    <ClCompile Include="src\Effect.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\InputLayout.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
     <ClCompile Include="src\OBJInstance.cpp" />
+    <ClCompile Include="src\Pass.cpp" />
     <ClCompile Include="src\PixelShader.cpp" />
     <ClCompile Include="src\RenderManager.cpp" />
     <ClCompile Include="src\RenderTargetView.cpp" />
@@ -579,6 +584,7 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\ShaderResourceView.cpp" />
     <ClCompile Include="src\SwapChain.cpp" />
+    <ClCompile Include="src\Technique.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />

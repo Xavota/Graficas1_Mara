@@ -319,6 +319,8 @@ string OpenFileGetName(HWND owner = NULL)
     return "";
 }
 
+void OpenMesh(string fileName, unsigned int Flags, MATRIX mat);
+
 HRESULT Init(unsigned int width, unsigned int height)
 {
 	g_Cameras.push_back(GraphicsModule::Camara({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
@@ -328,7 +330,9 @@ HRESULT Init(unsigned int width, unsigned int height)
 
 	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA);
     
-    return S_OK;
+    OpenMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
+	
+	return S_OK;
 }
 
 void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat)
@@ -393,33 +397,98 @@ void UIRender()
 
 	if (!g_SelectingLoadMode)
 	{
-		if (ImGui::Begin("Models", nullptr))
+		if (ImGui::Begin("Lights", nullptr))
 		{
 			static float ambient = .1;
-			static float specular = .1;
-			static float scatering = 32;
-			static float dir[3]{ 0.0f, -0.5f, 1.0f };
 			ImGui::Text("Ambient light:");
-			if (ImGui::DragFloat("Ambient", &ambient, 0.001f, 0.0f, 1.0f))
-			{
-				g_Test.SetAmbientLight(ambient);
-			}
-			ImGui::Text("Light Direction:");
-			if (ImGui::DragFloat3("Dir", dir, 0.001f, -1.0f, 1.0f))
-			{
+			ImGui::PushID("ambient");
+			ImGui::DragFloat("Intensity", &ambient, 0.001f, 0.0f, 1.0f);
+			ImGui::PopID();
+			g_Test.SetAmbientLight(ambient);
+
+			ImGui::Separator();
+
+			ImGui::Text("Directional Light");
+
+			ImGui::Separator();
+
+			ImGui::PushID("directional");
+			static float dir[3]{ 0.0f, 0.5f, -1.0f };
+			//ImGui::Text("Light Direction:");
+			ImGui::DragFloat3("Light Direction", dir, 0.001f, -1.0f, 1.0f);
 				g_Test.SetDirLight(Vector4{dir[0], dir[1], dir[2], 0});
-			}
-			ImGui::Text("Specular strenght:");
-			if (ImGui::DragFloat("Specular", &specular, 0.001f, 0.0f, 1.0f))
-			{
+
+			static float specular = .5;
+			//ImGui::Text("Specular strenght:");
+			ImGui::DragFloat("Specular strenght", &specular, 0.001f, 0.0f, 1.0f);
 				g_Test.SetSpecularStrength(specular);
-			}
-			ImGui::Text("Scatering:");
-			if (ImGui::DragFloat("Scatering", &scatering, 0.5f, 1.0f, 256.0f))
-			{
-				g_Test.SetLightScatering(scatering);
-			}
-		    ImGui::Separator();
+
+			static float scatering = 50;
+			//ImGui::Text("Scatering:");
+			ImGui::DragFloat("Scatering", &scatering, 0.5f, 1.0f, 256.0f);
+			g_Test.SetLightScatering(scatering);
+			ImGui::PopID();
+
+			ImGui::Separator();
+
+			ImGui::Text("Point Light");
+
+			ImGui::Separator();
+
+			ImGui::PushID("point");
+			static float pointPos[3]{ 0.0f, 0.0f, 10.0f };
+			//ImGui::Text("Point Light Pos:");
+			ImGui::DragFloat3("Light Position", pointPos, 0.5f, -20.0f, 20.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat4("pointLight.lightPos", pointPos[0], pointPos[1], pointPos[2], 0);
+
+			static float pointDiff = 1;
+			//ImGui::Text("Point Light Intensity:");
+			ImGui::DragFloat("Intensity", &pointDiff, 0.01f, 0.0f, 10.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat4("pointLight.diffuse", pointDiff, pointDiff, pointDiff, 1);
+
+			static float pointSpecular = .5;
+			//ImGui::Text("Point Light Specular:");
+			ImGui::DragFloat("Specular strength", &pointSpecular, 0.001f, 0.0f, 1.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat4("pointLight.specular", pointSpecular, pointSpecular, pointSpecular, 1);
+
+			static float pointBlurDist = 20;
+			//ImGui::Text("Point Light Blur Distance:");
+			ImGui::DragFloat("Blur Distance", &pointBlurDist, 0.5f, 1.0f, 256.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat("pointLight.blurDistance", pointBlurDist);
+			ImGui::PopID();
+
+			ImGui::Separator();
+
+			ImGui::Text("Spot Light");
+
+			ImGui::Separator();
+
+			ImGui::PushID("spot");
+			//static float spotDiff = 1;
+			static float spotDiff[3]{ 1.0f, 1.0f, 1.0f };
+			//ImGui::Text("Point Light Intensity:");
+			ImGui::DragFloat3("Intensity", spotDiff, 0.01f, 0.0f, 10.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat4("spotLight.diffuse", spotDiff[0], spotDiff[1], spotDiff[2], 1);
+
+			static float cutOff = 12.5;
+			//ImGui::Text("Point Light Intensity:");
+			ImGui::DragFloat("Cut Off", &cutOff, 1.0f, 10.0f, 80.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat("spotLight.cutOff", glm::cos(glm::radians(cutOff)));
+
+			static float outerCutOff = 17.5;
+			//ImGui::Text("Point Light Blur Distance:");
+			ImGui::DragFloat("Outer Cut Off", &outerCutOff, 1.0f, cutOff, 80.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat("spotLight.outerCutOff", glm::cos(glm::radians(outerCutOff / 2 + 45)));
+
+			static float spotBlurDist = 20;
+			//ImGui::Text("Point Light Blur Distance:");
+			ImGui::DragFloat("Blur Distance", &spotBlurDist, 0.5f, 1.0f, 256.0f);
+			g_Test.GetRenderManager()->ShaderSetFloat("spotLight.blurDistance", spotBlurDist);
+			ImGui::PopID();
+		}
+		ImGui::End();
+		if (ImGui::Begin("Models", nullptr))
+		{
 		    if (ImGui::Button("Open Mesh", ImVec2(100, 30)))
 			{
 				fileName = OpenFileGetName();
@@ -577,12 +646,20 @@ void Update(float dt)
     g_Cameras[g_activeCamera].Update();
 
 	GraphicsModule::Vector dir = g_Cameras[g_activeCamera].GetFrontVector();
-	g_Test.SetViewLight(Vector4{dir.x(), dir.y(), dir.z(), 0.0f});
+	GraphicsModule::Vector pos = g_Cameras[g_activeCamera].getEyePos();
+	g_Test.SetViewPos(Vector4{ pos.x(), pos.y(), pos.z(), 0.0f });
+	g_Test.SetViewDir(Vector4{ dir.x(), dir.y(), dir.z(), 0.0f });
 
 
     /*Set the new view and projection matrices*/
     g_Test.GetRenderManager()->UpdateViewMatrix(g_Cameras[g_activeCamera].getViewMatrix());
     g_Test.GetRenderManager()->UpdateProjectionMatrix(g_Cameras[g_activeCamera].getProjectionMatrix());
+
+	g_Test.GetRenderManager()->ShaderSetFloat("mat1.specular", 1);
+	g_Test.GetRenderManager()->ShaderSetFloat4("dirLight.diffuse", 1, 1, 1, 1);
+
+	g_Test.GetRenderManager()->ShaderSetFloat4("spotLight.lightPos", pos.x(), pos.y(), pos.z(), 1.0f);
+	g_Test.GetRenderManager()->ShaderSetFloat4("spotLight.lightDir", dir.x(), dir.y(), dir.z(), 1.0f);
 }
 
 void Render()

@@ -590,7 +590,7 @@ void RenderManager::UpdateLightDirection(Vector4 dir)
 	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
 	VSSetConstantBuffers(3, 1, m_DirLightBuffer);
 #elif defined(OGL)
-	m_shader.SetFloat4("lightDir", dir.x, dir.y, dir.z, dir.w);
+	m_shader.SetFloat4("dirLight.lightDir", dir.x, dir.y, dir.z, dir.w);
 #endif
 }
 
