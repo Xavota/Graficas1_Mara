@@ -399,92 +399,106 @@ void UIRender()
 	{
 		if (ImGui::Begin("Lights", nullptr))
 		{
-			static float ambient = .1;
+			/*Ambient light*/
 			ImGui::Text("Ambient light:");
-			ImGui::PushID("ambient");
-			ImGui::DragFloat("Intensity", &ambient, 0.001f, 0.0f, 1.0f);
-			ImGui::PopID();
-			g_Test.SetAmbientLight(ambient);
-
 			ImGui::Separator();
 
-			ImGui::Text("Directional Light");
+			ImGui::PushID("ambient");
 
+			static float ambient = .1;
+			ImGui::DragFloat("Intensity", &ambient, 0.001f, 0.0f, 1.0f);
+
+			ImGui::PopID();
+			ImGui::Separator();
+
+			/*Directional Light*/
+			ImGui::Text("Directional Light");
 			ImGui::Separator();
 
 			ImGui::PushID("directional");
+
 			static float dir[3]{ 0.0f, 0.5f, -1.0f };
-			//ImGui::Text("Light Direction:");
 			ImGui::DragFloat3("Light Direction", dir, 0.001f, -1.0f, 1.0f);
-				g_Test.SetDirLight(Vector4{dir[0], dir[1], dir[2], 0});
 
 			static float specular = .5;
-			//ImGui::Text("Specular strenght:");
 			ImGui::DragFloat("Specular strenght", &specular, 0.001f, 0.0f, 1.0f);
-				g_Test.SetSpecularStrength(specular);
 
 			static float scatering = 50;
-			//ImGui::Text("Scatering:");
 			ImGui::DragFloat("Scatering", &scatering, 0.5f, 1.0f, 256.0f);
 			g_Test.SetLightScatering(scatering);
-			ImGui::PopID();
 
+			ImGui::PopID();
 			ImGui::Separator();
 
-			ImGui::Text("Point Light");
+			DirectionalLight dirDesc;
+			dirDesc.lightDir = Vector4{ dir[0], dir[1], dir[2], 0 };
+			dirDesc.ambient = Vector4{ambient, ambient, ambient, 1};
+			dirDesc.diffuse = Vector4{1,1,1,1};
+			dirDesc.specular = Vector4{ specular, specular, specular, 1 };
 
+			g_Test.GetRenderManager()->UpdateDirectionalLight(dirDesc);
+
+			/*Point Light*/
+			ImGui::Text("Point Light");
 			ImGui::Separator();
 
 			ImGui::PushID("point");
+
 			static float pointPos[3]{ 0.0f, 0.0f, 10.0f };
-			//ImGui::Text("Point Light Pos:");
 			ImGui::DragFloat3("Light Position", pointPos, 0.5f, -20.0f, 20.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat4("pointLight.lightPos", pointPos[0], pointPos[1], pointPos[2], 0);
 
 			static float pointDiff = 1;
-			//ImGui::Text("Point Light Intensity:");
 			ImGui::DragFloat("Intensity", &pointDiff, 0.01f, 0.0f, 10.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat4("pointLight.diffuse", pointDiff, pointDiff, pointDiff, 1);
 
 			static float pointSpecular = .5;
-			//ImGui::Text("Point Light Specular:");
 			ImGui::DragFloat("Specular strength", &pointSpecular, 0.001f, 0.0f, 1.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat4("pointLight.specular", pointSpecular, pointSpecular, pointSpecular, 1);
 
 			static float pointBlurDist = 20;
-			//ImGui::Text("Point Light Blur Distance:");
 			ImGui::DragFloat("Blur Distance", &pointBlurDist, 0.5f, 1.0f, 256.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat("pointLight.blurDistance", pointBlurDist);
-			ImGui::PopID();
 
+			ImGui::PopID();
 			ImGui::Separator();
 
-			ImGui::Text("Spot Light");
+			PointLight pointDesc;
+			pointDesc.lightPos = Vector4{ pointPos[0], pointPos[1], pointPos[2], 0 };
+			pointDesc.diffuse = Vector4{ pointDiff, pointDiff, pointDiff, 1 };
+			pointDesc.specular = Vector4{ pointSpecular, pointSpecular, pointSpecular, 1 };
+			pointDesc.blurDistance = pointBlurDist;
 
+			g_Test.GetRenderManager()->UpdatePointLight(pointDesc);
+
+			/*Spot Light*/
+			ImGui::Text("Spot Light");
 			ImGui::Separator();
 
 			ImGui::PushID("spot");
-			//static float spotDiff = 1;
+
 			static float spotDiff[3]{ 1.0f, 1.0f, 1.0f };
-			//ImGui::Text("Point Light Intensity:");
 			ImGui::DragFloat3("Intensity", spotDiff, 0.01f, 0.0f, 10.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat4("spotLight.diffuse", spotDiff[0], spotDiff[1], spotDiff[2], 1);
 
-			static float cutOff = 12.5;
-			//ImGui::Text("Point Light Intensity:");
-			ImGui::DragFloat("Cut Off", &cutOff, 1.0f, 10.0f, 80.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat("spotLight.cutOff", glm::cos(glm::radians(cutOff)));
+			static float cutOff = 40;
+			static float outerCutOff = 45;
+			ImGui::DragFloat("Cut Off", &cutOff, 1.0f, 10.0f, outerCutOff);
 
-			static float outerCutOff = 17.5;
-			//ImGui::Text("Point Light Blur Distance:");
 			ImGui::DragFloat("Outer Cut Off", &outerCutOff, 1.0f, cutOff, 80.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat("spotLight.outerCutOff", glm::cos(glm::radians(outerCutOff / 2 + 45)));
 
-			static float spotBlurDist = 20;
-			//ImGui::Text("Point Light Blur Distance:");
+			static float spotBlurDist = 100;
 			ImGui::DragFloat("Blur Distance", &spotBlurDist, 0.5f, 1.0f, 256.0f);
-			g_Test.GetRenderManager()->ShaderSetFloat("spotLight.blurDistance", spotBlurDist);
+
 			ImGui::PopID();
+
+			SpotLight spotDesc;
+			GraphicsModule::Vector sportDir = g_Cameras[g_activeCamera].GetFrontVector();
+			GraphicsModule::Vector sportPos = g_Cameras[g_activeCamera].getEyePos();
+
+			spotDesc.lightPos = Vector4{ sportPos.x(), sportPos.y(), sportPos.z(), 1.0f };
+			spotDesc.lightDir = Vector4{ sportDir.x(), sportDir.y(), sportDir.z(), 1.0f };
+			spotDesc.cutOff = cutOff;
+			spotDesc.outerCutOff = outerCutOff;
+			spotDesc.diffuse = Vector4{ spotDiff[0], spotDiff[1], spotDiff[2], 1 };
+			spotDesc.blurDistance = spotBlurDist;
+
+			g_Test.GetRenderManager()->UpdateSpotLight(spotDesc);
 		}
 		ImGui::End();
 		if (ImGui::Begin("Models", nullptr))
@@ -647,19 +661,15 @@ void Update(float dt)
 
 	GraphicsModule::Vector dir = g_Cameras[g_activeCamera].GetFrontVector();
 	GraphicsModule::Vector pos = g_Cameras[g_activeCamera].getEyePos();
-	g_Test.SetViewPos(Vector4{ pos.x(), pos.y(), pos.z(), 0.0f });
-	g_Test.SetViewDir(Vector4{ dir.x(), dir.y(), dir.z(), 0.0f });
+	g_Test.SetViewPosAndDir(Vector4{ pos.x(), pos.y(), pos.z(), 0.0f }, Vector4{ dir.x(), dir.y(), dir.z(), 0.0f });
 
 
     /*Set the new view and projection matrices*/
     g_Test.GetRenderManager()->UpdateViewMatrix(g_Cameras[g_activeCamera].getViewMatrix());
     g_Test.GetRenderManager()->UpdateProjectionMatrix(g_Cameras[g_activeCamera].getProjectionMatrix());
 
-	g_Test.GetRenderManager()->ShaderSetFloat("mat1.specular", 1);
-	g_Test.GetRenderManager()->ShaderSetFloat4("dirLight.diffuse", 1, 1, 1, 1);
+	//g_Test.GetRenderManager()->ShaderSetFloat("mat1.specular", 1);
 
-	g_Test.GetRenderManager()->ShaderSetFloat4("spotLight.lightPos", pos.x(), pos.y(), pos.z(), 1.0f);
-	g_Test.GetRenderManager()->ShaderSetFloat4("spotLight.lightDir", dir.x(), dir.y(), dir.z(), 1.0f);
 }
 
 void Render()

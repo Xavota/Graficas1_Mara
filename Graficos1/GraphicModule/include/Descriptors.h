@@ -391,33 +391,6 @@ enum CREATE_DEVICE_FLAG
 	CREATE_DEVICE_BGRA_SUPPORT = 0x20
 };
 
-struct ModelMat
-{
-#if defined(DX11)
-	XMMATRIX model;
-#elif defined(OGL)
-	glm::mat4 model;
-#endif
-};
-
-struct ViewMat
-{
-#if defined(DX11)
-	XMMATRIX view;
-#elif defined(OGL)
-	glm::mat4 view;
-#endif
-};
-
-struct ProjectionMat
-{
-#if defined(DX11)
-	XMMATRIX projection;
-#elif defined(OGL)
-	glm::mat4 projection;
-#endif
-};
-
 struct Vector4
 {
 	float x;
@@ -459,7 +432,7 @@ struct MATRIX
 		float m[4][4];
 	};
 
-	MATRIX() 
+	MATRIX()
 	{
 		_11 = 1; _12 = 0; _13 = 0; _14 = 0;
 		_21 = 0; _22 = 1; _23 = 0; _24 = 0;
@@ -499,44 +472,72 @@ struct MATRIX
 
 };
 
-/*MATRIX MatrixRotationY
-(
-	float Angle
-)
-{
-	MATRIX M;
-
-	FLOAT fSinAngle = sinf(Angle);
-	FLOAT fCosAngle = cosf(Angle);
-
-	M.m[0][0] = fCosAngle;
-	M.m[0][1] = 0.0f;
-	M.m[0][2] = -fSinAngle;
-	M.m[0][3] = 0.0f;
-
-	M.m[1][0] = 0.0f;
-	M.m[1][1] = 1.0f;
-	M.m[1][2] = 0.0f;
-	M.m[1][3] = 0.0f;
-
-	M.m[2][0] = fSinAngle;
-	M.m[2][1] = 0.0f;
-	M.m[2][2] = fCosAngle;
-	M.m[2][3] = 0.0f;
-
-	M.m[3][0] = 0.0f;
-	M.m[3][1] = 0.0f;
-	M.m[3][2] = 0.0f;
-	M.m[3][3] = 1.0f;
-	return M;
-}*/
-
 struct Color
 {
 	float r;
 	float g;
 	float b;
 	float a;
+};
+
+struct DirectionalLight
+{
+	Vector4 lightDir;
+
+	Vector4 ambient;
+	Vector4 diffuse;
+	Vector4 specular;
+};
+
+struct PointLight
+{
+	Vector4 lightPos;
+
+	Vector4 diffuse;
+	Vector4 specular;
+
+	float blurDistance;
+};
+
+struct SpotLight
+{
+	Vector4 lightPos;
+	Vector4 lightDir;
+
+	float cutOff;
+	float outerCutOff;
+
+	Vector4 diffuse;
+	Vector4 specular;
+
+	float blurDistance;
+};
+
+struct ModelMat
+{
+#if defined(DX11)
+	XMMATRIX model;
+#elif defined(OGL)
+	glm::mat4 model;
+#endif
+};
+
+struct ViewMat
+{
+#if defined(DX11)
+	XMMATRIX view;
+#elif defined(OGL)
+	glm::mat4 view;
+#endif
+};
+
+struct ProjectionMat
+{
+#if defined(DX11)
+	XMMATRIX projection;
+#elif defined(OGL)
+	glm::mat4 projection;
+#endif
 };
 
 struct NeverChangesDesc

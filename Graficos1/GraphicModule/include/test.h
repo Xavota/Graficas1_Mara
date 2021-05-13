@@ -75,34 +75,19 @@ namespace GraphicsModule
 #endif
         inline RenderManager* GetRenderManager() { return g_RenderManager; }
 
-        inline void SetDirLight(Vector4 dir) 
+		inline void SetViewPosAndDir(Vector4 pos, Vector4 dir)
 		{
-			g_RenderManager->UpdateLightDirection(dir);
-		}
-
-		inline void SetViewPos(Vector4 pos)
-		{
+#if defined(OGL)
 			g_RenderManager->ShaderSetFloat4("viewPos", pos.x, pos.y, pos.z, pos.w);
-		}
-
-		inline void SetViewDir(Vector4 dir)
-		{
 			g_RenderManager->ShaderSetFloat4("viewDir2", dir.x, dir.y, dir.z, dir.w);
-		}
-
-		inline void SetAmbientLight(float ambient)
-		{
-			g_RenderManager->ShaderSetFloat4("dirLight.ambient", ambient, ambient, ambient, 1);
-		}
-
-		inline void SetSpecularStrength(float specularStrength)
-		{
-			g_RenderManager->ShaderSetFloat4("dirLight.specular", specularStrength, specularStrength, specularStrength, 1);
+#endif
 		}
 
 		inline void SetLightScatering(float scatering)
 		{
+#if defined(OGL)
 			g_RenderManager->ShaderSetFloat("mat1.shininess", scatering);
+#endif
 		}
 
     private:

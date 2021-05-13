@@ -143,7 +143,10 @@ public:
 	void UpdateViewMatrix(MATRIX view);
 	void UpdateProjectionMatrix(MATRIX projection);
 	void UpdateModelMatrix(MATRIX model);
-	void UpdateLightDirection(Vector4 dir);
+
+	void UpdateDirectionalLight(DirectionalLight dirDesc);
+	void UpdatePointLight(PointLight pointDesc);
+	void UpdateSpotLight(SpotLight spotDesc);
 
 #if defined(DX11)
 	Buffer& GetNeverChangesBuffer() { return m_pCBNeverChanges; }

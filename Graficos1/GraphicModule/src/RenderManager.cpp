@@ -582,15 +582,51 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 #endif   
 }
 
-void RenderManager::UpdateLightDirection(Vector4 dir)
+void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 {
 #if defined(DX11)
-	DirLight dirDesc;
+	/*DirLight dirDesc;
 	dirDesc.DIR = dir;
 	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
-	VSSetConstantBuffers(3, 1, m_DirLightBuffer);
+	VSSetConstantBuffers(3, 1, m_DirLightBuffer);*/
+	cout << "a" << endl;
 #elif defined(OGL)
-	m_shader.SetFloat4("dirLight.lightDir", dir.x, dir.y, dir.z, dir.w);
+	m_shader.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
+	m_shader.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
+	m_shader.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
+	m_shader.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);
+#endif
+}
+
+void RenderManager::UpdatePointLight(PointLight pointDesc)
+{
+#if defined(DX11)
+	/*DirLight dirDesc;
+	dirDesc.DIR = dir;
+	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
+	VSSetConstantBuffers(3, 1, m_DirLightBuffer);*/
+#elif defined(OGL)
+	m_shader.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
+	m_shader.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
+	m_shader.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
+	m_shader.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);
+#endif
+}
+
+void RenderManager::UpdateSpotLight(SpotLight spotDesc)
+{
+#if defined(DX11)
+	/*DirLight dirDesc;
+	dirDesc.DIR = dir;
+	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
+	VSSetConstantBuffers(3, 1, m_DirLightBuffer);*/
+#elif defined(OGL)
+	m_shader.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
+	m_shader.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
+	m_shader.SetFloat("spotLight.cutOff", glm::cos(glm::radians(spotDesc.cutOff)));
+	m_shader.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotDesc.outerCutOff)));
+	m_shader.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
+	m_shader.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);
 #endif
 }
 
