@@ -127,8 +127,28 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 
-		bd.ByteWidth = sizeof(DirLight);
-		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetLightDirectionBuffer());/**/
+		bd.ByteWidth = sizeof(Vector4);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetViewPositionBuffer());/**/
+		if (FAILED(hr))
+			return hr;
+
+		bd.ByteWidth = sizeof(Material);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetMaterialShininessBuffer());/**/
+		if (FAILED(hr))
+			return hr;
+
+		bd.ByteWidth = sizeof(DirectionalLight);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetDirectionalLightBuffer());/**/
+		if (FAILED(hr))
+			return hr;
+
+		bd.ByteWidth = sizeof(PointLight);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetPointLightBuffer());/**/
+		if (FAILED(hr))
+			return hr;
+
+		bd.ByteWidth = sizeof(SpotLight);
+		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetSpotLightBuffer());/**/
 		if (FAILED(hr))
 			return hr;
 

@@ -77,7 +77,10 @@ namespace GraphicsModule
 
 		inline void SetViewPosAndDir(Vector4 pos, Vector4 dir)
 		{
-#if defined(OGL)
+#if defined(DX11)
+			g_RenderManager->UpdateSubresource(g_RenderManager->GetViewPositionBuffer(), 0, NULL, &pos, 0, 0);
+			g_RenderManager->PSSetConstantBuffers(3, 1, g_RenderManager->GetViewPositionBuffer());
+#elif defined(OGL)
 			g_RenderManager->ShaderSetFloat4("viewPos", pos.x, pos.y, pos.z, pos.w);
 			g_RenderManager->ShaderSetFloat4("viewDir2", dir.x, dir.y, dir.z, dir.w);
 #endif
@@ -85,7 +88,12 @@ namespace GraphicsModule
 
 		inline void SetLightScatering(float scatering)
 		{
-#if defined(OGL)
+#if defined(DX11)
+			Material mat;
+			mat.shininess = scatering;
+			g_RenderManager->UpdateSubresource(g_RenderManager->GetMaterialShininessBuffer(), 0, NULL, &mat, 0, 0);
+			g_RenderManager->PSSetConstantBuffers(4, 1, g_RenderManager->GetMaterialShininessBuffer());
+#elif defined(OGL)
 			g_RenderManager->ShaderSetFloat("mat1.shininess", scatering);
 #endif
 		}

@@ -152,7 +152,15 @@ public:
 	Buffer& GetNeverChangesBuffer() { return m_pCBNeverChanges; }
 	Buffer& GetChangeOnResizeBuffer() { return m_pCBChangeOnResize; }
 	Buffer& GetChangesEveryFrameBuffer() { return m_pCBChangesEveryFrame; }
-	Buffer& GetLightDirectionBuffer() { return m_DirLightBuffer; }
+
+	Buffer& GetViewPositionBuffer() { return m_ViewPositionBuffer; }
+	Buffer& GetMaterialShininessBuffer() { 
+	return m_MaterialShininessBuffer; 
+	}
+
+	Buffer& GetDirectionalLightBuffer() { return m_DirectionalLightBuffer; }
+	Buffer& GetPointLightBuffer() { return m_PointLightBuffer; }
+	Buffer& GetSpotLightBuffer() { return m_SpotLightBuffer; }
 
 	VertexShader& GetVertexShader() { return m_vertexShader; }
 	PixelShader& GetPixelShader() { return m_pixelShader; }
@@ -191,7 +199,13 @@ public:
 	Buffer									m_pCBNeverChanges;
 	Buffer									m_pCBChangeOnResize;
 	Buffer									m_pCBChangesEveryFrame;
-	Buffer									m_DirLightBuffer;
+
+	Buffer									m_ViewPositionBuffer;
+	Buffer									m_MaterialShininessBuffer;
+
+	Buffer									m_DirectionalLightBuffer;
+	Buffer									m_PointLightBuffer;
+	Buffer									m_SpotLightBuffer;
 #endif
 };
 extern RenderManager* GetManager();

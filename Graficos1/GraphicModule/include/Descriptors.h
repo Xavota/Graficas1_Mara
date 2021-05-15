@@ -480,6 +480,19 @@ struct Color
 	float a;
 };
 
+struct Material
+{
+	float specular;
+	float shininess;
+	float unused1;
+	float unused2;
+};
+
+struct ViewPosition
+{
+	Vector4 pos;
+};
+
 struct DirectionalLight
 {
 	Vector4 lightDir;
@@ -497,6 +510,10 @@ struct PointLight
 	Vector4 specular;
 
 	float blurDistance;
+
+	float unused1;
+	float unused2;
+	float unused3;
 };
 
 struct SpotLight
@@ -504,13 +521,15 @@ struct SpotLight
 	Vector4 lightPos;
 	Vector4 lightDir;
 
-	float cutOff;
-	float outerCutOff;
-
 	Vector4 diffuse;
 	Vector4 specular;
 
+	float cutOff;
+	float outerCutOff;
+
 	float blurDistance;
+	
+	float unused1;
 };
 
 struct ModelMat
@@ -558,11 +577,6 @@ struct ChangesEveryFrameDesc
 {
 	MATRIX mWorld;
 	Color vMeshColor;
-};
-
-struct DirLight
-{
-	Vector4 DIR;
 };
 
 struct SAMPLE_DESC

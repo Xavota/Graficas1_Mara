@@ -585,11 +585,8 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 {
 #if defined(DX11)
-	/*DirLight dirDesc;
-	dirDesc.DIR = dir;
-	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
-	VSSetConstantBuffers(3, 1, m_DirLightBuffer);*/
-	cout << "a" << endl;
+	UpdateSubresource(m_DirectionalLightBuffer, 0, NULL, &dirDesc, 0, 0);
+	PSSetConstantBuffers(5, 1, m_DirectionalLightBuffer);
 #elif defined(OGL)
 	m_shader.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
 	m_shader.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
@@ -601,10 +598,8 @@ void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 void RenderManager::UpdatePointLight(PointLight pointDesc)
 {
 #if defined(DX11)
-	/*DirLight dirDesc;
-	dirDesc.DIR = dir;
-	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
-	VSSetConstantBuffers(3, 1, m_DirLightBuffer);*/
+	UpdateSubresource(m_PointLightBuffer, 0, NULL, &pointDesc, 0, 0);
+	PSSetConstantBuffers(6, 1, m_PointLightBuffer);
 #elif defined(OGL)
 	m_shader.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
 	m_shader.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
@@ -616,10 +611,10 @@ void RenderManager::UpdatePointLight(PointLight pointDesc)
 void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 {
 #if defined(DX11)
-	/*DirLight dirDesc;
-	dirDesc.DIR = dir;
-	UpdateSubresource(m_DirLightBuffer, 0, NULL, &dirDesc, 0, 0);
-	VSSetConstantBuffers(3, 1, m_DirLightBuffer);*/
+	spotDesc.cutOff = cos((spotDesc.cutOff) * 3.1415 / 180);
+	spotDesc.outerCutOff = cos((spotDesc.outerCutOff) * 3.1415 / 180);
+	UpdateSubresource(m_SpotLightBuffer, 0, NULL, &spotDesc, 0, 0);
+	PSSetConstantBuffers(7, 1, m_SpotLightBuffer);
 #elif defined(OGL)
 	m_shader.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
 	m_shader.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
@@ -644,7 +639,9 @@ void RenderManager::Release()
 	m_pCBNeverChanges.Release();
 	m_pCBChangeOnResize.Release();
 	m_pCBChangesEveryFrame.Release();
-	m_DirLightBuffer.Release();
+	m_DirectionalLightBuffer.Release();
+	m_PointLightBuffer.Release();
+	m_SpotLightBuffer.Release();
 
 	m_vertexShader.Release();
 	m_pixelShader.Release();
