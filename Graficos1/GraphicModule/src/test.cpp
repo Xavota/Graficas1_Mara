@@ -44,7 +44,7 @@ namespace GraphicsModule
 		};
 		UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
-		if (g_RenderManager->CreateDevices(width, height, driverTypes, numDriverTypes, createDeviceFlags, featureLevels, numFeatureLevels, &g_featureLevel))
+		if (FAILED(g_RenderManager->CreateDevices(width, height, driverTypes, numDriverTypes, createDeviceFlags, featureLevels, numFeatureLevels, &g_featureLevel)))
 			return E_FAIL;
 
 
@@ -100,10 +100,10 @@ namespace GraphicsModule
 
 
 		/*Compile vertex and pixel shaders*/
-		g_RenderManager->CompileShaders("Tutorial07.fx", "VS", "vs_4_0", "Tutorial07.fx", "PS", "ps_4_0");
+		//g_RenderManager->CompileShaders("Tutorial07.fx", "main", "vs_4_0", "Tutorial07.fx", "PS", "ps_4_0");
+		//g_RenderManager->CompileShaders("miVertex.fx", "main", "vs_4_0", "miPixel.fx", "main", "ps_4_0");
 
 
-		g_RenderManager->IASetInputLayout(g_RenderManager->GetInputLayout());
 
 
 		/*Create buffers that pass data to the shaders*/
@@ -172,8 +172,10 @@ namespace GraphicsModule
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
+	//g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 #endif
+
+	g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 		return S_OK;
 	}
 
@@ -196,6 +198,8 @@ namespace GraphicsModule
 	void test::Clear()
 	{
 #if defined(DX11)
+		g_RenderManager->IASetInputLayout(g_RenderManager->GetInputLayout());
+
 		g_RenderManager->VSSetShader(g_RenderManager->GetVertexShader(), NULL, 0);
 		g_RenderManager->PSSetShader(g_RenderManager->GetPixelShader(), NULL, 0);
 

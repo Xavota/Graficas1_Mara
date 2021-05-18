@@ -470,6 +470,16 @@ struct MATRIX
 		return vecR;
 	}
 
+	MATRIX TransposeMatrix()
+	{
+		MATRIX r;
+		r._11 = _11; r._21 = _12; r._31 = _13; r._41 = _14;
+		r._12 = _21; r._22 = _22; r._32 = _23; r._42 = _24;
+		r._13 = _31; r._23 = _32; r._33 = _33; r._43 = _34;
+		r._14 = _41; r._24 = _42; r._34 = _43; r._44 = _44;
+		return r;
+	}
+
 };
 
 struct Color
@@ -534,49 +544,17 @@ struct SpotLight
 
 struct ModelMat
 {
-#if defined(DX11)
-	XMMATRIX model;
-#elif defined(OGL)
-	glm::mat4 model;
-#endif
+	MATRIX model;
 };
 
 struct ViewMat
 {
-#if defined(DX11)
-	XMMATRIX view;
-#elif defined(OGL)
-	glm::mat4 view;
-#endif
+	MATRIX view;
 };
 
 struct ProjectionMat
 {
-#if defined(DX11)
-	XMMATRIX projection;
-#elif defined(OGL)
-	glm::mat4 projection;
-#endif
-};
-
-struct NeverChangesDesc
-{
-#if defined(DX11)
-	MATRIX mView;
-#endif
-};
-
-struct ChangeOnResizeDesc
-{
-#if defined(DX11)
-	MATRIX mProjection;
-#endif
-};
-
-struct ChangesEveryFrameDesc
-{
-	MATRIX mWorld;
-	Color vMeshColor;
+	MATRIX projection;
 };
 
 struct SAMPLE_DESC

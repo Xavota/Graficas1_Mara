@@ -52,6 +52,8 @@ public:
 	void SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4);
 
 	void SetMat4(const string name, glm::mat4 value);
+
+	void SetInputLayout(unsigned int VAO);
 #endif
 private:
 #if defined(DX11)

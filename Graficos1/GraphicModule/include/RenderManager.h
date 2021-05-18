@@ -106,12 +106,10 @@ public:
 						  const FEATURE_LEVEL* pFeatureLevels, unsigned int numFeatureLevels, FEATURE_LEVEL* pFeatureLevel);
 
 	HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+	HRESULT CompileShaderFromString(const char* source, unsigned int bytesCount, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 	HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, InputLayout& pInputLayout);
 
-	HRESULT CompileShaders(const char* vsFileName, LPCSTR vsEntryPoint, LPCSTR vsShaderModel, const char* psFileName, LPCSTR psEntryPoint, LPCSTR psShaderModel);
-
 #elif defined(OGL)
-	void CompileShaders(const char* vsFileName, const char* psFileName);
 
 	void ShaderSetBool(const string name, bool value);
 	void ShaderSetInt(const string name, int value);
@@ -137,6 +135,7 @@ public:
 
 	Shader& getShader() { return m_shader; }
 #endif
+	HRESULT CompileShaders(const char* vsFileName, const char* psFileName);
 
 	void setViewport(unsigned int width, unsigned int height);
 

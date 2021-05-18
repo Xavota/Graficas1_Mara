@@ -306,6 +306,34 @@ HRESULT RenderManager::CompileShaderFromFile(const char* szFileName, LPCSTR szEn
 	return S_OK;
 }
 
+HRESULT RenderManager::CompileShaderFromString(const char* source, unsigned int bytesCount, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+{
+	HRESULT hr = S_OK;
+
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if defined( DEBUG ) || defined( _DEBUG )
+	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows
+	// the shaders to be optimized and to run exactly the way they will run in
+	// the release configuration of this program.
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+
+	ID3DBlob* pErrorBlob;
+	hr = D3DCompile(source, bytesCount, nullptr, nullptr, nullptr,
+		szEntryPoint, szShaderModel, dwShaderFlags, 0, &ppBlobOut; pErrorBlob);
+	if (FAILED(hr))
+	{
+		if (pErrorBlob != NULL)
+			OutputDebugStringA((char*)pErrorBlob->GetBufferPointer());
+		if (pErrorBlob) pErrorBlob->Release();
+		return hr;
+	}
+	if (pErrorBlob) pErrorBlob->Release();
+
+	return S_OK;
+}
+
 HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, InputLayout& pInputLayout)
 {
 	// Reflect shader info
@@ -373,62 +401,7 @@ HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* 
 	return hr;
 }
 
-HRESULT RenderManager::CompileShaders(const char* vsFileName, LPCSTR vsEntryPoint, LPCSTR vsShaderModel, const char* psFileName, LPCSTR psEntryPoint, LPCSTR psShaderModel)
-{
-	HRESULT hr = S_OK;
-	// Compile the vertex shader
-	ID3DBlob* pVSBlob = NULL;
-	hr = CompileShaderFromFile(vsFileName, vsEntryPoint, vsShaderModel, &pVSBlob);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL,
-			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-		return hr;
-	}
-
-	// Create the vertex shader
-	hr = CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, m_vertexShader);
-	if (FAILED(hr))
-	{
-		pVSBlob->Release();
-		return hr;
-	}
-
-
-
-
-	// Compile the pixel shader
-	ID3DBlob* pPSBlob = NULL;
-	hr = CompileShaderFromFile(psFileName, psEntryPoint, psShaderModel, &pPSBlob);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL,
-			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-		return hr;
-	}
-
-	// Create the pixel shader
-	hr = CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, m_pixelShader);
-	pPSBlob->Release();
-	if (FAILED(hr))
-		return hr;
-
-
-
-
-	CreateInputLayoutDescFromVertexShaderSignature(pVSBlob, m_inputLayout);
-
-	pVSBlob->Release();
-	if (FAILED(hr))
-		return hr;
-	return S_OK;
-}
 #elif defined(OGL)
-
-void RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
-{
-	m_shader.Init(vsFileName, psFileName);
-}
 
 void RenderManager::ShaderSetBool(const string name, bool value)
 {
@@ -517,6 +490,65 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 
 #endif
 
+HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
+{
+#if defined(DX11)
+	HRESULT hr = S_OK;
+	// Compile the vertex shader
+	ID3DBlob* pVSBlob = NULL;
+	hr = CompileShaderFromFile(vsFileName, "main", "vs_4_0", &pVSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		return hr;
+	}
+
+	// Create the vertex shader
+	hr = CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, m_vertexShader);
+	if (FAILED(hr))
+	{
+		pVSBlob->Release();
+		return hr;
+	}
+
+
+
+
+	// Compile the pixel shader
+	ID3DBlob* pPSBlob = NULL;
+	hr = CompileShaderFromFile(psFileName, "main", "ps_4_0", &pPSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		return hr;
+	}
+
+	// Create the pixel shader
+	hr = CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, m_pixelShader);
+	pPSBlob->Release();
+	if (FAILED(hr))
+		return hr;
+
+
+
+
+	CreateInputLayoutDescFromVertexShaderSignature(pVSBlob, m_inputLayout);
+
+	pVSBlob->Release();
+	if (FAILED(hr))
+		return hr;
+
+#elif defined(OGL)
+
+	m_shader.Init(vsFileName, psFileName);
+
+#endif
+
+	return S_OK;
+}
+
 void RenderManager::setViewport(unsigned int width, unsigned int height)
 {
 #if defined(DX11)
@@ -536,9 +568,8 @@ void RenderManager::setViewport(unsigned int width, unsigned int height)
 void RenderManager::UpdateViewMatrix(MATRIX view)
 {
 #if defined(DX11)
-	XMMATRIX g_View = *reinterpret_cast<XMMATRIX*>(&view);
 	ViewMat cbNeverChanges;
-	cbNeverChanges.view = XMMatrixTranspose(g_View);
+	cbNeverChanges.view = view.TransposeMatrix();
 	UpdateSubresource(m_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
 	VSSetConstantBuffers(0, 1, m_pCBNeverChanges);
 #elif defined(OGL)
@@ -552,9 +583,8 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 {
 #if defined(DX11)
-	XMMATRIX g_Projection = *reinterpret_cast<XMMATRIX*>(&projection);
 	ProjectionMat cbChangesOnResize;
-	cbChangesOnResize.projection = XMMatrixTranspose(g_Projection);
+	cbChangesOnResize.projection = projection.TransposeMatrix();
 	UpdateSubresource(m_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
 	VSSetConstantBuffers(1, 1, m_pCBChangeOnResize);
 #elif defined(OGL)
@@ -568,12 +598,10 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 void RenderManager::UpdateModelMatrix(MATRIX model)
 {
 #if defined(DX11)
-	XMMATRIX g_Model = *reinterpret_cast<XMMATRIX*>(&model);
 	ModelMat modl;
-	modl.model = g_Model;
+	modl.model = model;
 	UpdateSubresource(m_pCBChangesEveryFrame, 0, NULL, &modl, 0, 0);
 	VSSetConstantBuffers(2, 1, m_pCBChangesEveryFrame);
-	PSSetConstantBuffers(2, 1, m_pCBChangesEveryFrame);
 #elif defined(OGL)
 	m_shader.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
 										model._21, model._22, model._23, model._24,
@@ -611,8 +639,8 @@ void RenderManager::UpdatePointLight(PointLight pointDesc)
 void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 {
 #if defined(DX11)
-	spotDesc.cutOff = cos((spotDesc.cutOff) * 3.1415 / 180);
-	spotDesc.outerCutOff = cos((spotDesc.outerCutOff) * 3.1415 / 180);
+	spotDesc.cutOff = cos((spotDesc.cutOff * 2) * 3.1415 / 180 - 45);
+	spotDesc.outerCutOff = cos((spotDesc.outerCutOff * 2) * 3.1415 / 180 - 45);
 	UpdateSubresource(m_SpotLightBuffer, 0, NULL, &spotDesc, 0, 0);
 	PSSetConstantBuffers(7, 1, m_SpotLightBuffer);
 #elif defined(OGL)

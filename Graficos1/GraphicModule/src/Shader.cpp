@@ -217,5 +217,9 @@ void Shader::SetMat4(const string name, glm::mat4 value)
 	glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 	//Unuse();
 }
+void Shader::SetInputLayout(unsigned int VAO)
+{
+	glBindVertexArray(VAO);
+}
 #endif
 }
