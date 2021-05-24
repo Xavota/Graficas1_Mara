@@ -476,6 +476,9 @@ void UIRender()
 			static float spotDiff[3]{ 1.0f, 1.0f, 1.0f };
 			ImGui::DragFloat3("Intensity", spotDiff, 0.01f, 0.0f, 10.0f);
 
+			static float spotSpecular = .5;
+			ImGui::DragFloat("Specular strength", &spotSpecular, 0.001f, 0.0f, 1.0f);
+
 			static float cutOff = 40;
 			static float outerCutOff = 45;
 			ImGui::DragFloat("Cut Off", &cutOff, 1.0f, 10.0f, outerCutOff);
@@ -496,6 +499,7 @@ void UIRender()
 			spotDesc.cutOff = cutOff;
 			spotDesc.outerCutOff = outerCutOff;
 			spotDesc.diffuse = Vector4{ spotDiff[0], spotDiff[1], spotDiff[2], 1 };
+			spotDesc.specular = Vector4{ spotSpecular , spotSpecular , spotSpecular , 1};
 			spotDesc.blurDistance = spotBlurDist;
 
 			g_Test.GetRenderManager()->UpdateSpotLight(spotDesc);

@@ -3,6 +3,8 @@
 #include <string>
 #include "Pass.h"
 
+namespace GraphicsModule
+{
 class Technique
 {
 public:
@@ -15,4 +17,4 @@ private:
 	std::vector<Pass> m_passes;
 	
 };
-
+}

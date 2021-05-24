@@ -109,6 +109,8 @@ public:
 	HRESULT CompileShaderFromString(const char* source, unsigned int bytesCount, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 	HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, InputLayout& pInputLayout);
 
+	void SetBuffer(int slot, Buffer buff, void* data);
+
 #elif defined(OGL)
 
 	void ShaderSetBool(const string name, bool value);
@@ -133,8 +135,9 @@ public:
 
 	void ShaderSetMat4(const string name, glm::mat4 value);
 
-	Shader& getShader() { return m_shader; }
 #endif
+	Shader& getShader() { return m_shader; }
+
 	HRESULT CompileShaders(const char* vsFileName, const char* psFileName);
 
 	void setViewport(unsigned int width, unsigned int height);
@@ -160,10 +163,6 @@ public:
 	Buffer& GetDirectionalLightBuffer() { return m_DirectionalLightBuffer; }
 	Buffer& GetPointLightBuffer() { return m_PointLightBuffer; }
 	Buffer& GetSpotLightBuffer() { return m_SpotLightBuffer; }
-
-	VertexShader& GetVertexShader() { return m_vertexShader; }
-	PixelShader& GetPixelShader() { return m_pixelShader; }
-	InputLayout& GetInputLayout() { return m_inputLayout; }
 #endif
 #if !defined(OGL)
 	HWND& GetWindow() { return m_hwnd; }
@@ -181,10 +180,6 @@ private:
 	Device									m_device;
 	DeviceContext							m_deviceContext;
 	SwapChain								m_swapChain;
-
-	VertexShader							m_vertexShader;
-	PixelShader								m_pixelShader;
-	InputLayout								m_inputLayout;
 #endif
 #if !defined(OGL)
 	HWND m_hwnd;

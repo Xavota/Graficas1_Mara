@@ -321,7 +321,7 @@ HRESULT RenderManager::CompileShaderFromString(const char* source, unsigned int 
 
 	ID3DBlob* pErrorBlob;
 	hr = D3DCompile(source, bytesCount, nullptr, nullptr, nullptr,
-		szEntryPoint, szShaderModel, dwShaderFlags, 0, &ppBlobOut; pErrorBlob);
+		szEntryPoint, szShaderModel, dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
 	if (FAILED(hr))
 	{
 		if (pErrorBlob != NULL)
@@ -399,6 +399,11 @@ HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* 
 	//Free allocation shader reflection memory
 	pVertexShaderReflection->Release();
 	return hr;
+}
+
+void RenderManager::SetBuffer(int slot, Buffer buff, void* data)
+{
+	m_shader.SetBuffer(slot, buff, data);
 }
 
 #elif defined(OGL)
@@ -492,59 +497,7 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 
 HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
 {
-#if defined(DX11)
-	HRESULT hr = S_OK;
-	// Compile the vertex shader
-	ID3DBlob* pVSBlob = NULL;
-	hr = CompileShaderFromFile(vsFileName, "main", "vs_4_0", &pVSBlob);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL,
-			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-		return hr;
-	}
-
-	// Create the vertex shader
-	hr = CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, m_vertexShader);
-	if (FAILED(hr))
-	{
-		pVSBlob->Release();
-		return hr;
-	}
-
-
-
-
-	// Compile the pixel shader
-	ID3DBlob* pPSBlob = NULL;
-	hr = CompileShaderFromFile(psFileName, "main", "ps_4_0", &pPSBlob);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL,
-			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-		return hr;
-	}
-
-	// Create the pixel shader
-	hr = CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, m_pixelShader);
-	pPSBlob->Release();
-	if (FAILED(hr))
-		return hr;
-
-
-
-
-	CreateInputLayoutDescFromVertexShaderSignature(pVSBlob, m_inputLayout);
-
-	pVSBlob->Release();
-	if (FAILED(hr))
-		return hr;
-
-#elif defined(OGL)
-
 	m_shader.Init(vsFileName, psFileName);
-
-#endif
 
 	return S_OK;
 }
@@ -570,8 +523,7 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 #if defined(DX11)
 	ViewMat cbNeverChanges;
 	cbNeverChanges.view = view.TransposeMatrix();
-	UpdateSubresource(m_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
-	VSSetConstantBuffers(0, 1, m_pCBNeverChanges);
+	GraphicsModule::GetManager()->getShader().SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
 #elif defined(OGL)
 	m_shader.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14, 
 											 view._21, view._22, view._23, view._24, 
@@ -585,8 +537,7 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 #if defined(DX11)
 	ProjectionMat cbChangesOnResize;
 	cbChangesOnResize.projection = projection.TransposeMatrix();
-	UpdateSubresource(m_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
-	VSSetConstantBuffers(1, 1, m_pCBChangeOnResize);
+	GraphicsModule::GetManager()->getShader().SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
 #elif defined(OGL)
 	m_shader.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14, 
 											 projection._21, projection._22, projection._23, projection._24, 
@@ -600,8 +551,7 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 #if defined(DX11)
 	ModelMat modl;
 	modl.model = model;
-	UpdateSubresource(m_pCBChangesEveryFrame, 0, NULL, &modl, 0, 0);
-	VSSetConstantBuffers(2, 1, m_pCBChangesEveryFrame);
+	GraphicsModule::GetManager()->getShader().SetBuffer(2, m_pCBChangesEveryFrame, &model);
 #elif defined(OGL)
 	m_shader.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
 										model._21, model._22, model._23, model._24,
@@ -613,8 +563,7 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 {
 #if defined(DX11)
-	UpdateSubresource(m_DirectionalLightBuffer, 0, NULL, &dirDesc, 0, 0);
-	PSSetConstantBuffers(5, 1, m_DirectionalLightBuffer);
+	GraphicsModule::GetManager()->getShader().SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
 #elif defined(OGL)
 	m_shader.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
 	m_shader.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
@@ -626,8 +575,7 @@ void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 void RenderManager::UpdatePointLight(PointLight pointDesc)
 {
 #if defined(DX11)
-	UpdateSubresource(m_PointLightBuffer, 0, NULL, &pointDesc, 0, 0);
-	PSSetConstantBuffers(6, 1, m_PointLightBuffer);
+	GraphicsModule::GetManager()->getShader().SetBuffer(6, m_PointLightBuffer, &pointDesc);
 #elif defined(OGL)
 	m_shader.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
 	m_shader.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
@@ -641,8 +589,7 @@ void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 #if defined(DX11)
 	spotDesc.cutOff = cos((spotDesc.cutOff * 2) * 3.1415 / 180 - 45);
 	spotDesc.outerCutOff = cos((spotDesc.outerCutOff * 2) * 3.1415 / 180 - 45);
-	UpdateSubresource(m_SpotLightBuffer, 0, NULL, &spotDesc, 0, 0);
-	PSSetConstantBuffers(7, 1, m_SpotLightBuffer);
+	GraphicsModule::GetManager()->getShader().SetBuffer(7, m_SpotLightBuffer, &spotDesc);
 #elif defined(OGL)
 	m_shader.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
 	m_shader.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
@@ -670,10 +617,6 @@ void RenderManager::Release()
 	m_DirectionalLightBuffer.Release();
 	m_PointLightBuffer.Release();
 	m_SpotLightBuffer.Release();
-
-	m_vertexShader.Release();
-	m_pixelShader.Release();
-	m_inputLayout.Release();
 #endif           
 }
 

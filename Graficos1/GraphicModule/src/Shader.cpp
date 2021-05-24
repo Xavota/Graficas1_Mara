@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "RenderManager.h"
 
 namespace GraphicsModule
 {
@@ -14,9 +15,70 @@ Shader::~Shader()
 {
 }
 
+void Shader::Use()
+{
+#if defined(DX11)
+	GraphicsModule::GetManager()->IASetInputLayout(m_inputLayout);
+
+	GraphicsModule::GetManager()->VSSetShader(m_vertex, NULL, 0);
+	GraphicsModule::GetManager()->PSSetShader(m_pixel, NULL, 0);
+#elif defined(OGL)
+	//glBindVertexArray(m_inputLayout);
+	glUseProgram(m_ID);
+#endif
+}
+
 void Shader::Init(const char* vertexShaderPath, const char* pixelShaderPath)
 {
-#if defined(OGL)
+#if defined(DX11)
+	HRESULT hr = S_OK;
+	// Compile the vertex shader
+	ID3DBlob* pVSBlob = NULL;
+	hr = GraphicsModule::GetManager()->CompileShaderFromFile(vertexShaderPath, "main", "vs_4_0", &pVSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		return;
+	}
+
+	// Create the vertex shader
+	hr = GraphicsModule::GetManager()->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, m_vertex);
+	if (FAILED(hr))
+	{
+		pVSBlob->Release();
+		return;
+	}
+
+
+
+
+	// Compile the pixel shader
+	ID3DBlob* pPSBlob = NULL;
+	hr = GraphicsModule::GetManager()->CompileShaderFromFile(pixelShaderPath, "main", "ps_4_0", &pPSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		return;
+	}
+
+	// Create the pixel shader
+	hr = GraphicsModule::GetManager()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, m_pixel);
+	pPSBlob->Release();
+	if (FAILED(hr))
+		return;
+
+
+
+
+	GraphicsModule::GetManager()->CreateInputLayoutDescFromVertexShaderSignature(pVSBlob, m_inputLayout);
+
+	pVSBlob->Release();
+	if (FAILED(hr))
+		return;
+
+#elif defined(OGL)
 	ifstream vShaderFile;
 	ifstream pShaderFile;
 	stringstream ssVertex;
@@ -82,17 +144,17 @@ void Shader::Init(const char* vertexShaderPath, const char* pixelShaderPath)
 #endif
 }
 
+
+
 #if defined(DX11)
-void Shader::SetBuffer(int slot, Buffer data)
+void Shader::SetBuffer(int slot, Buffer buff, void* data)
 {
-	
+	GraphicsModule::GetManager()->UpdateSubresource(buff, 0, NULL, data, 0, 0);
+	GraphicsModule::GetManager()->VSSetConstantBuffers(slot, 1, buff);
+	GraphicsModule::GetManager()->PSSetConstantBuffers(slot, 1, buff);
 }
 
 #elif defined(OGL)
-void Shader::Use()
-{
-	glUseProgram(m_ID);
-}
 
 void Shader::Unuse()
 {
@@ -219,7 +281,7 @@ void Shader::SetMat4(const string name, glm::mat4 value)
 }
 void Shader::SetInputLayout(unsigned int VAO)
 {
-	glBindVertexArray(VAO);
+	m_inputLayout = VAO;
 }
 #endif
 }

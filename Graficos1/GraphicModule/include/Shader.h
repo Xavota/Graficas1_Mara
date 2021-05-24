@@ -5,6 +5,7 @@
 #include "Buffer.h"
 #include "VertexShader.h"
 #include "PixelShader.h"
+#include "InputLayout.h"
 #elif defined(OGL)
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
@@ -26,10 +27,13 @@ public:
 
 	void Init(const char* vertexShaderPath, const char* pixelShaderPath);
 
-#if defined(DX11)
-	void SetBuffer(int slot, Buffer data);
-#elif defined(OGL)
 	void Use();
+
+#if defined(DX11)
+	void SetBuffer(int slot, Buffer buff, void* data);
+
+	
+#elif defined(OGL)
 	void Unuse();
 	void SetBool(const string name, bool value);
 	void SetInt(const string name, int value);
@@ -59,8 +63,10 @@ private:
 #if defined(DX11)
 	VertexShader m_vertex;
 	PixelShader m_pixel;
+	InputLayout m_inputLayout;
 #elif defined(OGL)
 	unsigned int m_ID = 0;
+	unsigned int m_inputLayout = 0;
 #endif
 };
 }

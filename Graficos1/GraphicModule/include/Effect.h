@@ -1,6 +1,9 @@
 #pragma once
 #include "Technique.h"
 #include <vector>
+
+namespace GraphicsModule
+{
 class Effect
 {
 public:
@@ -9,4 +12,4 @@ public:
 private:
 	std::vector<Technique> m_technics;
 };
-
+}

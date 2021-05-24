@@ -197,18 +197,10 @@ namespace GraphicsModule
 
 	void test::Clear()
 	{
-#if defined(DX11)
-		g_RenderManager->IASetInputLayout(g_RenderManager->GetInputLayout());
-
-		g_RenderManager->VSSetShader(g_RenderManager->GetVertexShader(), NULL, 0);
-		g_RenderManager->PSSetShader(g_RenderManager->GetPixelShader(), NULL, 0);
-
-		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView, g_pDepthStencilView, g_ClearColor);
-
-#elif defined(OGL)
 		g_RenderManager->getShader().Use();
-
-		/*Clear screen*/
+#if defined(DX11)
+		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView, g_pDepthStencilView, g_ClearColor);
+#elif defined(OGL)
 		glClearColor(g_ClearColor[0] * g_ClearColor[3], g_ClearColor[1] * g_ClearColor[3], g_ClearColor[2] * g_ClearColor[3], g_ClearColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
