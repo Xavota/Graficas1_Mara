@@ -30,6 +30,7 @@ using std::string;
 #endif
 
 #include "Shader.h"
+#include "Effect.h"
 
 
 namespace GraphicsModule
@@ -136,7 +137,8 @@ public:
 	void ShaderSetMat4(const string name, glm::mat4 value);
 
 #endif
-	Shader& getShader() { return m_shader; }
+	//Shader& getShader() { return m_shader; }
+	Effect& getShader() { return m_effect; }
 
 	HRESULT CompileShaders(const char* vsFileName, const char* psFileName);
 
@@ -188,6 +190,8 @@ private:
 #endif
 
 	Shader m_shader;
+	Effect m_effect;
+
 public:
 #if defined(DX11)
 	Buffer									m_pCBNeverChanges;

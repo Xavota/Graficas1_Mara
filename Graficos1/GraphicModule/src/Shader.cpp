@@ -6,29 +6,12 @@
 
 namespace GraphicsModule
 {
-Shader::Shader(const char* vertexShaderPath, const char* pixelShaderPath)
-{
-	Init(vertexShaderPath, pixelShaderPath);
-}
 
 Shader::~Shader()
 {
 }
 
-void Shader::Use()
-{
-#if defined(DX11)
-	GraphicsModule::GetManager()->IASetInputLayout(m_inputLayout);
-
-	GraphicsModule::GetManager()->VSSetShader(m_vertex, NULL, 0);
-	GraphicsModule::GetManager()->PSSetShader(m_pixel, NULL, 0);
-#elif defined(OGL)
-	//glBindVertexArray(m_inputLayout);
-	glUseProgram(m_ID);
-#endif
-}
-
-void Shader::Init(const char* vertexShaderPath, const char* pixelShaderPath)
+void Shader::CompileFromFile(const char* vertexShaderPath, const char* pixelShaderPath)
 {
 #if defined(DX11)
 	HRESULT hr = S_OK;
@@ -144,7 +127,168 @@ void Shader::Init(const char* vertexShaderPath, const char* pixelShaderPath)
 #endif
 }
 
+void Shader::CompileFromString(const char* vertexShaderString, const char* pixelShaderString)
+{
+#if defined(DX11)
+	HRESULT hr = S_OK;
+	// Compile the vertex shader
+	ID3DBlob* pVSBlob = NULL; 
+	ID3DBlob* pVSErrorBlob = NULL;
 
+	hr = D3DCompile(
+		vertexShaderString,
+		strlen(vertexShaderString),
+		nullptr,
+		nullptr,
+		nullptr,
+		"main", "vs_4_0",
+		D3DCOMPILE_ENABLE_STRICTNESS, 0,
+		&pVSBlob,
+		&pVSErrorBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+
+		if (pVSErrorBlob != NULL)
+			OutputDebugStringA((char*)pVSErrorBlob->GetBufferPointer());
+		if (pVSErrorBlob) pVSErrorBlob->Release();
+		return;
+	}
+
+	// Create the vertex shader
+	hr = GraphicsModule::GetManager()->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, m_vertex);
+
+	if (pVSErrorBlob) pVSErrorBlob->Release();
+
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+
+
+	// Compile the pixel shader
+	ID3DBlob* pPSBlob = NULL;
+	ID3DBlob* pPSErrorBlob = NULL;
+	hr = D3DCompile(
+		pixelShaderString,
+		strlen(pixelShaderString),
+		nullptr,
+		nullptr,
+		nullptr,
+		"main", "ps_4_0",
+		D3DCOMPILE_ENABLE_STRICTNESS, 0,
+		&pPSBlob,
+		&pPSErrorBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		
+		if (pPSErrorBlob != NULL)
+			OutputDebugStringA((char*)pPSErrorBlob->GetBufferPointer());
+		if (pPSErrorBlob) pPSErrorBlob->Release();
+		return;
+	}
+
+	// Create the pixel shader
+	hr = GraphicsModule::GetManager()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, m_pixel);
+
+	if (pPSErrorBlob) pPSErrorBlob->Release();
+
+	if (FAILED(hr))
+		return;
+
+
+
+
+	GraphicsModule::GetManager()->CreateInputLayoutDescFromVertexShaderSignature(pVSBlob, m_inputLayout);
+
+	if (pVSBlob) pVSBlob->Release();
+	if (pPSBlob) pPSBlob->Release();
+
+	if (FAILED(hr))
+		return;
+
+#elif defined(OGL)
+	ifstream vShaderFile;
+	ifstream pShaderFile;
+	stringstream ssVertex;
+	stringstream ssPixel;
+
+	vShaderFile.open(vertexShaderPath);
+	pShaderFile.open(pixelShaderPath);
+
+	ssVertex << vShaderFile.rdbuf();
+	ssPixel << pShaderFile.rdbuf();
+
+	vShaderFile.close();
+	pShaderFile.close();
+
+	string sv = ssVertex.str();
+	string sp = ssPixel.str();
+
+	const char* vShaderCode = sv.c_str();
+	const char* pShaderCode = sp.c_str();
+
+	unsigned int vertex, pixel;
+	int success;
+	char infoLog[512];
+
+	// vertex Shader
+	vertex = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex, 1, &vShaderCode, NULL);
+	glCompileShader(vertex);
+	// print compile errors if any
+	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	};
+
+	pixel = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(pixel, 1, &pShaderCode, NULL);
+	glCompileShader(pixel);
+	// print compile errors if any
+	glGetShaderiv(pixel, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(pixel, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PIXEL::COMPILATION_FAILED\n" << infoLog << std::endl;
+	};
+
+	m_ID = glCreateProgram();
+	glAttachShader(m_ID, vertex);
+	glAttachShader(m_ID, pixel);
+	glLinkProgram(m_ID);
+	// print linking errors if any
+	glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
+
+	// delete the shaders as they're linked into our program now and no longer necessary
+	glDeleteShader(vertex);
+	glDeleteShader(pixel);
+#endif
+}
+
+void Shader::Use()
+{
+#if defined(DX11)
+	GraphicsModule::GetManager()->IASetInputLayout(m_inputLayout);
+
+	GraphicsModule::GetManager()->VSSetShader(m_vertex, NULL, 0);
+	GraphicsModule::GetManager()->PSSetShader(m_pixel, NULL, 0);
+#elif defined(OGL)
+	//glBindVertexArray(m_inputLayout);
+	glUseProgram(m_ID);
+#endif
+}
 
 #if defined(DX11)
 void Shader::SetBuffer(int slot, Buffer buff, void* data)

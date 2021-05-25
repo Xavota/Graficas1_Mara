@@ -22,10 +22,10 @@ class Shader
 {
 public:
 	Shader() = default;
-	Shader(const char* vertexShaderPath, const char* pixelShaderPath);
 	~Shader();
 
-	void Init(const char* vertexShaderPath, const char* pixelShaderPath);
+	void CompileFromFile(const char* vertexShaderPath, const char* pixelShaderPath);
+	void CompileFromString(const char* vertexShaderString, const char* pixelShaderString);
 
 	void Use();
 

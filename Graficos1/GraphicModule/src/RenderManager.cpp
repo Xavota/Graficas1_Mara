@@ -1,6 +1,8 @@
 #include "RenderManager.h"
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Device*/
@@ -403,7 +405,8 @@ HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* 
 
 void RenderManager::SetBuffer(int slot, Buffer buff, void* data)
 {
-	m_shader.SetBuffer(slot, buff, data);
+	//m_shader.SetBuffer(slot, buff, data);
+	m_effect.SetBuffer(slot, buff, data);
 }
 
 #elif defined(OGL)
@@ -497,8 +500,9 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 
 HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
 {
-	m_shader.Init(vsFileName, psFileName);
-
+	m_effect.CompileShader(vsFileName, psFileName);
+	m_effect.SetShaderFlags(eNORMAL_TECHNIQUES::PIXEL_SHADER, eSPECULAR_TECHNIQUES::BLINN_PHONG, 0);
+	//m_shader.CompileFromFile(vsFileName, psFileName);
 	return S_OK;
 }
 

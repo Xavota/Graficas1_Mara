@@ -175,7 +175,7 @@ namespace GraphicsModule
 	//g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 #endif
 
-	g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
+		g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 		return S_OK;
 	}
 
