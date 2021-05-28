@@ -103,60 +103,136 @@ namespace GraphicsModule
 #elif defined(OGL)
 	void Effect::Unuse()
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.Unuse();
+		}
 	}
 	void Effect::SetBool(const string name, bool value)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetBool(name, value);
+		}
 	}
 	void Effect::SetInt(const string name, int value)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetInt(name, value);
+		}
 	}
 	void Effect::SetFloat(const string name, float value)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetFloat(name, value);
+		}
 	}
 	void Effect::SetUint(const string name, unsigned int value)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetUint(name, value);
+		}
 	}
 	void Effect::SetBool2(const string name, bool value1, bool value2)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetBool2(name, value1, value2);
+		}
 	}
 	void Effect::SetInt2(const string name, int value1, int value2)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetInt2(name, value1, value2);
+		}
 	}
 	void Effect::SetFloat2(const string name, float value1, float value2)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetFloat2(name, value1, value2);
+		}
 	}
 	void Effect::SetUint2(const string name, unsigned int value1, unsigned int value2)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetUint2(name, value1, value2);
+		}
 	}
 	void Effect::SetBool3(const string name, bool value1, bool value2, bool value3)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetBool3(name, value1, value2, value3);
+		}
 	}
 	void Effect::SetInt3(const string name, int value1, int value2, int value3)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetInt3(name, value1, value2, value3);
+		}
 	}
 	void Effect::SetFloat3(const string name, float value1, float value2, float value3)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetFloat3(name, value1, value2, value3);
+		}
 	}
 	void Effect::SetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetUint3(name, value1, value2, value3);
+		}
 	}
 	void Effect::SetBool4(const string name, bool value1, bool value2, bool value3, bool value4)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetBool4(name, value1, value2, value3, value4);
+		}
 	}
 	void Effect::SetInt4(const string name, int value1, int value2, int value3, int value4)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetInt4(name, value1, value2, value3, value4);
+		}
 	}
 	void Effect::SetFloat4(const string name, float value1, float value2, float value3, float value4)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetFloat4(name, value1, value2, value3, value4);
+		}
 	}
 	void Effect::SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetUint4(name, value1, value2, value3, value4);
+		}
 	}
 	void Effect::SetMat4(const string name, glm::mat4 value)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetMat4(name, value);
+		}
 	}
 	void Effect::SetInputLayout(unsigned int VAO)
 	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetInputLayout(VAO);
+		}
 	}
 #endif
 }

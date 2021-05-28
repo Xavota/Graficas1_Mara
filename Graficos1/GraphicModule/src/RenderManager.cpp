@@ -413,87 +413,87 @@ void RenderManager::SetBuffer(int slot, Buffer buff, void* data)
 
 void RenderManager::ShaderSetBool(const string name, bool value)
 {
-	m_shader.SetBool(name, value);
+	m_effect.SetBool(name, value);
 }
 
 void RenderManager::ShaderSetInt(const string name, int value)
 {
-	m_shader.SetInt(name, value);
+	m_effect.SetInt(name, value);
 }
 
 void RenderManager::ShaderSetFloat(const string name, float value)
 {
-	m_shader.SetFloat(name, value);
+	m_effect.SetFloat(name, value);
 }
 
 void RenderManager::ShaderSetUint(const string name, unsigned int value)
 {
-	m_shader.SetUint(name, value);
+	m_effect.SetUint(name, value);
 }
 
 void RenderManager::ShaderSetBool2(const string name, bool value1, bool value2)
 {
-	m_shader.SetBool2(name, value1, value2);
+	m_effect.SetBool2(name, value1, value2);
 }
 
 void RenderManager::ShaderSetInt2(const string name, int value1, int value2)
 {
-	m_shader.SetInt2(name, value1, value2);
+	m_effect.SetInt2(name, value1, value2);
 }
 
 void RenderManager::ShaderSetFloat2(const string name, float value1, float value2)
 {
-	m_shader.SetFloat2(name, value1, value2);
+	m_effect.SetFloat2(name, value1, value2);
 }
 
 void RenderManager::ShaderSetUint2(const string name, unsigned int value1, unsigned int value2)
 {
-	m_shader.SetUint2(name, value1, value2);
+	m_effect.SetUint2(name, value1, value2);
 }
 
 void RenderManager::ShaderSetBool3(const string name, bool value1, bool value2, bool value3)
 {
-	m_shader.SetBool3(name, value1, value2, value3);
+	m_effect.SetBool3(name, value1, value2, value3);
 }
 
 void RenderManager::ShaderSetInt3(const string name, int value1, int value2, int value3)
 {
-	m_shader.SetInt3(name, value1, value2, value3);
+	m_effect.SetInt3(name, value1, value2, value3);
 }
 
 void RenderManager::ShaderSetFloat3(const string name, float value1, float value2, float value3)
 {
-	m_shader.SetFloat3(name, value1, value2, value3);
+	m_effect.SetFloat3(name, value1, value2, value3);
 }
 
 void RenderManager::ShaderSetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3)
 {
-	m_shader.SetUint3(name, value1, value2, value3);
+	m_effect.SetUint3(name, value1, value2, value3);
 }
 
 void RenderManager::ShaderSetBool4(const string name, bool value1, bool value2, bool value3, bool value4)
 {
-	m_shader.SetBool4(name, value1, value2, value3, value4);
+	m_effect.SetBool4(name, value1, value2, value3, value4);
 }
 
 void RenderManager::ShaderSetInt4(const string name, int value1, int value2, int value3, int value4)
 {
-	m_shader.SetInt4(name, value1, value2, value3, value4);
+	m_effect.SetInt4(name, value1, value2, value3, value4);
 }
 
 void RenderManager::ShaderSetFloat4(const string name, float value1, float value2, float value3, float value4)
 {
-	m_shader.SetFloat4(name, value1, value2, value3, value4);
+	m_effect.SetFloat4(name, value1, value2, value3, value4);
 }
 
 void RenderManager::ShaderSetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4)
 {
-	m_shader.SetUint4(name, value1, value2, value3, value4);
+	m_effect.SetUint4(name, value1, value2, value3, value4);
 }
 
 void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 {
-	m_shader.SetMat4(name, value);
+	m_effect.SetMat4(name, value);
 }
 
 #endif
@@ -501,7 +501,7 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
 {
 	m_effect.CompileShader(vsFileName, psFileName);
-	m_effect.SetShaderFlags(eNORMAL_TECHNIQUES::PIXEL_SHADER, eSPECULAR_TECHNIQUES::BLINN_PHONG, 0);
+	m_effect.SetShaderFlags(eNORMAL_TECHNIQUES::VERTEX_SHADER, eSPECULAR_TECHNIQUES::PHONG, 0);
 	//m_shader.CompileFromFile(vsFileName, psFileName);
 	return S_OK;
 }
@@ -527,9 +527,9 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 #if defined(DX11)
 	ViewMat cbNeverChanges;
 	cbNeverChanges.view = view.TransposeMatrix();
-	GraphicsModule::GetManager()->getShader().SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
+	m_effect.SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
 #elif defined(OGL)
-	m_shader.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14, 
+	m_effect.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14,
 											 view._21, view._22, view._23, view._24, 
 											 view._31, view._32, view._33, view._34, 
 											 view._41, view._42, view._43, view._44));
@@ -541,9 +541,9 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 #if defined(DX11)
 	ProjectionMat cbChangesOnResize;
 	cbChangesOnResize.projection = projection.TransposeMatrix();
-	GraphicsModule::GetManager()->getShader().SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
+	m_effect.SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
 #elif defined(OGL)
-	m_shader.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14, 
+	m_effect.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14,
 											 projection._21, projection._22, projection._23, projection._24, 
 											 projection._31, projection._32, projection._33, projection._34, 
 											 projection._41, projection._42, projection._43, projection._44));
@@ -555,9 +555,9 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 #if defined(DX11)
 	ModelMat modl;
 	modl.model = model;
-	GraphicsModule::GetManager()->getShader().SetBuffer(2, m_pCBChangesEveryFrame, &model);
+	m_effect.SetBuffer(2, m_pCBChangesEveryFrame, &model);
 #elif defined(OGL)
-	m_shader.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
+	m_effect.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
 										model._21, model._22, model._23, model._24,
 										model._31, model._32, model._33, model._34,
 										model._41, model._42, model._43, model._44));
@@ -567,24 +567,24 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 {
 #if defined(DX11)
-	GraphicsModule::GetManager()->getShader().SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
+	m_effect.SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
 #elif defined(OGL)
-	m_shader.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
-	m_shader.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
-	m_shader.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
-	m_shader.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);
+	m_effect.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
+	m_effect.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
+	m_effect.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
+	m_effect.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);
 #endif
 }
 
 void RenderManager::UpdatePointLight(PointLight pointDesc)
 {
 #if defined(DX11)
-	GraphicsModule::GetManager()->getShader().SetBuffer(6, m_PointLightBuffer, &pointDesc);
+	m_effect.SetBuffer(6, m_PointLightBuffer, &pointDesc);
 #elif defined(OGL)
-	m_shader.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
-	m_shader.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
-	m_shader.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
-	m_shader.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);
+	m_effect.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
+	m_effect.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
+	m_effect.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
+	m_effect.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);
 #endif
 }
 
@@ -593,14 +593,15 @@ void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 #if defined(DX11)
 	spotDesc.cutOff = cos((spotDesc.cutOff * 2) * 3.1415 / 180 - 45);
 	spotDesc.outerCutOff = cos((spotDesc.outerCutOff * 2) * 3.1415 / 180 - 45);
-	GraphicsModule::GetManager()->getShader().SetBuffer(7, m_SpotLightBuffer, &spotDesc);
+	m_effect.SetBuffer(7, m_SpotLightBuffer, &spotDesc);
 #elif defined(OGL)
-	m_shader.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
-	m_shader.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
-	m_shader.SetFloat("spotLight.cutOff", glm::cos(glm::radians(spotDesc.cutOff)));
-	m_shader.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotDesc.outerCutOff)));
-	m_shader.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
-	m_shader.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);
+	m_effect.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
+	m_effect.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
+	m_effect.SetFloat("spotLight.cutOff", glm::cos(glm::radians(spotDesc.cutOff)));
+	m_effect.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotDesc.outerCutOff)));
+	m_effect.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
+	m_effect.SetFloat4("spotLight.specular", spotDesc.specular.x, spotDesc.specular.y, spotDesc.specular.z, 1);
+	m_effect.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);
 #endif
 }
 

@@ -212,7 +212,7 @@ void Shader::CompileFromString(const char* vertexShaderString, const char* pixel
 		return;
 
 #elif defined(OGL)
-	ifstream vShaderFile;
+	/*ifstream vShaderFile;
 	ifstream pShaderFile;
 	stringstream ssVertex;
 	stringstream ssPixel;
@@ -230,7 +230,7 @@ void Shader::CompileFromString(const char* vertexShaderString, const char* pixel
 	string sp = ssPixel.str();
 
 	const char* vShaderCode = sv.c_str();
-	const char* pShaderCode = sp.c_str();
+	const char* pShaderCode = sp.c_str();*/
 
 	unsigned int vertex, pixel;
 	int success;
@@ -238,7 +238,7 @@ void Shader::CompileFromString(const char* vertexShaderString, const char* pixel
 
 	// vertex Shader
 	vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, 1, &vShaderCode, NULL);
+	glShaderSource(vertex, 1, &vertexShaderString, NULL);
 	glCompileShader(vertex);
 	// print compile errors if any
 	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
@@ -249,7 +249,7 @@ void Shader::CompileFromString(const char* vertexShaderString, const char* pixel
 	};
 
 	pixel = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(pixel, 1, &pShaderCode, NULL);
+	glShaderSource(pixel, 1, &pixelShaderString, NULL);
 	glCompileShader(pixel);
 	// print compile errors if any
 	glGetShaderiv(pixel, GL_COMPILE_STATUS, &success);
