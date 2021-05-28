@@ -397,7 +397,7 @@ void UIRender()
 
 	if (!g_SelectingLoadMode)
 	{
-		if (ImGui::Begin("Lights", nullptr))
+		if (ImGui::Begin("Lights"))
 		{
 			/*Ambient light*/
 			ImGui::Text("Ambient light:");
@@ -505,7 +505,65 @@ void UIRender()
 			g_Test.GetRenderManager()->UpdateSpotLight(spotDesc);
 		}
 		ImGui::End();
-		if (ImGui::Begin("Models", nullptr))
+		if (ImGui::Begin("Defines"))
+		{		
+			static int lightTypeIndex = 0;
+			const char* lightTypes[] = { "None", "Vertex light", "Pixel light" };
+			ImGui::Combo("Light Type", &lightTypeIndex, lightTypes, IM_ARRAYSIZE(lightTypes));
+
+			static int specularTypeIndex = 0;
+			const char* specularTypes[] = { "None", "PHONG", "BLINN PHONG" };
+			ImGui::Combo("Specular Type", &specularTypeIndex, specularTypes, IM_ARRAYSIZE(specularTypes));
+
+			static bool diffuseMap = false;
+			static bool normalMap = false;
+			static bool specularMap = false;
+			if (lightTypeIndex == 2)
+			{
+				ImGui::Checkbox("Diffuse map", &diffuseMap);
+				ImGui::Checkbox("Normal map", &normalMap);
+				ImGui::Checkbox("Specular map", &specularMap);
+			}
+
+			eNORMAL_TECHNIQUES normalTech = eNORMAL_TECHNIQUES::NONE;
+			eSPECULAR_TECHNIQUES specularTech = eSPECULAR_TECHNIQUES::NONE;
+			unsigned int mapFlags = 0;
+
+			if (lightTypeIndex == 1)
+			{
+				normalTech =  eNORMAL_TECHNIQUES::VERTEX_SHADER;
+			}
+			else if (lightTypeIndex == 2)
+			{
+				normalTech = eNORMAL_TECHNIQUES::PIXEL_SHADER;
+			}
+
+			if (specularTypeIndex == 1)
+			{
+				specularTech = eSPECULAR_TECHNIQUES::PHONG;
+			}
+			else if (specularTypeIndex == 2)
+			{
+				specularTech = eSPECULAR_TECHNIQUES::BLINN_PHONG;
+			}
+
+			if (diffuseMap)
+			{
+				mapFlags |= TEXTURE_MAP_DIFFUSE;
+			}
+			if (normalMap)
+			{
+				mapFlags |= TEXTURE_MAP_NORMAL;				
+			}
+			if (specularMap)
+			{
+				mapFlags |= TEXTURE_MAP_SPECULAR;				
+			}
+
+			g_Test.GetRenderManager()->SetShaderFlags(normalTech, specularTech, mapFlags);
+		}
+		ImGui::End();
+		if (ImGui::Begin("Models"))
 		{
 		    if (ImGui::Button("Open Mesh", ImVec2(100, 30)))
 			{

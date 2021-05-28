@@ -43,13 +43,17 @@ namespace GraphicsModule
 							break;
 						}
 
+						if (k & TEXTURE_MAP_DIFFUSE)
+						{
+							m_techniques[m_techniques.size() - 1].tech.AddDefine("DIFFUSE_MAP");
+						}
 						if (k & TEXTURE_MAP_NORMAL)
 						{
-							m_techniques[m_techniques.size() - 1].tech.AddDefine("TEXTURE_MAP_NORMAL");
+							//m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");
 						}
 						if (k & TEXTURE_MAP_SPECULAR)
 						{
-							m_techniques[m_techniques.size() - 1].tech.AddDefine("TEXTURE_MAP_SPECULAR");
+							//m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
 						}
 
 						m_techniques[m_techniques.size() - 1].tech.CompileShader(vertexShaderPath, pixelShaderPath);

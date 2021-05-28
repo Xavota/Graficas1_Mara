@@ -212,26 +212,6 @@ void Shader::CompileFromString(const char* vertexShaderString, const char* pixel
 		return;
 
 #elif defined(OGL)
-	/*ifstream vShaderFile;
-	ifstream pShaderFile;
-	stringstream ssVertex;
-	stringstream ssPixel;
-
-	vShaderFile.open(vertexShaderPath);
-	pShaderFile.open(pixelShaderPath);
-
-	ssVertex << vShaderFile.rdbuf();
-	ssPixel << pShaderFile.rdbuf();
-
-	vShaderFile.close();
-	pShaderFile.close();
-
-	string sv = ssVertex.str();
-	string sp = ssPixel.str();
-
-	const char* vShaderCode = sv.c_str();
-	const char* pShaderCode = sp.c_str();*/
-
 	unsigned int vertex, pixel;
 	int success;
 	char infoLog[512];

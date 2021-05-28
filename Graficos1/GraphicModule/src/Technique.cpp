@@ -9,7 +9,7 @@ namespace GraphicsModule
 		std::ifstream vsFile(vertexShaderPath);
 		std::stringstream vsString;
 
-/*#if defined(DX11)
+#if defined(DX11)
 		vsString << "#define DX11" << '\n';
 #elif defined(OGL)
 		vsString << "#version 330 core" << '\n';
@@ -19,7 +19,7 @@ namespace GraphicsModule
 		for (string& s : m_defines)
 		{
 			vsString << "#define " << s << '\n';
-		}*/
+		}
 
 		while (!vsFile.eof())
 		{
@@ -33,7 +33,7 @@ namespace GraphicsModule
 		std::ifstream psFile(pixelShaderPath);
 		std::stringstream psString;
 
-/*#if defined(DX11)
+#if defined(DX11)
 		psString << "#define DX11" << '\n';
 #elif defined(OGL)
 		psString << "#version 330 core" << '\n';
@@ -43,7 +43,7 @@ namespace GraphicsModule
 		for (string& s : m_defines)
 		{
 			psString << "#define " << s << '\n';
-		}*/
+		}
 
 		while (!psFile.eof())
 		{

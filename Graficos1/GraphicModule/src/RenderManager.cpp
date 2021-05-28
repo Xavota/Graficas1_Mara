@@ -501,9 +501,13 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
 {
 	m_effect.CompileShader(vsFileName, psFileName);
-	m_effect.SetShaderFlags(eNORMAL_TECHNIQUES::VERTEX_SHADER, eSPECULAR_TECHNIQUES::PHONG, 0);
-	//m_shader.CompileFromFile(vsFileName, psFileName);
+	SetShaderFlags(eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES::NONE, 0);
 	return S_OK;
+}
+
+void RenderManager::SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags)
+{
+	m_effect.SetShaderFlags(nor, spec, texFlags);
 }
 
 void RenderManager::setViewport(unsigned int width, unsigned int height)

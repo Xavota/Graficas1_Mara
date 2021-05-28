@@ -141,6 +141,7 @@ public:
 	Effect& getShader() { return m_effect; }
 
 	HRESULT CompileShaders(const char* vsFileName, const char* psFileName);
+	void SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags);
 
 	void setViewport(unsigned int width, unsigned int height);
 
@@ -189,7 +190,7 @@ private:
 	GLFWwindow* m_window;
 #endif
 
-	Shader m_shader;
+	//Shader m_shader;
 	Effect m_effect;
 
 public:

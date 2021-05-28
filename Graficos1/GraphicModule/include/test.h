@@ -98,7 +98,7 @@ namespace GraphicsModule
 			//ShaderChange
 			GraphicsModule::GetManager()->getShader().SetBuffer(4, g_RenderManager->GetMaterialShininessBuffer(), &mat);
 #elif defined(OGL)
-			g_RenderManager->ShaderSetFloat("mat1.shininess", scatering);
+			g_RenderManager->ShaderSetFloat("shininess", scatering);
 #endif
 		}
 
