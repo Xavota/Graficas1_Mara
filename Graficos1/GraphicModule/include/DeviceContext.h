@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <vector>
 
 #if defined(DX11)
 #include <d3d11.h>
@@ -48,7 +49,7 @@ public:
 	void VSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
 	void PSSetShader(PixelShader pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void PSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
-	void PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, ShaderResourceView ppShaderResourceViews);
+	void PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews);
 	void PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers);
 	void RSSetState(ID3D11RasterizerState* pRasterizerState);
 	void Flush();

@@ -415,6 +415,8 @@ struct Vertex
 	Vector3 Pos;
 	Vector2 Tex;
 	Vector3 Normales;
+	Vector3 Binormal;
+	Vector3 Tangente;
 };
 
 struct MATRIX

@@ -9,59 +9,21 @@ namespace GraphicsModule
 		{
 			for (int j = -1; j < (int)eSPECULAR_TECHNIQUES::COUNT; j++)
 			{
-				if (eNORMAL_TECHNIQUES(i) == eNORMAL_TECHNIQUES::VERTEX_SHADER)
+				for (unsigned int k = 0; k <= TEXTURE_MAP_COUNT; k++)
 				{
-					m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), 0, Technique() });
-					m_techniques[m_techniques.size() - 1].tech.AddDefine("VERTEX_LIGHT");
-
-					switch ((eSPECULAR_TECHNIQUES)j)
+					m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), k, Technique() });
+					
+					switch ((eNORMAL_TECHNIQUES)i)
 					{
-					case eSPECULAR_TECHNIQUES::PHONG:
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("PHONG");
-						break;
-					case eSPECULAR_TECHNIQUES::BLINN_PHONG:
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
-						break;
-					}
-
-					m_techniques[m_techniques.size() - 1].tech.CompileShader(vertexShaderPath,pixelShaderPath);
-				}
-				else if (eNORMAL_TECHNIQUES(i) == eNORMAL_TECHNIQUES::PIXEL_SHADER)
-				{
-					for (unsigned int k = 0; k < TEXTURE_MAP_COUNT; k++)
-					{
-						m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), k, Technique() });
+					case eNORMAL_TECHNIQUES::PIXEL_SHADER:
 						m_techniques[m_techniques.size() - 1].tech.AddDefine("PIXEL_LIGHT");
+						break;
+					case eNORMAL_TECHNIQUES::VERTEX_SHADER:
+						m_techniques[m_techniques.size() - 1].tech.AddDefine("VERTEX_LIGHT");
+						break;
 
-						switch ((eSPECULAR_TECHNIQUES)j)
-						{
-						case eSPECULAR_TECHNIQUES::PHONG:
-							m_techniques[m_techniques.size() - 1].tech.AddDefine("PHONG");
-							break;
-						case eSPECULAR_TECHNIQUES::BLINN_PHONG:
-							m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
-							break;
-						}
-
-						if (k & TEXTURE_MAP_DIFFUSE)
-						{
-							m_techniques[m_techniques.size() - 1].tech.AddDefine("DIFFUSE_MAP");
-						}
-						if (k & TEXTURE_MAP_NORMAL)
-						{
-							//m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");
-						}
-						if (k & TEXTURE_MAP_SPECULAR)
-						{
-							//m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
-						}
-
-						m_techniques[m_techniques.size() - 1].tech.CompileShader(vertexShaderPath, pixelShaderPath);
 					}
-				}
-				else
-				{
-					m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), 0, Technique() });
+					
 
 					switch ((eSPECULAR_TECHNIQUES)j)
 					{
@@ -71,6 +33,19 @@ namespace GraphicsModule
 					case eSPECULAR_TECHNIQUES::BLINN_PHONG:
 						m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
 						break;
+					}
+
+					if (k & TEXTURE_MAP_DIFFUSE)
+					{
+						m_techniques[m_techniques.size() - 1].tech.AddDefine("DIFFUSE_MAP");
+					}
+					if (k & TEXTURE_MAP_NORMAL)
+					{
+						m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");
+					}
+					if (k & TEXTURE_MAP_SPECULAR)
+					{
+						m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
 					}
 
 					m_techniques[m_techniques.size() - 1].tech.CompileShader(vertexShaderPath, pixelShaderPath);

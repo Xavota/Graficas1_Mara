@@ -73,6 +73,10 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	{
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
+	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Normal.jpg", "norm", MODEL_LOAD_FORMAT_BGRA);
+	setTexture(TextureManager::GetTexture("norm")); 
+	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Metallic.jpg", "spec", MODEL_LOAD_FORMAT_BGRA);
+	setTexture(TextureManager::GetTexture("spec"));
 
 	HRESULT hr;
 	
@@ -120,6 +124,42 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 			}
 
 			vertices.push_back(v);
+		}
+
+		for (int j = 0; j * 3 + 2 < scene->mMeshes[i]->mNumVertices; ++j)
+		{
+			aiVector3D deltaPos1 = scene->mMeshes[i]->mVertices[j * 3 + 1] - scene->mMeshes[i]->mVertices[j * 3];
+			aiVector3D deltaPos2 = scene->mMeshes[i]->mVertices[j * 3 + 2] - scene->mMeshes[i]->mVertices[j * 3];
+			aiVector3D deltaUV1 = scene->mMeshes[i]->mTextureCoords[0][j * 3 + 1] - scene->mMeshes[i]->mTextureCoords[0][j * 3];
+			aiVector3D deltaUV2 = scene->mMeshes[i]->mTextureCoords[0][j * 3 + 2] - scene->mMeshes[i]->mTextureCoords[0][j * 3];
+			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+			aiVector3D tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+			aiVector3D bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+			vertices[j * 3 + 0].Binormal.x = bitangent.x;
+			vertices[j * 3 + 0].Binormal.y = bitangent.y;
+			vertices[j * 3 + 0].Binormal.z = bitangent.z;
+
+			vertices[j * 3 + 1].Binormal.x = bitangent.x;
+			vertices[j * 3 + 1].Binormal.y = bitangent.y;
+			vertices[j * 3 + 1].Binormal.z = bitangent.z;
+											 
+			vertices[j * 3 + 2].Binormal.x = bitangent.x;
+			vertices[j * 3 + 2].Binormal.y = bitangent.y;
+			vertices[j * 3 + 2].Binormal.z = bitangent.z;
+
+
+			vertices[j * 3 + 0].Tangente.x = tangent.x;
+			vertices[j * 3 + 0].Tangente.y = tangent.y;
+			vertices[j * 3 + 0].Tangente.z = tangent.z;
+
+			vertices[j * 3 + 1].Tangente.x = tangent.x;
+			vertices[j * 3 + 1].Tangente.y = tangent.y;
+			vertices[j * 3 + 1].Tangente.z = tangent.z;
+
+			vertices[j * 3 + 2].Tangente.x = tangent.x;
+			vertices[j * 3 + 2].Tangente.y = tangent.y;
+			vertices[j * 3 + 2].Tangente.z = tangent.z;
 		}
 
 		hr = m_modelMeshes[m_modelMeshes.size() - 1].setVertex(vertices);
@@ -171,7 +211,13 @@ void Model::Draw(RenderManager* renderManager)
 		/*Set primitive topology*/
 		renderManager->IASetPrimitiveTopology(m_topology);
 
-		renderManager->PSSetShaderResources(0, 1, m_textures[0].getBuffer());
+		std::vector<ShaderResourceView> srvs;
+		for (Texture& t : m_textures)
+		{
+			srvs.push_back(t.getBuffer());
+		}
+
+		renderManager->PSSetShaderResources(0, 1, srvs);
 #elif defined(OGL)
 		/*Set primitive topology*/
 		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
@@ -180,6 +226,16 @@ void Model::Draw(RenderManager* renderManager)
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_textures[0].getID());
+
+		renderManager->ShaderSetFloat("mat1.normalMap", 1);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_textures[1].getID());
+
+		renderManager->ShaderSetFloat("mat1.specularMap", 2);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_textures[2].getID());
 #endif
 
 		m_modelMeshes[i].Draw(renderManager);

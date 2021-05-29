@@ -329,8 +329,8 @@ HRESULT Init(unsigned int width, unsigned int height)
 		width, height, 0.01f, 100.0f, false, PIDIV4));
 
 	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA);
-    
-    OpenMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
+    //"Models/Models/CuboPuzzle.obj"
+    OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
 	
 	return S_OK;
 }
@@ -518,12 +518,10 @@ void UIRender()
 			static bool diffuseMap = false;
 			static bool normalMap = false;
 			static bool specularMap = false;
-			if (lightTypeIndex == 2)
-			{
-				ImGui::Checkbox("Diffuse map", &diffuseMap);
-				ImGui::Checkbox("Normal map", &normalMap);
-				ImGui::Checkbox("Specular map", &specularMap);
-			}
+			
+			ImGui::Checkbox("Diffuse map", &diffuseMap);
+			ImGui::Checkbox("Normal map", &normalMap);
+			ImGui::Checkbox("Specular map", &specularMap);
 
 			eNORMAL_TECHNIQUES normalTech = eNORMAL_TECHNIQUES::NONE;
 			eSPECULAR_TECHNIQUES specularTech = eSPECULAR_TECHNIQUES::NONE;

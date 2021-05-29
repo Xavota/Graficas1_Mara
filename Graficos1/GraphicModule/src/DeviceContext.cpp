@@ -1,6 +1,5 @@
 #include "DeviceContext.h"
 
-
 namespace GraphicsModule
 {
 #if defined(DX11)
@@ -84,9 +83,9 @@ void DeviceContext::PSSetConstantBuffers(unsigned int StartSlot, unsigned int Nu
 	m_pImmediateContext->PSSetConstantBuffers(StartSlot, NumBuffers, &ppConstantBuffers.getBufferPtr());
 }
 
-void DeviceContext::PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, ShaderResourceView ppShaderResourceViews)
+void DeviceContext::PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews)
 {
-	m_pImmediateContext->PSSetShaderResources(StartSlot, NumViews, &ppShaderResourceViews.getPtr());
+	m_pImmediateContext->PSSetShaderResources(StartSlot, ppShaderResourceViews.size(), &ppShaderResourceViews.data()->getPtr());
 }
 
 void DeviceContext::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers)

@@ -148,7 +148,7 @@ void RenderManager::PSSetConstantBuffers(unsigned int StartSlot, unsigned int Nu
 	m_deviceContext.PSSetConstantBuffers(StartSlot, NumBuffers, ppConstantBuffers);
 }
 
-void RenderManager::PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, ShaderResourceView ppShaderResourceViews)
+void RenderManager::PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews)
 {
 	m_deviceContext.PSSetShaderResources(StartSlot, NumViews, ppShaderResourceViews);
 }
