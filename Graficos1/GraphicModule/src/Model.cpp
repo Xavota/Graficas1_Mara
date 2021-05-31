@@ -211,30 +211,24 @@ void Model::Draw(RenderManager* renderManager)
 		/*Set primitive topology*/
 		renderManager->IASetPrimitiveTopology(m_topology);
 
-		std::vector<ShaderResourceView> srvs;
-		for (Texture& t : m_textures)
-		{
-			srvs.push_back(t.getBuffer());
-		}
-
-		renderManager->PSSetShaderResources(0, 1, srvs);
+		renderManager->PSSetShaderResources(0, m_textures);
 #elif defined(OGL)
 		/*Set primitive topology*/
 		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
 
+		renderManager->ShaderSetFloat("mat1.normalMap", 1);
+
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, m_textures[1].getID());
+
 		renderManager->ShaderSetFloat("mat1.diffuseMap", 0);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_textures[0].getID());
-
-		renderManager->ShaderSetFloat("mat1.normalMap", 1);
-
-		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, m_textures[1].getID());
 
 		renderManager->ShaderSetFloat("mat1.specularMap", 2);
 
-		glActiveTexture(GL_TEXTURE2);
+		glActiveTexture(GL_TEXTURE0 + 2);
 		glBindTexture(GL_TEXTURE_2D, m_textures[2].getID());
 #endif
 

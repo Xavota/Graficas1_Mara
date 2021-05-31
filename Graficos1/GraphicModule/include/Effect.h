@@ -32,14 +32,16 @@ public:
 	Effect() = default;
 	~Effect() = default;
 
-	void CompileShader(const char* vertexShaderPath, const char* pixelShaderPath);
-
+	//void CompileShader(const char* vertexShaderPath, const char* pixelShaderPath);
+	void CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath);
+	
 	void SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags);
 
 	void Use(); 
+	void Draw(unsigned int indexCount);
 
 #if defined(DX11)
-	void SetBuffer(int slot, Buffer buff, void* data);
+	//void SetBuffer(int slot, Buffer buff, void* data);
 
 
 #elif defined(OGL)
@@ -68,6 +70,16 @@ public:
 
 	void SetInputLayout(unsigned int VAO);
 #endif
+
+#if defined(DX11)
+	void AddEffectTrackValue(string name, unsigned int id, unsigned int size);
+#elif defined(OGL)
+	void AddEffectTrackValue(string name, string uniform, Technique::eDataType type);
+#endif
+
+	void SetEffectValue(string name, void* data);
+private:
+	void GenerateEffects();
 
 private:
 	struct Techs

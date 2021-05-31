@@ -2,9 +2,13 @@
 
 namespace GraphicsModule
 {
-	void Effect::CompileShader(const char* vertexShaderPath, const char* pixelShaderPath)
-	{
+	/*void Effect::CompileShader(const char* vertexShaderPath, const char* pixelShaderPath)
+	{	
 		
+	}*/
+
+	void Effect::GenerateEffects()
+	{
 		for (int i = -1; i < (int)eNORMAL_TECHNIQUES::COUNT; i++)
 		{
 			for (int j = -1; j < (int)eSPECULAR_TECHNIQUES::COUNT; j++)
@@ -12,7 +16,7 @@ namespace GraphicsModule
 				for (unsigned int k = 0; k <= TEXTURE_MAP_COUNT; k++)
 				{
 					m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), k, Technique() });
-					
+
 					switch ((eNORMAL_TECHNIQUES)i)
 					{
 					case eNORMAL_TECHNIQUES::PIXEL_SHADER:
@@ -23,7 +27,7 @@ namespace GraphicsModule
 						break;
 
 					}
-					
+
 
 					switch ((eSPECULAR_TECHNIQUES)j)
 					{
@@ -48,12 +52,24 @@ namespace GraphicsModule
 						m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
 					}
 
-					m_techniques[m_techniques.size() - 1].tech.CompileShader(vertexShaderPath, pixelShaderPath);
 				}
 			}
 		}
-		
+
+		m_currentTechnique = &m_techniques[0].tech;
 	}
+
+	void Effect::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath)
+	{
+		if (m_techniques.size() == 0)
+			GenerateEffects();
+		
+		for (Techs& t : m_techniques)
+		{
+			t.tech.CreatePass(name, vertexShaderPath, pixelShaderPath);
+		}
+		
+	}	
 
 	void Effect::SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags)
 	{
@@ -68,16 +84,19 @@ namespace GraphicsModule
 
 	void Effect::Use()
 	{
-		m_currentTechnique->Use();
+	}
+	void Effect::Draw(unsigned int indexCount)
+	{
+		m_currentTechnique->Use(indexCount);
 	}
 #if defined(DX11)
-	void Effect::SetBuffer(int slot, Buffer buff, void* data)
+	/*void Effect::SetBuffer(int slot, Buffer buff, void* data)
 	{
 		for (Techs& t : m_techniques)
 		{
 			t.tech.SetBuffer(slot, buff, data);
 		}
-	}
+	}*/
 
 #elif defined(OGL)
 	void Effect::Unuse()
@@ -214,4 +233,29 @@ namespace GraphicsModule
 		}
 	}
 #endif
+
+#if defined(DX11)
+	void Effect::AddEffectTrackValue(string name, unsigned int id, unsigned int size)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddTrackValue(name, id, size);
+		}
+	}
+#elif defined(OGL)
+	void Effect::AddEffectTrackValue(string name, string uniform, Technique::eDataType type)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddTrackValue(name, uniform, type);
+		}
+	}
+#endif
+	void Effect::SetEffectValue(string name, void* data)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetValue(name, data);
+		}
+	}
 }

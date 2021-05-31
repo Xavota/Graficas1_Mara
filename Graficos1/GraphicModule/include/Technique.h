@@ -1,7 +1,9 @@
 #pragma once
 #include <vector>
+#include <map>
 #include <string>
 #include "Pass.h"
+#include "Buffer.h"
 
 namespace GraphicsModule
 {
@@ -12,10 +14,11 @@ public:
 	~Technique() = default;	
 
 	void CompileShader(const char* vertexShaderPath, const char* pixelShaderPath);
+	void CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath);
 
 	void AddDefine(std::string def);
 
-	void Use();
+	void Use(unsigned int indexCount);
 
 #if defined(DX11)
 	void SetBuffer(int slot, Buffer buff, void* data);
@@ -47,10 +50,21 @@ public:
 
 	void SetInputLayout(unsigned int VAO);
 #endif
+
+#if defined(DX11)
+	void AddTrackValue(string name, unsigned int id, unsigned int size);
+	void AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size);
+#elif defined(OGL)
+	void AddTrackValue(string name, string uniform, eDataType type);
+	void AddPassTrackValue(string passName, string name, string uniform, eDataType type);
+#endif
+
+	void SetValue(string name, void* data);
 private:
 	std::vector<string> m_defines;
 
-	std::vector<Pass> m_passes;
+	std::map<string, Pass> m_passes;
 	
+	std::vector<Values> m_values;
 };
 }

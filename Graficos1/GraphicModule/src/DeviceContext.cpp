@@ -23,9 +23,14 @@ void DeviceContext::DrawIndexed(unsigned int IndexCount, unsigned int StartIndex
 	m_pImmediateContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
 
-void DeviceContext::OMSetRenderTargets(unsigned int NumViews, RenderTargetView ppRenderTargetViews, DepthStencilView pDepthStencilView)
+void DeviceContext::OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView pDepthStencilView)
 {
-	m_pImmediateContext->OMSetRenderTargets(NumViews, &ppRenderTargetViews.getPtr(), pDepthStencilView.getStencilViewPtr());
+	std::vector<ID3D11RenderTargetView*> renderTargets;
+	for (int i = 0; i < ppRenderTargetViews.size(); i++)
+	{
+		renderTargets.push_back(ppRenderTargetViews[i].getPtr());
+	}
+	m_pImmediateContext->OMSetRenderTargets(ppRenderTargetViews.size(), renderTargets.data(), pDepthStencilView.getStencilViewPtr());
 }
 
 void DeviceContext::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports)
@@ -83,9 +88,15 @@ void DeviceContext::PSSetConstantBuffers(unsigned int StartSlot, unsigned int Nu
 	m_pImmediateContext->PSSetConstantBuffers(StartSlot, NumBuffers, &ppConstantBuffers.getBufferPtr());
 }
 
-void DeviceContext::PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews)
+void DeviceContext::PSSetShaderResources(unsigned int StartSlot, std::vector<Texture> ppShaderResourceViews)
 {
-	m_pImmediateContext->PSSetShaderResources(StartSlot, ppShaderResourceViews.size(), &ppShaderResourceViews.data()->getPtr());
+	std::vector<ShaderResourceView> srvs;
+	for (Texture& t : ppShaderResourceViews)
+	{
+		srvs.push_back(t.getBuffer());
+	}
+
+	m_pImmediateContext->PSSetShaderResources(StartSlot, srvs.size(), &srvs.data()->getPtr());
 }
 
 void DeviceContext::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers)

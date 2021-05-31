@@ -29,7 +29,7 @@ using std::string;
 #include <glad/glad.h>
 #endif
 
-#include "Shader.h"
+//#include "Shader.h"
 #include "Effect.h"
 
 
@@ -65,8 +65,8 @@ public:
 							unsigned int SrcRowPitch, unsigned int SrcDepthPitch );
 	void UpdateTexture2D( Texture2D& image, const void* data, unsigned int rowSize);
 	void DrawIndexed( unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation );
-	void OMSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView);
-	void ClearAndSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4]);
+	void OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView& pDepthStencilView);
+	void ClearAndSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4]);
 	void RSSetViewports( unsigned int NumViewports, const VIEWPORT* pViewports );
 	void IASetInputLayout( InputLayout& pInputLayout );
 	void IASetVertexBuffers( unsigned int StartSlot, unsigned int NumBuffers, Buffer& ppVertexBuffers, 
@@ -79,7 +79,7 @@ public:
 	void VSSetConstantBuffers( unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
 	void PSSetShader(PixelShader pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void PSSetConstantBuffers( unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
-	void PSSetShaderResources( unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews);
+	void PSSetShaderResources( unsigned int StartSlot, std::vector<Texture> ppShaderResourceViews);
 	void PSSetSamplers( unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers);
 	void RSSetState( ID3D11RasterizerState* pRasterizerState);
 	void Flush();
@@ -110,7 +110,7 @@ public:
 	HRESULT CompileShaderFromString(const char* source, unsigned int bytesCount, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 	HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, InputLayout& pInputLayout);
 
-	void SetBuffer(int slot, Buffer buff, void* data);
+	//void SetBuffer(int slot, Buffer buff, void* data);
 
 #elif defined(OGL)
 

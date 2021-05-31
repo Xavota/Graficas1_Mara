@@ -81,16 +81,19 @@ void RenderManager::DrawIndexed(unsigned int IndexCount, unsigned int StartIndex
 	m_deviceContext.DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
 
-void RenderManager::OMSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView)
+void RenderManager::OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView& pDepthStencilView)
 {
-	m_deviceContext.OMSetRenderTargets(NumViews,ppRenderTargetViews, pDepthStencilView);
+	m_deviceContext.OMSetRenderTargets(ppRenderTargetViews, pDepthStencilView);
 }
 
-void RenderManager::ClearAndSetRenderTargets(unsigned int NumViews, RenderTargetView& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4])
+void RenderManager::ClearAndSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4])
 {
-	ClearRenderTargetView(ppRenderTargetViews, ColorRGBA);
+	for (int i = 0; i < ppRenderTargetViews.size(); i++)
+	{
+		ClearRenderTargetView(ppRenderTargetViews[i], ColorRGBA);
+	}
 	ClearDepthStencilView(pDepthStencilView, CLEAR_DEPTH, 1.0f, 0);
-	OMSetRenderTargets(NumViews, ppRenderTargetViews, pDepthStencilView);
+	OMSetRenderTargets(ppRenderTargetViews, pDepthStencilView);
 }
 
 void RenderManager::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports)
@@ -148,9 +151,9 @@ void RenderManager::PSSetConstantBuffers(unsigned int StartSlot, unsigned int Nu
 	m_deviceContext.PSSetConstantBuffers(StartSlot, NumBuffers, ppConstantBuffers);
 }
 
-void RenderManager::PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews)
+void RenderManager::PSSetShaderResources(unsigned int StartSlot, std::vector<Texture> ppShaderResourceViews)
 {
-	m_deviceContext.PSSetShaderResources(StartSlot, NumViews, ppShaderResourceViews);
+	m_deviceContext.PSSetShaderResources(StartSlot, ppShaderResourceViews);
 }
 
 void RenderManager::PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers)
@@ -403,11 +406,11 @@ HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* 
 	return hr;
 }
 
-void RenderManager::SetBuffer(int slot, Buffer buff, void* data)
+/*void RenderManager::SetBuffer(int slot, Buffer buff, void* data)
 {
 	//m_shader.SetBuffer(slot, buff, data);
 	m_effect.SetBuffer(slot, buff, data);
-}
+}*/
 
 #elif defined(OGL)
 
@@ -500,8 +503,8 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 
 HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
 {
-	m_effect.CompileShader(vsFileName, psFileName);
-	SetShaderFlags(eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES::NONE, 0);
+	/*m_effect.CompileShader(vsFileName, psFileName);
+	SetShaderFlags(eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES::NONE, 0);*/
 	return S_OK;
 }
 
@@ -531,7 +534,8 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 #if defined(DX11)
 	ViewMat cbNeverChanges;
 	cbNeverChanges.view = view.TransposeMatrix();
-	m_effect.SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
+	//m_effect.SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
+	m_effect.SetEffectValue("ViewMatrix", &cbNeverChanges);
 #elif defined(OGL)
 	m_effect.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14,
 											 view._21, view._22, view._23, view._24, 
@@ -545,7 +549,8 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 #if defined(DX11)
 	ProjectionMat cbChangesOnResize;
 	cbChangesOnResize.projection = projection.TransposeMatrix();
-	m_effect.SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
+	//m_effect.SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
+	m_effect.SetEffectValue("ProjectionMatrix", &cbChangesOnResize);
 #elif defined(OGL)
 	m_effect.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14,
 											 projection._21, projection._22, projection._23, projection._24, 
@@ -559,7 +564,8 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 #if defined(DX11)
 	ModelMat modl;
 	modl.model = model;
-	m_effect.SetBuffer(2, m_pCBChangesEveryFrame, &model);
+	//m_effect.SetBuffer(2, m_pCBChangesEveryFrame, &model);
+	m_effect.SetEffectValue("ModelMatrix", &model);
 #elif defined(OGL)
 	m_effect.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
 										model._21, model._22, model._23, model._24,
@@ -571,7 +577,8 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 {
 #if defined(DX11)
-	m_effect.SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
+	//m_effect.SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
+	m_effect.SetEffectValue("DirectionalLight", &dirDesc);
 #elif defined(OGL)
 	m_effect.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
 	m_effect.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
@@ -583,7 +590,8 @@ void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 void RenderManager::UpdatePointLight(PointLight pointDesc)
 {
 #if defined(DX11)
-	m_effect.SetBuffer(6, m_PointLightBuffer, &pointDesc);
+	//m_effect.SetBuffer(6, m_PointLightBuffer, &pointDesc);
+	m_effect.SetEffectValue("PointLight", &pointDesc);
 #elif defined(OGL)
 	m_effect.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
 	m_effect.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
@@ -597,7 +605,8 @@ void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 #if defined(DX11)
 	spotDesc.cutOff = cos((spotDesc.cutOff * 2) * 3.1415 / 180 - 45);
 	spotDesc.outerCutOff = cos((spotDesc.outerCutOff * 2) * 3.1415 / 180 - 45);
-	m_effect.SetBuffer(7, m_SpotLightBuffer, &spotDesc);
+	//m_effect.SetBuffer(7, m_SpotLightBuffer, &spotDesc);
+	m_effect.SetEffectValue("SpotLight", &spotDesc);
 #elif defined(OGL)
 	m_effect.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
 	m_effect.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);

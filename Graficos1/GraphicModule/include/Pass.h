@@ -1,11 +1,54 @@
 #pragma once
 #include "Shader.h"
 #include "OBJInstance.h"
+#include "RenderTargetView.h"
 
 #include <map>
 
 namespace GraphicsModule
 {
+	enum class eDataType
+	{
+		NONE = -1,
+		BOOL,
+		INT,
+		FLOAT,
+		UINT,
+		BOOL2,
+		INT2,
+		FLOAT2,
+		UNIT2,
+		BOOL3,
+		INT3,
+		FLOAT3,
+		UINT3,
+		BOOL4,
+		INT4,
+		FLOAT4,
+		UINT4
+	};
+
+	struct Values
+	{
+#if defined(DX11)
+		Values(string name, unsigned int id, unsigned int size);
+#elif defined(OGL)
+		Values(string name, string uniform, eDataType type);
+#endif
+		Values(const Values& other);
+		~Values();
+		string m_name;
+#if defined(DX11)
+		unsigned int m_id = 0;
+		Buffer m_buff;
+		unsigned int m_size = 0;
+#elif defined(OGL)
+		string m_uniform;
+		eDataType m_type;
+#endif
+		void* m_data = nullptr;
+	};
+
 class Pass
 {
 public:
@@ -17,10 +60,10 @@ public:
 	void Compile(const char* vertexShaderString, const char* pixelShaderString);
 
 	void Use();
+	void Draw(unsigned int indexCount);
 
 #if defined(DX11)
 	void SetBuffer(int slot, Buffer buff, void* data);
-
 
 #elif defined(OGL)
 	void Unuse();
@@ -48,9 +91,28 @@ public:
 
 	void SetInputLayout(unsigned int VAO);
 #endif
+
+
+
+#if defined(DX11)
+	void AddTrackValue(string name, unsigned int id, unsigned int size);
+#elif defined(OGL)
+	void AddTrackValue(string name, string uniform, eDataType type);
+#endif
+	
+	void AddInputTexture(string name);
+	void SetInputTexture(string name, Texture tex);
+	void AddOutputTexture(string name);
+	void SetOutputTexture(string name, RenderTargetView tex);
+
+	void SetValue(string name, void* data);
+
+
 private:
 	Shader m_shaders;
-	std::map<int, void*> m_values;
-	OBJInstance* m_model;
+	std::vector<Values> m_values;
+
+	std::map<string, Texture> m_inputTextures;
+	std::map<string, RenderTargetView> m_outputTextures;
 };
 }

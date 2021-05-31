@@ -18,6 +18,7 @@
 #include "PixelShader.h"
 #include "InputLayout.h"
 #include "SamplerState.h"
+#include "Texture.h"
 
 namespace GraphicsModule
 {
@@ -36,7 +37,7 @@ public:
 		unsigned int SrcRowPitch, unsigned int SrcDepthPitch);
 	void UpdateTexture2D(Texture2D& texture, const void* data, unsigned int rowSize);
 	void DrawIndexed(unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation);
-	void OMSetRenderTargets(unsigned int NumViews, RenderTargetView ppRenderTargetViews, DepthStencilView pDepthStencilView);
+	void OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView pDepthStencilView);
 	void RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports);
 	void IASetInputLayout(InputLayout& pInputLayout);
 	void IASetVertexBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppVertexBuffers,
@@ -49,7 +50,7 @@ public:
 	void VSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
 	void PSSetShader(PixelShader pPixelShader, ID3D11ClassInstance* const* ppClassInstances, unsigned int NumClassInstances);
 	void PSSetConstantBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
-	void PSSetShaderResources(unsigned int StartSlot, unsigned int NumViews, std::vector<ShaderResourceView> ppShaderResourceViews);
+	void PSSetShaderResources(unsigned int StartSlot, std::vector<Texture> ppShaderResourceViews);
 	void PSSetSamplers(unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers);
 	void RSSetState(ID3D11RasterizerState* pRasterizerState);
 	void Flush();

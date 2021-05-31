@@ -6,6 +6,10 @@ namespace GraphicsModule
 {
 	void Technique::CompileShader(const char* vertexShaderPath, const char* pixelShaderPath)
 	{
+	}
+
+	void Technique::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath)
+	{
 		std::ifstream vsFile(vertexShaderPath);
 		std::stringstream vsString;
 
@@ -53,8 +57,8 @@ namespace GraphicsModule
 		}
 
 
-		m_passes.push_back(Pass());
-		m_passes[m_passes.size() - 1].Compile(vsString.str().c_str(), psString.str().c_str());
+		m_passes.insert(make_pair(name, Pass()));
+		m_passes[name].Compile(vsString.str().c_str(), psString.str().c_str());
 	}
 
 	void Technique::AddDefine(std::string def)
@@ -62,154 +66,282 @@ namespace GraphicsModule
 		m_defines.push_back(def);	
 	}
 
-	void Technique::Use()
+	void Technique::Use(unsigned int indexCount)
 	{
-		for (Pass& p : m_passes)
+		for (std::map<string, Pass>::iterator p = m_passes.begin(); p != m_passes.end(); p++)
 		{
-			p.Use();
+			p->second.Use();
+			for (Values& v : m_values)
+			{
+#if defined(DX11)
+				p->second.SetBuffer(v.m_id, v.m_buff, v.m_data);
+#elif defined(OGL)
+				switch (v.m_type)
+				{
+				case eDataType::BOOL:
+					p->second.SetBool(v.m_uniform, *(bool*)v.m_data);
+					break;
+				case eDataType::INT:
+					p->second.SetBool(v.m_uniform, *(int*)v.m_data);
+					break;
+				case eDataType::FLOAT:
+					p->second.SetBool(v.m_uniform, *(float*)v.m_data);
+					break;
+				case eDataType::UINT:
+					p->second.SetBool(v.m_uniform, *(unsigned int*)v.m_data);
+					break;
+				case eDataType::BOOL2:
+				{
+					bool* data = (bool*)v.m_data;
+					p->second.SetBool2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::INT2:
+				{
+					int* data = (int*)v.m_data;
+					p->second.SetInt2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::FLOAT2:
+				{
+					float* data = (float*)v.m_data;
+					p->second.SetFloat2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::UNIT2:
+				{
+					unsigned int* data = (unsigned int*)v.m_data;
+					p->second.SetUint2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::BOOL3:
+				{
+					bool* data = (bool*)v.m_data;
+					p->second.SetBool3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::INT3:
+				{
+					int* data = (int*)v.m_data;
+					p->second.SetInt3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::FLOAT3:
+				{
+					float* data = (float*)v.m_data;
+					p->second.SetFloat3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::UINT3:
+				{
+					unsigned int* data = (unsigned int*)v.m_data;
+					p->second.SetUint3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::BOOL4:
+				{
+					bool* data = (bool*)v.m_data;
+					p->second.SetBool4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				case eDataType::INT4:
+				{
+					int* data = (int*)v.m_data;
+					p->second.SetInt4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				case eDataType::FLOAT4:
+				{
+					float* data = (float*)v.m_data;
+					p->second.SetFloat4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				case eDataType::UINT4:
+				{
+					unsigned int* data = (unsigned int*)v.m_data;
+					p->second.SetUint4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				}
+#endif
+			}
+			p->second.Draw(indexCount);
 		}
 	}
 #if defined(DX11)
 	void Technique::SetBuffer(int slot, Buffer buff, void* data)
 	{
-		for (Pass& p : m_passes)
+		for (map<string, Pass>::iterator p; p != m_passes.end(); p++)
 		{
-			p.SetBuffer(slot, buff, data);
+			p->second.SetBuffer(slot, buff, data);
 		}
 	}
 #elif defined(OGL)
 	void Technique::Unuse()
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.Unuse();
+			ps->second.Unuse();
 		}
 	}
 	void Technique::SetBool(const string name, bool value)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetBool(name, value);
+			ps->second.SetBool(name, value);
 		}
 	}
 	void Technique::SetInt(const string name, int value)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetInt(name, value);
+			ps->second.SetInt(name, value);
 		}
 	}
 	void Technique::SetFloat(const string name, float value)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetFloat(name, value);
+			ps->second.SetFloat(name, value);
 		}
 	}
 	void Technique::SetUint(const string name, unsigned int value)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetUint(name, value);
+			ps->second.SetUint(name, value);
 		}
 	}
 	void Technique::SetBool2(const string name, bool value1, bool value2)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetBool2(name, value1, value2);
+			ps->second.SetBool2(name, value1, value2);
 		}
 	}
 	void Technique::SetInt2(const string name, int value1, int value2)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetInt2(name, value1, value2);
+			ps->second.SetInt2(name, value1, value2);
 		}
 	}
 	void Technique::SetFloat2(const string name, float value1, float value2)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetFloat2(name, value1, value2);
+			ps->second.SetFloat2(name, value1, value2);
 		}
 	}
 	void Technique::SetUint2(const string name, unsigned int value1, unsigned int value2)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetUint2(name, value1, value2);
+			ps->second.SetUint2(name, value1, value2);
 		}
 	}
 	void Technique::SetBool3(const string name, bool value1, bool value2, bool value3)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetBool3(name, value1, value2, value3);
+			ps->second.SetBool3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetInt3(const string name, int value1, int value2, int value3)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetInt3(name, value1, value2, value3);
+			ps->second.SetInt3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetFloat3(const string name, float value1, float value2, float value3)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetFloat3(name, value1, value2, value3);
+			ps->second.SetFloat3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetUint3(name, value1, value2, value3);
+			ps->second.SetUint3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetBool4(const string name, bool value1, bool value2, bool value3, bool value4)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetBool4(name, value1, value2, value3, value4);
+			ps->second.SetBool4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetInt4(const string name, int value1, int value2, int value3, int value4)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetInt4(name, value1, value2, value3, value4);
+			ps->second.SetInt4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetFloat4(const string name, float value1, float value2, float value3, float value4)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetFloat4(name, value1, value2, value3, value4);
+			ps->second.SetFloat4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetUint4(name, value1, value2, value3, value4);
+			ps->second.SetUint4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetMat4(const string name, glm::mat4 value)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetMat4(name, value);
+			ps->second.SetMat4(name, value);
 		}
 	}
 	void Technique::SetInputLayout(unsigned int VAO)
 	{
-		for (Pass& ps : m_passes)
+		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
-			ps.SetInputLayout(VAO);
+			ps->second.SetInputLayout(VAO);
 		}
 	}
 #endif
+
+#if defined(DX11)
+	void Technique::AddTrackValue(string name, unsigned int id, unsigned int size)
+	{
+		m_values.push_back(Values(name, id, size));
+	}
+	void Technique::AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size)
+	{
+		m_passes[passName].AddTrackValue(name, id, size);
+	}
+#elif defined(OGL)
+	void Technique::AddTrackValue(string name, string uniform, eDataType type)
+	{
+		m_values.push_back(Values(name, uniform, type));
+	}
+	void Technique::AddPassTrackValue(string passName, string name, string uniform, eDataType type)
+	{
+		m_passes[passName].AddTrackValue(name, uniform, type);
+	}
+#endif
+	void Technique::SetValue(string name, void* data)
+	{
+		for (Values& v : m_values)
+		{
+			if (v.m_name == name)
+			{
+				memcpy(v.m_data, data, v.m_size);
+			}
+		}
+	}
+
+
+
 }

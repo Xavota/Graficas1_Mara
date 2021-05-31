@@ -50,6 +50,8 @@ namespace GraphicsModule
 
 		SamplerState                        g_pSamplerLinear;
 		/**/
+		RenderTargetView RTV2;
+		ShaderResourceView srv;
 #endif
 
 
@@ -81,7 +83,8 @@ namespace GraphicsModule
 			/*g_RenderManager->UpdateSubresource(g_RenderManager->GetViewPositionBuffer(), 0, NULL, &pos, 0, 0);
 			g_RenderManager->PSSetConstantBuffers(3, 1, g_RenderManager->GetViewPositionBuffer());/**/
 			//ShaderChange
-			GraphicsModule::GetManager()->getShader().SetBuffer(3, g_RenderManager->GetViewPositionBuffer(), &pos);
+			//GraphicsModule::GetManager()->getShader().SetBuffer(3, g_RenderManager->GetViewPositionBuffer(), &pos);
+			GraphicsModule::GetManager()->getShader().SetEffectValue("ViewPosition", &pos);
 #elif defined(OGL)
 			g_RenderManager->ShaderSetFloat4("viewPos", pos.x, pos.y, pos.z, pos.w);
 			g_RenderManager->ShaderSetFloat4("viewDir2", dir.x, dir.y, dir.z, dir.w);
@@ -96,7 +99,8 @@ namespace GraphicsModule
 			/*g_RenderManager->UpdateSubresource(g_RenderManager->GetMaterialShininessBuffer(), 0, NULL, &mat, 0, 0);
 			g_RenderManager->PSSetConstantBuffers(4, 1, g_RenderManager->GetMaterialShininessBuffer());/**/
 			//ShaderChange
-			GraphicsModule::GetManager()->getShader().SetBuffer(4, g_RenderManager->GetMaterialShininessBuffer(), &mat);
+			//GraphicsModule::GetManager()->getShader().SetBuffer(4, g_RenderManager->GetMaterialShininessBuffer(), &mat);
+			GraphicsModule::GetManager()->getShader().SetEffectValue("Material", &mat);
 #elif defined(OGL)
 			g_RenderManager->ShaderSetFloat("shininess", scatering);
 #endif

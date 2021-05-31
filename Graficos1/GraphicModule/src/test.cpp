@@ -95,7 +95,7 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 
-		g_RenderManager->OMSetRenderTargets(1, g_pRenderTargetView, g_pDepthStencilView);
+		//g_RenderManager->OMSetRenderTargets(1, g_pRenderTargetView, g_pDepthStencilView);
 
 
 
@@ -107,7 +107,7 @@ namespace GraphicsModule
 
 
 		/*Create buffers that pass data to the shaders*/
-		BUFFER_DESC bd;
+		/*BUFFER_DESC bd;
 		ZeroMemory(&bd, sizeof(bd));
 		bd.Usage = USAGE_DEFAULT;
 		bd.ByteWidth = sizeof(ProjectionMat);
@@ -124,32 +124,32 @@ namespace GraphicsModule
 
 		bd.ByteWidth = sizeof(ModelMat);
 		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetChangesEveryFrameBuffer());/**/
-		if (FAILED(hr))
+		/*if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(Vector4);
 		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetViewPositionBuffer());/**/
-		if (FAILED(hr))
+		/*if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(Material);
 		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetMaterialShininessBuffer());/**/
-		if (FAILED(hr))
+		/*if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(DirectionalLight);
 		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetDirectionalLightBuffer());/**/
-		if (FAILED(hr))
+		/*if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(PointLight);
 		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetPointLightBuffer());/**/
-		if (FAILED(hr))
+		/*if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(SpotLight);
 		hr = g_RenderManager->CreateBuffer(&bd, NULL, g_RenderManager->GetSpotLightBuffer());/**/
-		if (FAILED(hr))
+		/*if (FAILED(hr))
 			return hr;
 
 
@@ -168,6 +168,53 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 		g_RenderManager->PSSetSamplers(0, 1, g_pSamplerLinear);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		Texture2D g_pTextRT2;
+		TEXTURE2D_DESC descTextRT;
+		ZeroMemory(&descTextRT, sizeof(descTextRT));
+		descTextRT.Width = 1264;
+		descTextRT.Height = 681;
+		descTextRT.MipLevels = 1;
+		descTextRT.ArraySize = 1;
+		descTextRT.Format = FORMAT_R8G8B8A8_UNORM;
+		descTextRT.SampleDesc.Count = 1;
+		descTextRT.SampleDesc.Quality = 0;
+		descTextRT.Usage = USAGE_DEFAULT;
+		descTextRT.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
+		descTextRT.CPUAccessFlags = 0;
+		descTextRT.MiscFlags = 0;
+		if (FAILED(g_RenderManager->CreateTexture2D(&descTextRT, NULL, g_pTextRT2)))
+			return E_FAIL;
+
+		// create the rt Shader resource view
+		SHADER_RESOURCE_VIEW_DESC descViewRT;
+		ZeroMemory(&descViewRT, sizeof(descViewRT));
+		descViewRT.Format = FORMAT_R8G8B8A8_UNORM;
+		descViewRT.ViewDimension = SRV_DIMENSION_TEXTURE2D;
+		descViewRT.Texture2D.MostDetailedMip = 0;
+		descViewRT.Texture2D.MipLevels = 1;
+		if (FAILED(g_RenderManager->CreateShaderResourceView(g_pTextRT2, &descViewRT, srv)))
+			return E_FAIL;
+
+		// Create the render target view
+		if (FAILED(g_RenderManager->CreateRenderTargetView(g_pTextRT2, NULL, RTV2)))
+			return E_FAIL;
+
+		g_pTextRT2.Release();
 #elif defined(OGL)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -175,7 +222,18 @@ namespace GraphicsModule
 	//g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 #endif
 
-		g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
+		g_RenderManager->getShader().CreatePass("Lights", "miVertex.fx", "miPixel.fx");
+#if defined(DX11)
+		g_RenderManager->getShader().AddEffectTrackValue("ViewMatrix", 0, sizeof(ViewMat));
+		g_RenderManager->getShader().AddEffectTrackValue("ProjectionMatrix", 1, sizeof(ProjectionMat));
+		g_RenderManager->getShader().AddEffectTrackValue("ModelMatrix", 2, sizeof(ModelMat));
+		g_RenderManager->getShader().AddEffectTrackValue("ViewPosition", 3, sizeof(Vector4));
+		g_RenderManager->getShader().AddEffectTrackValue("Material", 4, sizeof(Material));
+		g_RenderManager->getShader().AddEffectTrackValue("DirectionalLight", 5, sizeof(DirectionalLight));
+		g_RenderManager->getShader().AddEffectTrackValue("PointLight", 6, sizeof(PointLight));
+		g_RenderManager->getShader().AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));
+#elif defined(OGL)
+#endif
 		return S_OK;
 	}
 
@@ -197,9 +255,14 @@ namespace GraphicsModule
 
 	void test::Clear()
 	{
-		g_RenderManager->getShader().Use();
+		//g_RenderManager->getShader().Use();
 #if defined(DX11)
-		g_RenderManager->ClearAndSetRenderTargets(1, g_pRenderTargetView, g_pDepthStencilView, g_ClearColor);
+
+		std::vector<RenderTargetView> rtvs;
+		rtvs.push_back(g_pRenderTargetView);
+		rtvs.push_back(RTV2);
+
+		g_RenderManager->ClearAndSetRenderTargets(rtvs, g_pDepthStencilView, g_ClearColor);
 #elif defined(OGL)
 		glClearColor(g_ClearColor[0] * g_ClearColor[3], g_ClearColor[1] * g_ClearColor[3], g_ClearColor[2] * g_ClearColor[3], g_ClearColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

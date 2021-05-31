@@ -150,7 +150,12 @@ void Mesh::Draw(RenderManager* renderManager)
 	renderManager->IASetVertexBuffers(0, 1, m_pVertexBuffer, &stride, &offset);
 	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);
 
-	renderManager->DrawIndexed(m_indicesCount, 0, 0);
+	//renderManager->getShader().Use();
+	renderManager->getShader().Draw(m_indicesCount);
+	// TODO: Cambiar a que el Use() pida la cantidad de índices a renderizar para llamar a la función desde dentro
+	// (o cambiar la función de Use() a un drawCall con la misma cantidad de índices
+
+	//renderManager->DrawIndexed(m_indicesCount, 0, 0);
 
 #elif defined(OGL)
 	glBindVertexArray(VAO);
