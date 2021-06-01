@@ -81,19 +81,19 @@ void RenderManager::DrawIndexed(unsigned int IndexCount, unsigned int StartIndex
 	m_deviceContext.DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
 
-void RenderManager::OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView& pDepthStencilView)
+void RenderManager::OMSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView)
 {
-	m_deviceContext.OMSetRenderTargets(ppRenderTargetViews, pDepthStencilView);
+	m_deviceContext.OMSetRenderTargets(count, ppRenderTargetViews, pDepthStencilView);
 }
 
-void RenderManager::ClearAndSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4])
+void RenderManager::ClearAndSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4])
 {
-	for (int i = 0; i < ppRenderTargetViews.size(); i++)
+	for (int i = 0; i < count; i++)
 	{
 		ClearRenderTargetView(ppRenderTargetViews[i], ColorRGBA);
 	}
 	ClearDepthStencilView(pDepthStencilView, CLEAR_DEPTH, 1.0f, 0);
-	OMSetRenderTargets(ppRenderTargetViews, pDepthStencilView);
+	OMSetRenderTargets(count, ppRenderTargetViews, pDepthStencilView);
 }
 
 void RenderManager::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports)

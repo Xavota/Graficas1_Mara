@@ -37,7 +37,7 @@ public:
 		unsigned int SrcRowPitch, unsigned int SrcDepthPitch);
 	void UpdateTexture2D(Texture2D& texture, const void* data, unsigned int rowSize);
 	void DrawIndexed(unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation);
-	void OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView pDepthStencilView);
+	void OMSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView pDepthStencilView);
 	void RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports);
 	void IASetInputLayout(InputLayout& pInputLayout);
 	void IASetVertexBuffers(unsigned int StartSlot, unsigned int NumBuffers, Buffer ppVertexBuffers,

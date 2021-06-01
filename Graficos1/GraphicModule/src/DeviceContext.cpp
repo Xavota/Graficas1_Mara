@@ -23,14 +23,14 @@ void DeviceContext::DrawIndexed(unsigned int IndexCount, unsigned int StartIndex
 	m_pImmediateContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
 
-void DeviceContext::OMSetRenderTargets(std::vector<RenderTargetView>& ppRenderTargetViews, DepthStencilView pDepthStencilView)
+void DeviceContext::OMSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView pDepthStencilView)
 {
 	std::vector<ID3D11RenderTargetView*> renderTargets;
-	for (int i = 0; i < ppRenderTargetViews.size(); i++)
+	for (int i = 0; i < count; i++)
 	{
 		renderTargets.push_back(ppRenderTargetViews[i].getPtr());
 	}
-	m_pImmediateContext->OMSetRenderTargets(ppRenderTargetViews.size(), renderTargets.data(), pDepthStencilView.getStencilViewPtr());
+	m_pImmediateContext->OMSetRenderTargets(count, renderTargets.data(), pDepthStencilView.getStencilViewPtr());
 }
 
 void DeviceContext::RSSetViewports(unsigned int NumViewports, const VIEWPORT* pViewports)

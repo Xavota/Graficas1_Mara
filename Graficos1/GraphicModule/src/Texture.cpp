@@ -107,11 +107,11 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags)
 }
 
 #if defined(DX11)
-bool Texture::CreateTextureFromBuffer(Texture2D buffer)
+bool Texture::CreateTextureFromBuffer(Texture2D& buffer)
 {
 	SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
-	srvDesc.Format = FORMAT_R32_FLOAT;
+	srvDesc.Format = FORMAT_R8G8B8A8_UNORM;
 	srvDesc.ViewDimension = SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1; // same as orig texture
 	HRESULT hr = GetManager()->CreateShaderResourceView(buffer, &srvDesc, m_texture);

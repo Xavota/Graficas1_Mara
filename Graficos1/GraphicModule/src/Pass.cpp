@@ -108,12 +108,21 @@ namespace GraphicsModule
 			}
 #endif
 		}
-		/*std::vector<Texture> texs;
-		for (map<string, Texture>::iterator tex = m_inputTextures.begin(); tex != m_inputTextures.end(); tex++)
+
+
+		float color[4] = { 0.0f,0.0f,0.0f,0.0f };
+		std::vector<RenderTargetView> rtvs;
+		for (OutputTexture& ot : m_outputTextures)
 		{
-			texs.push_back(tex->second);
+			rtvs.push_back(*ot.m_renderTarget);
 		}
-		GetManager()->PSSetShaderResources()*/
+		GetManager()->ClearAndSetRenderTargets(rtvs.size(), rtvs.data(), m_outputTextures[0].m_depthStencil, color);
+
+		int slot = 0;
+		for (InputTexture& it : m_inputTextures)
+		{
+			GetManager()->PSSetShaderResources(slot++, {it.m_texture});
+		}
 	}
 	void Pass::Draw(unsigned int indexCount)
 	{
@@ -217,23 +226,33 @@ namespace GraphicsModule
 
 	void Pass::AddInputTexture(string name)
 	{
-		m_inputTextures.insert(make_pair(name, Texture()));
-		// TODO: Terminar de setear el sistema de intercambio de texturas entre pases
+		m_inputTextures.push_back({name, Texture()});
 	}
 
 	void Pass::SetInputTexture(string name, Texture tex)
 	{
-		m_inputTextures[name] = tex;
+		for (InputTexture& it : m_inputTextures)
+		{
+			if (it.m_name == name)
+				it.m_texture = tex;
+		}
 	}
 
 	void Pass::AddOutputTexture(string name)
 	{
-		m_outputTextures.insert(make_pair(name, RenderTargetView()));
+		m_outputTextures.push_back({name, nullptr, DepthStencilView()});
 	}
 
-	void Pass::SetOutputTexture(string name, RenderTargetView tex)
+	void Pass::SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv)
 	{
-		m_outputTextures[name] = tex;
+		for (OutputTexture& ot : m_outputTextures)
+		{		
+			if (ot.m_name == name)
+			{
+				ot.m_renderTarget = tex;
+				ot.m_depthStencil = dsv;
+			}
+		}
 	}
 
 	void Pass::SetValue(string name, void* data)

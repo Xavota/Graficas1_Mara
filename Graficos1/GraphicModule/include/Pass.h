@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "OBJInstance.h"
 #include "RenderTargetView.h"
+#include "DepthStencilView.h"
 
 #include <map>
 
@@ -103,16 +104,28 @@ public:
 	void AddInputTexture(string name);
 	void SetInputTexture(string name, Texture tex);
 	void AddOutputTexture(string name);
-	void SetOutputTexture(string name, RenderTargetView tex);
+	void SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv);
 
 	void SetValue(string name, void* data);
 
 
 private:
+	struct OutputTexture
+	{
+		string m_name;
+		RenderTargetView* m_renderTarget;
+		DepthStencilView m_depthStencil;
+	};
 	Shader m_shaders;
 	std::vector<Values> m_values;
 
-	std::map<string, Texture> m_inputTextures;
-	std::map<string, RenderTargetView> m_outputTextures;
+	struct InputTexture
+	{
+		string m_name;
+		Texture m_texture;
+	};
+
+	std::vector<InputTexture> m_inputTextures;
+	std::vector<OutputTexture> m_outputTextures;
 };
 }

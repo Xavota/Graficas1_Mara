@@ -73,6 +73,12 @@ public:
 
 #if defined(DX11)
 	void AddEffectTrackValue(string name, unsigned int id, unsigned int size);
+	void AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size);
+	void AddPassInputTexture(string passName, string textureName);
+	void SetPassInputTexture(string passName, string textureName, Texture tex);
+	void AddPassOutputTexture(string passName, string textureName);
+	void SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv);
+	void UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName);
 #elif defined(OGL)
 	void AddEffectTrackValue(string name, string uniform, Technique::eDataType type);
 #endif

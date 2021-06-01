@@ -54,6 +54,11 @@ public:
 #if defined(DX11)
 	void AddTrackValue(string name, unsigned int id, unsigned int size);
 	void AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size);
+	void AddPassInputTexture(string passName, string textureName);
+	void SetPassInputTexture(string passName, string textureName, Texture tex);
+	void AddPassOutputTexture(string passName, string textureName);
+	void SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv);
+	void UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName);
 #elif defined(OGL)
 	void AddTrackValue(string name, string uniform, eDataType type);
 	void AddPassTrackValue(string passName, string name, string uniform, eDataType type);
@@ -61,10 +66,24 @@ public:
 
 	void SetValue(string name, void* data);
 private:
+	struct TextureExchange
+	{
+		TextureExchange(string outputPassName, string outputTextureName, std::vector<string> inputPassesNames, std::vector<string> inputTexturesNames);
+		string m_outputPassName;
+		string m_outputTextureName;
+		RenderTargetView m_outputTexture;
+		DepthStencilView m_depthStencil;
+		std::vector<string> m_inputPassesNames;
+		std::vector<string> m_inputTexturesNames;
+		std::vector<Texture> m_inputTextures;
+	};
+
 	std::vector<string> m_defines;
 
 	std::map<string, Pass> m_passes;
 	
 	std::vector<Values> m_values;
+
+	std::vector<TextureExchange> m_textureExchanges;
 };
 }

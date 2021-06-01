@@ -242,6 +242,48 @@ namespace GraphicsModule
 			ps.tech.AddTrackValue(name, id, size);
 		}
 	}
+	void Effect::AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddPassTrackValue(passName, name, id, size);
+		}
+	}
+	void Effect::AddPassInputTexture(string passName, string textureName)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddPassInputTexture(passName, textureName);
+		}
+	}
+	void Effect::SetPassInputTexture(string passName, string textureName, Texture tex)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetPassInputTexture(passName, textureName, tex);
+		}
+	}
+	void Effect::AddPassOutputTexture(string passName, string textureName)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddPassOutputTexture(passName, textureName);
+		}
+	}
+	void Effect::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetPassOutputTexture(passName, textureName, tex, dsv);
+		}
+	}
+	void Effect::UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.UniteInputOutputTextures( outputPassName, outpuTextureName, inputPassName, inputTextureName );
+		}
+	}
 #elif defined(OGL)
 	void Effect::AddEffectTrackValue(string name, string uniform, Technique::eDataType type)
 	{

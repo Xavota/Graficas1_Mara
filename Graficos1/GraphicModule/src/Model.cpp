@@ -65,6 +65,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	completePath.Append(m_name.c_str());
 	completePath.Append("_Albedo.jpg");
 	eSTATUS stat = TextureManager::CreateTextureFromFile(completePath.C_Str(), m_name, Flags);
+	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
 	if (stat == OK || stat == REPITED)
 	{
 		setTexture(TextureManager::GetTexture(m_name));
@@ -75,8 +76,10 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	}
 	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Normal.jpg", "norm", MODEL_LOAD_FORMAT_BGRA);
 	setTexture(TextureManager::GetTexture("norm")); 
+	//GetManager()->getShader().AddPassInputTexture("Lights", "normal");
 	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Metallic.jpg", "spec", MODEL_LOAD_FORMAT_BGRA);
 	setTexture(TextureManager::GetTexture("spec"));
+	//GetManager()->getShader().AddPassInputTexture("Lights", "specular");
 
 	HRESULT hr;
 	
@@ -211,7 +214,10 @@ void Model::Draw(RenderManager* renderManager)
 		/*Set primitive topology*/
 		renderManager->IASetPrimitiveTopology(m_topology);
 
-		renderManager->PSSetShaderResources(0, m_textures);
+		//renderManager->PSSetShaderResources(0, m_textures);
+		renderManager->getShader().SetPassInputTexture("GBuffer", "diffuse", m_textures[0]);
+		renderManager->getShader().SetPassInputTexture("GBuffer", "normal", m_textures[1]);
+		renderManager->getShader().SetPassInputTexture("GBuffer", "specular", m_textures[2]);
 #elif defined(OGL)
 		/*Set primitive topology*/
 		glPolygonMode(GL_FRONT_AND_BACK, m_topology);

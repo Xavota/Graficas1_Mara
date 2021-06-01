@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "RenderManager.h"
+
 namespace GraphicsModule
 {
 	void Technique::CompileShader(const char* vertexShaderPath, const char* pixelShaderPath)
@@ -68,9 +70,30 @@ namespace GraphicsModule
 
 	void Technique::Use(unsigned int indexCount)
 	{
+		bool f = true;
 		for (std::map<string, Pass>::iterator p = m_passes.begin(); p != m_passes.end(); p++)
 		{
+			for (TextureExchange& te : m_textureExchanges)
+			{
+				if (te.m_outputPassName == p->first)
+				{
+					p->second.SetOutputTexture(te.m_outputTextureName, &te.m_outputTexture, te.m_depthStencil);
+				}
+				else
+				{
+					for (int i = 0; i < te.m_inputPassesNames.size(); i++)
+					{
+						if (te.m_inputPassesNames[i] == p->first)
+						{
+							p->second.SetInputTexture(te.m_inputTexturesNames[i], te.m_inputTextures[i]);
+							break;
+						}
+					}
+				}
+			}
+
 			p->second.Use();
+
 			for (Values& v : m_values)
 			{
 #if defined(DX11)
@@ -165,7 +188,35 @@ namespace GraphicsModule
 				}
 #endif
 			}
-			p->second.Draw(indexCount);
+
+			if (f)
+			{	
+				p->second.Draw(indexCount);
+				f = false;
+			}
+			else
+			{
+				Mesh m;
+				std::vector<Vertex> vertices =
+				{
+					Vertex{Vector3{-1,-1,0}, Vector2{ 0, 1}, Vector3{0,0,0}, Vector3{0,0,0}, Vector3{0,0,0}},
+					Vertex{Vector3{-1, 1,0}, Vector2{ 0, 0}, Vector3{0,0,0}, Vector3{0,0,0}, Vector3{0,0,0}},
+					Vertex{Vector3{ 1, 1,0}, Vector2{ 1, 0}, Vector3{0,0,0}, Vector3{0,0,0}, Vector3{0,0,0}},
+					Vertex{Vector3{-1,-1,0}, Vector2{ 0, 1}, Vector3{0,0,0}, Vector3{0,0,0}, Vector3{0,0,0}},
+					Vertex{Vector3{ 1, 1,0}, Vector2{ 1, 0}, Vector3{0,0,0}, Vector3{0,0,0}, Vector3{0,0,0}},
+					Vertex{Vector3{ 1,-1,0}, Vector2{ 1, 1}, Vector3{0,0,0}, Vector3{0,0,0}, Vector3{0,0,0}},
+				};
+
+				m.setVertex(vertices);
+				m.setIndices({0,1,2,3,4,5});
+
+				UINT stride = sizeof(Vertex);
+				UINT offset = 0;
+				GetManager()->IASetVertexBuffers(0, 1, m.getVertexBuffer(), &stride, &offset);
+				GetManager()->IASetIndexBuffer(m.getIndexBuffer(), FORMAT_R32_UINT, offset);
+
+				p->second.Draw(m.getIndexCount());
+			}
 		}
 	}
 #if defined(DX11)
@@ -317,10 +368,46 @@ namespace GraphicsModule
 	{
 		m_values.push_back(Values(name, id, size));
 	}
+
 	void Technique::AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size)
 	{
 		m_passes[passName].AddTrackValue(name, id, size);
 	}
+
+	void Technique::AddPassInputTexture(string passName, string textureName)
+	{
+		m_passes[passName].AddInputTexture(textureName);
+	}
+
+	void Technique::SetPassInputTexture(string passName, string textureName, Texture tex)
+	{
+		m_passes[passName].SetInputTexture(textureName, tex);
+	}
+
+	void Technique::AddPassOutputTexture(string passName, string textureName)
+	{
+		m_passes[passName].AddOutputTexture(textureName);
+	}
+
+	void Technique::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
+	{
+		m_passes[passName].SetOutputTexture(textureName, tex, dsv);
+	}
+
+	void Technique::UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName)
+	{
+		for (TextureExchange& te : m_textureExchanges)
+		{
+			if (te.m_outputPassName == outputPassName && te.m_outputTextureName == outpuTextureName)
+			{
+				te.m_inputPassesNames.push_back(inputPassName);
+				te.m_inputTexturesNames.push_back(inputTextureName);
+				return;
+			}
+		}
+		m_textureExchanges.push_back(TextureExchange( outputPassName, outpuTextureName, {inputPassName}, {inputTextureName}));
+	}
+
 #elif defined(OGL)
 	void Technique::AddTrackValue(string name, string uniform, eDataType type)
 	{
@@ -344,4 +431,71 @@ namespace GraphicsModule
 
 
 
+	Technique::TextureExchange::TextureExchange(string outputPassName, string outputTextureName, std::vector<string> inputPassesNames, std::vector<string> inputTexturesNames)
+	{
+		m_outputPassName = outputPassName;
+		m_outputTextureName = outputTextureName;
+		m_inputPassesNames = inputPassesNames;
+		m_inputTexturesNames = inputTexturesNames;
+
+
+		Texture2D depth;
+		TEXTURE2D_DESC descDepth;
+		ZeroMemory(&descDepth, sizeof(descDepth));
+		descDepth.Width = 1264;
+		descDepth.Height = 681;
+		descDepth.MipLevels = 1;
+		descDepth.ArraySize = 1;
+		descDepth.Format = FORMAT_D24_UNORM_S8_UINT;
+		descDepth.SampleDesc.Count = 1;
+		descDepth.SampleDesc.Quality = 0;
+		descDepth.Usage = USAGE_DEFAULT;
+		descDepth.BindFlags = BIND_DEPTH_STENCIL;
+		descDepth.CPUAccessFlags = 0;
+		descDepth.MiscFlags = 0;
+		if (FAILED(GetManager()->CreateTexture2D(&descDepth, NULL, depth)))
+			return;
+
+		DEPTH_STENCIL_VIEW_DESC descDSV;
+		ZeroMemory(&descDSV, sizeof(descDSV));
+		descDSV.Format = descDepth.Format;
+		descDSV.ViewDimension = DSV_DIMENSION_TEXTURE2D;
+		descDSV.Texture2D.MipSlice = 0;
+		if (FAILED(GetManager()->CreateDepthStencilView(depth, &descDSV, m_depthStencil)))
+			return;
+
+		depth.Release();
+
+		Texture2D Tex;
+		TEXTURE2D_DESC descTextRT;
+		ZeroMemory(&descTextRT, sizeof(descTextRT));
+		descTextRT.Width = 1264;
+		descTextRT.Height = 681;
+		descTextRT.MipLevels = 1;
+		descTextRT.ArraySize = 1;
+		descTextRT.Format = FORMAT_R8G8B8A8_UNORM;
+		descTextRT.SampleDesc.Count = 1;
+		descTextRT.SampleDesc.Quality = 0;
+		descTextRT.Usage = USAGE_DEFAULT;
+		descTextRT.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
+		descTextRT.CPUAccessFlags = 0;
+		descTextRT.MiscFlags = 0;
+		if (FAILED(GetManager()->CreateTexture2D(&descTextRT, NULL, Tex)))
+			return;
+
+		if (FAILED(GetManager()->CreateRenderTargetView(Tex, NULL, m_outputTexture)))
+			return;
+
+
+		for (int i = 0; i < m_inputTexturesNames.size(); i++)
+		{
+			m_inputTextures.push_back(Texture());
+			if (!m_inputTextures[i].CreateTextureFromBuffer(Tex))
+			{
+				Tex.Release();
+				return;
+			}
+		}
+	}
+	//1982
 }

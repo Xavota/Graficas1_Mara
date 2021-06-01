@@ -14,7 +14,7 @@ public:
 
 	bool CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags);
 #if defined(DX11)
-	bool CreateTextureFromBuffer(Texture2D buffer);
+	bool CreateTextureFromBuffer(Texture2D& buffer);
 
 	ShaderResourceView getBuffer() { return m_texture; }
 #elif defined(OGL)

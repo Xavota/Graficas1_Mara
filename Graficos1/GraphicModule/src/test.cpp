@@ -222,7 +222,8 @@ namespace GraphicsModule
 	//g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 #endif
 
-		g_RenderManager->getShader().CreatePass("Lights", "miVertex.fx", "miPixel.fx");
+		g_RenderManager->getShader().CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx");
+		g_RenderManager->getShader().CreatePass("Lights", "LightVertex.fx", "LightPixel.fx");
 #if defined(DX11)
 		g_RenderManager->getShader().AddEffectTrackValue("ViewMatrix", 0, sizeof(ViewMat));
 		g_RenderManager->getShader().AddEffectTrackValue("ProjectionMatrix", 1, sizeof(ProjectionMat));
@@ -232,6 +233,25 @@ namespace GraphicsModule
 		g_RenderManager->getShader().AddEffectTrackValue("DirectionalLight", 5, sizeof(DirectionalLight));
 		g_RenderManager->getShader().AddEffectTrackValue("PointLight", 6, sizeof(PointLight));
 		g_RenderManager->getShader().AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));
+
+		g_RenderManager->getShader().AddPassInputTexture("GBuffer", "diffuse");
+		g_RenderManager->getShader().AddPassInputTexture("GBuffer", "normal");
+		g_RenderManager->getShader().AddPassInputTexture("GBuffer", "specular");
+		g_RenderManager->getShader().AddPassOutputTexture("GBuffer", "Position");
+		g_RenderManager->getShader().AddPassOutputTexture("GBuffer", "Color");
+		g_RenderManager->getShader().AddPassOutputTexture("GBuffer", "Normal");
+		g_RenderManager->getShader().AddPassOutputTexture("GBuffer", "Specular");
+
+		g_RenderManager->getShader().AddPassInputTexture("Lights", "position");
+		g_RenderManager->getShader().AddPassInputTexture("Lights", "diffuse");
+		g_RenderManager->getShader().AddPassInputTexture("Lights", "normal");
+		g_RenderManager->getShader().AddPassInputTexture("Lights", "specular");
+		g_RenderManager->getShader().AddPassOutputTexture("Lights", "Final");
+
+		g_RenderManager->getShader().UniteInputOutputTextures("GBuffer", "Position", "Lights", "position");
+		g_RenderManager->getShader().UniteInputOutputTextures("GBuffer", "Color", "Lights", "diffuse");
+		g_RenderManager->getShader().UniteInputOutputTextures("GBuffer", "Normal", "Lights", "normal");
+		g_RenderManager->getShader().UniteInputOutputTextures("GBuffer", "Specular", "Lights", "specular");
 #elif defined(OGL)
 #endif
 		return S_OK;
@@ -258,11 +278,13 @@ namespace GraphicsModule
 		//g_RenderManager->getShader().Use();
 #if defined(DX11)
 
-		std::vector<RenderTargetView> rtvs;
+		/*std::vector<RenderTargetView> rtvs;
 		rtvs.push_back(g_pRenderTargetView);
 		rtvs.push_back(RTV2);
 
-		g_RenderManager->ClearAndSetRenderTargets(rtvs, g_pDepthStencilView, g_ClearColor);
+		g_RenderManager->ClearAndSetRenderTargets(rtvs, g_pDepthStencilView, g_ClearColor);*/
+		g_RenderManager->getShader().SetPassOutputTexture("Lights", "Final", &g_pRenderTargetView, g_pDepthStencilView);
+		//g_RenderManager->getShader().SetPassOutputTexture("GBuffer", "Final", &g_pRenderTargetView, g_pDepthStencilView);
 #elif defined(OGL)
 		glClearColor(g_ClearColor[0] * g_ClearColor[3], g_ClearColor[1] * g_ClearColor[3], g_ClearColor[2] * g_ClearColor[3], g_ClearColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
