@@ -9,75 +9,101 @@ namespace GraphicsModule
 
 	void Effect::GenerateEffects()
 	{
-		for (int i = -1; i < (int)eNORMAL_TECHNIQUES::COUNT; i++)
+		/*for (int i = -1; i < (int)eNORMAL_TECHNIQUES::COUNT; i++)
 		{
-			for (int j = -1; j < (int)eSPECULAR_TECHNIQUES::COUNT; j++)
+			if (eNORMAL_TECHNIQUES(i) == eNORMAL_TECHNIQUES::PIXEL_SHADER)
 			{
-				for (unsigned int k = 0; k <= TEXTURE_MAP_COUNT; k++)
+				for (int j = -1; j < (int)eSPECULAR_TECHNIQUES::COUNT; j++)
 				{
-					m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), k, Technique() });
-
-					switch ((eNORMAL_TECHNIQUES)i)
+					for (unsigned int k = 0; k <= TEXTURE_MAP_COUNT; k++)
 					{
-					case eNORMAL_TECHNIQUES::PIXEL_SHADER:
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("PIXEL_LIGHT");
-						break;
-					case eNORMAL_TECHNIQUES::VERTEX_SHADER:
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("VERTEX_LIGHT");
-						break;
+						for (int l = -1; l < (int)eTONE_CORRECTION_TECHNIQUES::COUNT; l++)
+						{
+							m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), k, eTONE_CORRECTION_TECHNIQUES(l), Technique() });
 
-					}
+							switch ((eNORMAL_TECHNIQUES)i)
+							{
+							case eNORMAL_TECHNIQUES::PIXEL_SHADER:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("PIXEL_LIGHT");
+								break;
+							case eNORMAL_TECHNIQUES::VERTEX_SHADER:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("VERTEX_LIGHT");
+								break;
+
+							}
 
 
-					switch ((eSPECULAR_TECHNIQUES)j)
-					{
-					case eSPECULAR_TECHNIQUES::PHONG:
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("PHONG");
-						break;
-					case eSPECULAR_TECHNIQUES::BLINN_PHONG:
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
-						break;
-					}
+							switch ((eSPECULAR_TECHNIQUES)j)
+							{
+							case eSPECULAR_TECHNIQUES::PHONG:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("PHONG");
+								break;
+							case eSPECULAR_TECHNIQUES::BLINN_PHONG:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
+								break;
+							}
 
-					if (k & TEXTURE_MAP_DIFFUSE)
-					{
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("DIFFUSE_MAP");
-					}
-					if (k & TEXTURE_MAP_NORMAL)
-					{
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");
-					}
-					if (k & TEXTURE_MAP_SPECULAR)
-					{
-						m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
-					}
+							if (k & TEXTURE_MAP_DIFFUSE)
+							{
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("DIFFUSE_MAP");
+							}
+							if (k & TEXTURE_MAP_NORMAL)
+							{
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");
+							}
+							if (k & TEXTURE_MAP_SPECULAR)
+							{
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
+							}
 
+
+							switch ((eTONE_CORRECTION_TECHNIQUES)l)
+							{
+							case eTONE_CORRECTION_TECHNIQUES::BASIC:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("BASIC");
+								break;
+							case eTONE_CORRECTION_TECHNIQUES::REINHARD:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("REINHARD");
+								break;
+							case eTONE_CORRECTION_TECHNIQUES::BURGESS_DAWSON:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("BURGESS_DAWSON");
+								break;
+							case eTONE_CORRECTION_TECHNIQUES::UNCHARTED2:
+								m_techniques[m_techniques.size() - 1].tech.AddDefine("UNCHARTED2");
+								break;
+							}
+						}
+					}
 				}
 			}
-		}
+
+		}/**/
+
+		m_techniques.push_back({ eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES::NONE, 0, eTONE_CORRECTION_TECHNIQUES::NONE, Technique() });
 
 		m_currentTechnique = &m_techniques[0].tech;
 	}
 
-	void Effect::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath)
+	void Effect::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull)
 	{
 		if (m_techniques.size() == 0)
 			GenerateEffects();
 		
 		for (Techs& t : m_techniques)
 		{
-			t.tech.CreatePass(name, vertexShaderPath, pixelShaderPath);
+			t.tech.CreatePass(name, vertexShaderPath, pixelShaderPath, cull);
 		}
 		
 	}	
 
-	void Effect::SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags)
+	void Effect::SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags, eTONE_CORRECTION_TECHNIQUES toneMap/**/)
 	{
 		for (Techs& t : m_techniques)
 		{
-			if (t.normalTech == nor && t.specularTech == spec && t.texFlagsTech == texFlags)
+			if (t.normalTech == nor && t.specularTech == spec && t.texFlagsTech == texFlags && t.m_toneMap == toneMap/**/)
 			{
 				m_currentTechnique = &t.tech;
+				return;
 			}
 		}
 	}
@@ -85,9 +111,11 @@ namespace GraphicsModule
 	void Effect::Use()
 	{
 	}
-	void Effect::Draw(unsigned int indexCount)
+	//void Effect::Draw(unsigned int indexCount)
+	void Effect::Draw()
 	{
-		m_currentTechnique->Use(indexCount);
+		//m_currentTechnique->Use(indexCount);
+		m_currentTechnique->Use();
 	}
 #if defined(DX11)
 	/*void Effect::SetBuffer(int slot, Buffer buff, void* data)
@@ -263,11 +291,11 @@ namespace GraphicsModule
 			ps.tech.SetPassInputTexture(passName, textureName, tex);
 		}
 	}
-	void Effect::AddPassOutputTexture(string passName, string textureName)
+	void Effect::AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4])
 	{
 		for (Techs& ps : m_techniques)
 		{
-			ps.tech.AddPassOutputTexture(passName, textureName);
+			ps.tech.AddPassOutputTexture(passName, textureName, cleanRenderTarget, clearColor);
 		}
 	}
 	void Effect::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
@@ -284,6 +312,13 @@ namespace GraphicsModule
 			ps.tech.UniteInputOutputTextures( outputPassName, outpuTextureName, inputPassName, inputTextureName );
 		}
 	}
+	void Effect::UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.UniteOutputOutputTextures(outputPassName, outpuTextureName, newOutputPassName, newOutputTextureName);
+		}
+	}
 #elif defined(OGL)
 	void Effect::AddEffectTrackValue(string name, string uniform, Technique::eDataType type)
 	{
@@ -298,6 +333,20 @@ namespace GraphicsModule
 		for (Techs& ps : m_techniques)
 		{
 			ps.tech.SetValue(name, data);
+		}
+	}
+	void Effect::SetPassValue(string passName, string name, void* data)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetPassValue(passName, name, data);
+		}
+	}
+	void Effect::AddObjectToPass(string passName, OBJInstance* obj, bool useTextures)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddObjectToPass(passName, obj, useTextures);
 		}
 	}
 }

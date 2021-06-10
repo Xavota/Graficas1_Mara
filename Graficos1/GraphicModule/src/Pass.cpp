@@ -3,18 +3,29 @@
 
 namespace GraphicsModule
 {
-	void Pass::DrawPass()
+	Pass::Pass(CULL_MODE cull)
 	{
-		
+		RASTERIZER_DESC rsDesc;
+		ZeroMemory(&rsDesc, sizeof(RASTERIZER_DESC));
+		rsDesc.FillMode = FILL_SOLID;
+		rsDesc.CullMode = cull;
+		rsDesc.FrontCounterClockwise = true;
+
+		if (FAILED(GetManager()->CreateRasterizerState(&rsDesc, m_rsState)))
+		{
+			cout << "mal" << endl;
+		}
 	}
+
 	void Pass::Compile(const char* vertexShaderString, const char* pixelShaderString)
 	{
 		m_shaders.CompileFromString(vertexShaderString, pixelShaderString);
 	}
+
 	void Pass::Use()
 	{
 		m_shaders.Use();
-		for (Values& v : m_values)
+		/*for (Values& v : m_values)
 		{
 #if defined(DX11)
 			m_shaders.SetBuffer(v.m_id, v.m_buff, v.m_data);
@@ -107,26 +118,144 @@ namespace GraphicsModule
 			}
 			}
 #endif
-		}
+		}*/
 
-
-		float color[4] = { 0.0f,0.0f,0.0f,0.0f };
 		std::vector<RenderTargetView> rtvs;
+		std::vector<bool> cleans;
+		std::vector<float*> clearColors;
 		for (OutputTexture& ot : m_outputTextures)
 		{
-			rtvs.push_back(*ot.m_renderTarget);
+			if (ot.m_renderTarget != nullptr)
+			{
+				rtvs.push_back(*ot.m_renderTarget);
+				cleans.push_back(ot.m_cleanRenderTarget);
+				clearColors.push_back(ot.m_clearColor);
+			}
 		}
-		GetManager()->ClearAndSetRenderTargets(rtvs.size(), rtvs.data(), m_outputTextures[0].m_depthStencil, color);
+		if (rtvs.size() > 0 && m_depthStencil.getStencilViewPtr() != NULL)
+			GetManager()->ClearAndSetRenderTargets(rtvs.size(), rtvs.data(), m_depthStencil, clearColors, cleans);
 
-		int slot = 0;
+		/*int slot = 0;
 		for (InputTexture& it : m_inputTextures)
 		{
 			GetManager()->PSSetShaderResources(slot++, {it.m_texture});
-		}
+		}*/
 	}
-	void Pass::Draw(unsigned int indexCount)
+
+	//void Pass::Draw(unsigned int indexCount)/*
+	void Pass::Draw()/**/
 	{
-		GetManager()->DrawIndexed(indexCount, 0, 0);
+		GetManager()->RSSetState(m_rsState);
+		//GetManager()->DrawIndexed(indexCount, 0, 0);/*
+		for (ObjectStruct obj : m_objects)
+		{
+			obj.m_obj->SetResources(GetManager(), obj.m_useTextures); 
+
+			for (Values& v : m_values)
+			{
+#if defined(DX11)
+				m_shaders.SetBuffer(v.m_id, v.m_buff, v.m_data);
+#elif defined(OGL)
+				switch (v.m_type)
+				{
+				case eDataType::BOOL:
+					m_shaders.SetBool(v.m_uniform, *(bool*)v.m_data);
+					break;
+				case eDataType::INT:
+					m_shaders.SetBool(v.m_uniform, *(int*)v.m_data);
+					break;
+				case eDataType::FLOAT:
+					m_shaders.SetBool(v.m_uniform, *(float*)v.m_data);
+					break;
+				case eDataType::UINT:
+					m_shaders.SetBool(v.m_uniform, *(unsigned int*)v.m_data);
+					break;
+				case eDataType::BOOL2:
+				{
+					bool* data = (bool*)v.m_data;
+					m_shaders.SetBool2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::INT2:
+				{
+					int* data = (int*)v.m_data;
+					m_shaders.SetInt2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::FLOAT2:
+				{
+					float* data = (float*)v.m_data;
+					m_shaders.SetFloat2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::UNIT2:
+				{
+					unsigned int* data = (unsigned int*)v.m_data;
+					m_shaders.SetUint2(v.m_uniform, data[0], data[1]);
+					break;
+				}
+				case eDataType::BOOL3:
+				{
+					bool* data = (bool*)v.m_data;
+					m_shaders.SetBool3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::INT3:
+				{
+					int* data = (int*)v.m_data;
+					m_shaders.SetInt3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::FLOAT3:
+				{
+					float* data = (float*)v.m_data;
+					m_shaders.SetFloat3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::UINT3:
+				{
+					unsigned int* data = (unsigned int*)v.m_data;
+					m_shaders.SetUint3(v.m_uniform, data[0], data[1], data[2]);
+					break;
+				}
+				case eDataType::BOOL4:
+				{
+					bool* data = (bool*)v.m_data;
+					m_shaders.SetBool4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				case eDataType::INT4:
+				{
+					int* data = (int*)v.m_data;
+					m_shaders.SetInt4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				case eDataType::FLOAT4:
+				{
+					float* data = (float*)v.m_data;
+					m_shaders.SetFloat4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				case eDataType::UINT4:
+				{
+					unsigned int* data = (unsigned int*)v.m_data;
+					m_shaders.SetUint4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					break;
+				}
+				}
+#endif
+			}
+
+			int slot = 0;
+			for (InputTexture& it : m_inputTextures)
+			{
+				GetManager()->PSSetShaderResources(slot++, { it.m_texture });
+			}
+
+			
+			obj.m_obj->Draw(GetManager(), obj.m_useTextures);
+		}
+		/**/
 	}
 #if defined(DX11)
 	void Pass::SetBuffer(int slot, Buffer buff, void* data)
@@ -238,9 +367,9 @@ namespace GraphicsModule
 		}
 	}
 
-	void Pass::AddOutputTexture(string name)
+	void Pass::AddOutputTexture(string name, bool cleanRenderTarget, float clearColor[4])
 	{
-		m_outputTextures.push_back({name, nullptr, DepthStencilView()});
+		m_outputTextures.push_back(OutputTexture( name, nullptr, cleanRenderTarget, clearColor ));
 	}
 
 	void Pass::SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv)
@@ -250,9 +379,10 @@ namespace GraphicsModule
 			if (ot.m_name == name)
 			{
 				ot.m_renderTarget = tex;
-				ot.m_depthStencil = dsv;
+				break;
 			}
 		}
+		m_depthStencil = dsv;
 	}
 
 	void Pass::SetValue(string name, void* data)
@@ -264,6 +394,11 @@ namespace GraphicsModule
 				memcpy(v.m_data, data, v.m_size);
 			}
 		}
+	}
+
+	void GraphicsModule::Pass::AddObject(OBJInstance* obj, bool useTextures)
+	{
+		m_objects.push_back({obj, useTextures});
 	}
 
 

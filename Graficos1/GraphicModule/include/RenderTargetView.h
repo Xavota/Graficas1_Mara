@@ -10,6 +10,7 @@ class RenderTargetView
 {
 public:
 	RenderTargetView() = default;
+	//RenderTargetView(const RenderTargetView& other);
 	~RenderTargetView() = default;
 
 #if defined(DX11)

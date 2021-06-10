@@ -10,7 +10,7 @@ namespace GraphicsModule
 	{
 	}
 
-	void Technique::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath)
+	void Technique::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull)
 	{
 		std::ifstream vsFile(vertexShaderPath);
 		std::stringstream vsString;
@@ -18,13 +18,13 @@ namespace GraphicsModule
 #if defined(DX11)
 		vsString << "#define DX11" << '\n';
 #elif defined(OGL)
-		vsString << "#version 330 core" << '\n';
-		vsString << "#define OGL" << '\n';
+		//vsString << "#version 330 core" << '\n';
+		//vsString << "#define OGL" << '\n';
 #endif
 
 		for (string& s : m_defines)
 		{
-			vsString << "#define " << s << '\n';
+			//vsString << "#define " << s << '\n';
 		}
 
 		while (!vsFile.eof())
@@ -42,13 +42,13 @@ namespace GraphicsModule
 #if defined(DX11)
 		psString << "#define DX11" << '\n';
 #elif defined(OGL)
-		psString << "#version 330 core" << '\n';
-		psString << "#define OGL" << '\n';
+		//psString << "#version 330 core" << '\n';
+		//psString << "#define OGL" << '\n';
 #endif
 
 		for (string& s : m_defines)
 		{
-			psString << "#define " << s << '\n';
+			//psString << "#define " << s << '\n';
 		}
 
 		while (!psFile.eof())
@@ -59,8 +59,8 @@ namespace GraphicsModule
 		}
 
 
-		m_passes.insert(make_pair(name, Pass()));
-		m_passes[name].Compile(vsString.str().c_str(), psString.str().c_str());
+		m_passes.push_back({name, Pass(cull)});
+		m_passes[m_passes.size() - 1].m_pass.Compile(vsString.str().c_str(), psString.str().c_str());
 	}
 
 	void Technique::AddDefine(std::string def)
@@ -68,130 +68,136 @@ namespace GraphicsModule
 		m_defines.push_back(def);	
 	}
 
-	void Technique::Use(unsigned int indexCount)
+	//void Technique::Use(unsigned int indexCount)
+	void Technique::Use()
 	{
 		bool f = true;
-		for (std::map<string, Pass>::iterator p = m_passes.begin(); p != m_passes.end(); p++)
+		for (PassStruct& p : m_passes)
 		{
 			for (TextureExchange& te : m_textureExchanges)
 			{
-				if (te.m_outputPassName == p->first)
+				if (te.m_outputPassName == p.m_name)
 				{
-					p->second.SetOutputTexture(te.m_outputTextureName, &te.m_outputTexture, te.m_depthStencil);
+					//p.m_pass.SetOutputTexture(te.m_outputTextureName, &te.m_outputTexture, te.m_depthStencil);
+					p.m_pass.SetOutputTexture(te.m_outputTextureName, GetManager()->GetRenderTarget(te.m_outputPassName + te.m_outputTextureName), *GetManager()->GetDepthStencil(te.m_outputPassName + te.m_outputTextureName));
 				}
 				else
 				{
 					for (int i = 0; i < te.m_inputPassesNames.size(); i++)
 					{
-						if (te.m_inputPassesNames[i] == p->first)
+						if (te.m_inputPassesNames[i] == p.m_name)
 						{
-							p->second.SetInputTexture(te.m_inputTexturesNames[i], te.m_inputTextures[i]);
+							//p.m_pass.SetInputTexture(te.m_inputTexturesNames[i], te.m_inputTextures[i]);
+							p.m_pass.SetInputTexture(te.m_inputTexturesNames[i], *GetManager()->GetTexture(te.m_outputPassName + te.m_outputTextureName));
 							break;
 						}
 					}
 				}
 			}
 
-			p->second.Use();
+			p.m_pass.Use();
 
 			for (Values& v : m_values)
 			{
 #if defined(DX11)
-				p->second.SetBuffer(v.m_id, v.m_buff, v.m_data);
+				p.m_pass.SetBuffer(v.m_id, v.m_buff, v.m_data);
 #elif defined(OGL)
 				switch (v.m_type)
 				{
 				case eDataType::BOOL:
-					p->second.SetBool(v.m_uniform, *(bool*)v.m_data);
+					p.m_pass.SetBool(v.m_uniform, *(bool*)v.m_data);
 					break;
 				case eDataType::INT:
-					p->second.SetBool(v.m_uniform, *(int*)v.m_data);
+					p.m_pass.SetBool(v.m_uniform, *(int*)v.m_data);
 					break;
 				case eDataType::FLOAT:
-					p->second.SetBool(v.m_uniform, *(float*)v.m_data);
+					p.m_pass.SetBool(v.m_uniform, *(float*)v.m_data);
 					break;
 				case eDataType::UINT:
-					p->second.SetBool(v.m_uniform, *(unsigned int*)v.m_data);
+					p.m_pass.SetBool(v.m_uniform, *(unsigned int*)v.m_data);
 					break;
 				case eDataType::BOOL2:
 				{
 					bool* data = (bool*)v.m_data;
-					p->second.SetBool2(v.m_uniform, data[0], data[1]);
+					p.m_pass.SetBool2(v.m_uniform, data[0], data[1]);
 					break;
 				}
 				case eDataType::INT2:
 				{
 					int* data = (int*)v.m_data;
-					p->second.SetInt2(v.m_uniform, data[0], data[1]);
+					p.m_pass.SetInt2(v.m_uniform, data[0], data[1]);
 					break;
 				}
 				case eDataType::FLOAT2:
 				{
 					float* data = (float*)v.m_data;
-					p->second.SetFloat2(v.m_uniform, data[0], data[1]);
+					p.m_pass.SetFloat2(v.m_uniform, data[0], data[1]);
 					break;
 				}
 				case eDataType::UNIT2:
 				{
 					unsigned int* data = (unsigned int*)v.m_data;
-					p->second.SetUint2(v.m_uniform, data[0], data[1]);
+					p.m_pass.SetUint2(v.m_uniform, data[0], data[1]);
 					break;
 				}
 				case eDataType::BOOL3:
 				{
 					bool* data = (bool*)v.m_data;
-					p->second.SetBool3(v.m_uniform, data[0], data[1], data[2]);
+					p.m_pass.SetBool3(v.m_uniform, data[0], data[1], data[2]);
 					break;
 				}
 				case eDataType::INT3:
 				{
 					int* data = (int*)v.m_data;
-					p->second.SetInt3(v.m_uniform, data[0], data[1], data[2]);
+					p.m_pass.SetInt3(v.m_uniform, data[0], data[1], data[2]);
 					break;
 				}
 				case eDataType::FLOAT3:
 				{
 					float* data = (float*)v.m_data;
-					p->second.SetFloat3(v.m_uniform, data[0], data[1], data[2]);
+					p.m_pass.SetFloat3(v.m_uniform, data[0], data[1], data[2]);
 					break;
 				}
 				case eDataType::UINT3:
 				{
 					unsigned int* data = (unsigned int*)v.m_data;
-					p->second.SetUint3(v.m_uniform, data[0], data[1], data[2]);
+					p.m_pass.SetUint3(v.m_uniform, data[0], data[1], data[2]);
 					break;
 				}
 				case eDataType::BOOL4:
 				{
 					bool* data = (bool*)v.m_data;
-					p->second.SetBool4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					p.m_pass.SetBool4(v.m_uniform, data[0], data[1], data[2], data[3]);
 					break;
 				}
 				case eDataType::INT4:
 				{
 					int* data = (int*)v.m_data;
-					p->second.SetInt4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					p.m_pass.SetInt4(v.m_uniform, data[0], data[1], data[2], data[3]);
 					break;
 				}
 				case eDataType::FLOAT4:
 				{
 					float* data = (float*)v.m_data;
-					p->second.SetFloat4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					p.m_pass.SetFloat4(v.m_uniform, data[0], data[1], data[2], data[3]);
 					break;
 				}
 				case eDataType::UINT4:
 				{
 					unsigned int* data = (unsigned int*)v.m_data;
-					p->second.SetUint4(v.m_uniform, data[0], data[1], data[2], data[3]);
+					p.m_pass.SetUint4(v.m_uniform, data[0], data[1], data[2], data[3]);
 					break;
 				}
 				}
 #endif
 			}
 
-			if (f)
+			//p.m_pass.Draw(indexCount);
+			p.m_pass.Draw();
+
+			/*if (f)
 			{	
-				p->second.Draw(indexCount);
+				p.m_pass.Draw(indexCount);
 				f = false;
 			}
 			else
@@ -215,28 +221,32 @@ namespace GraphicsModule
 				GetManager()->IASetVertexBuffers(0, 1, m.getVertexBuffer(), &stride, &offset);
 				GetManager()->IASetIndexBuffer(m.getIndexBuffer(), FORMAT_R32_UINT, offset);
 
-				p->second.Draw(m.getIndexCount());
-			}
+				p.m_pass.Draw(m.getIndexCount());
+			}/**/
 		}
 	}
 #if defined(DX11)
 	void Technique::SetBuffer(int slot, Buffer buff, void* data)
 	{
-		for (map<string, Pass>::iterator p; p != m_passes.end(); p++)
+		for (PassStruct& p : m_passes)
 		{
-			p->second.SetBuffer(slot, buff, data);
+			p.m_pass.SetBuffer(slot, buff, data);
 		}
 	}
 #elif defined(OGL)
 	void Technique::Unuse()
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.Unuse();
+			p.m_pass.Unuse();
 		}
 	}
 	void Technique::SetBool(const string name, bool value)
 	{
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.Unuse();
+		}
 		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
 			ps->second.SetBool(name, value);
@@ -244,6 +254,10 @@ namespace GraphicsModule
 	}
 	void Technique::SetInt(const string name, int value)
 	{
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.Unuse();
+		}
 		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
 		{
 			ps->second.SetInt(name, value);
@@ -251,114 +265,114 @@ namespace GraphicsModule
 	}
 	void Technique::SetFloat(const string name, float value)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetFloat(name, value);
+			p.m_pass.SetFloat(name, value);
 		}
 	}
 	void Technique::SetUint(const string name, unsigned int value)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetUint(name, value);
+			p.m_pass.SetUint(name, value);
 		}
 	}
 	void Technique::SetBool2(const string name, bool value1, bool value2)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetBool2(name, value1, value2);
+			p.m_pass.SetBool2(name, value1, value2);
 		}
 	}
 	void Technique::SetInt2(const string name, int value1, int value2)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetInt2(name, value1, value2);
+			p.m_pass.SetInt2(name, value1, value2);
 		}
 	}
 	void Technique::SetFloat2(const string name, float value1, float value2)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetFloat2(name, value1, value2);
+			p.m_pass.SetFloat2(name, value1, value2);
 		}
 	}
 	void Technique::SetUint2(const string name, unsigned int value1, unsigned int value2)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetUint2(name, value1, value2);
+			p.m_pass.SetUint2(name, value1, value2);
 		}
 	}
 	void Technique::SetBool3(const string name, bool value1, bool value2, bool value3)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetBool3(name, value1, value2, value3);
+			p.m_pass.SetBool3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetInt3(const string name, int value1, int value2, int value3)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetInt3(name, value1, value2, value3);
+			p.m_pass.SetInt3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetFloat3(const string name, float value1, float value2, float value3)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetFloat3(name, value1, value2, value3);
+			p.m_pass.SetFloat3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetUint3(name, value1, value2, value3);
+			p.m_pass.SetUint3(name, value1, value2, value3);
 		}
 	}
 	void Technique::SetBool4(const string name, bool value1, bool value2, bool value3, bool value4)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetBool4(name, value1, value2, value3, value4);
+			p.m_pass.SetBool4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetInt4(const string name, int value1, int value2, int value3, int value4)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetInt4(name, value1, value2, value3, value4);
+			p.m_pass.SetInt4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetFloat4(const string name, float value1, float value2, float value3, float value4)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetFloat4(name, value1, value2, value3, value4);
+			p.m_pass.SetFloat4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetUint4(name, value1, value2, value3, value4);
+			p.m_pass.SetUint4(name, value1, value2, value3, value4);
 		}
 	}
 	void Technique::SetMat4(const string name, glm::mat4 value)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetMat4(name, value);
+			p.m_pass.SetMat4(name, value);
 		}
 	}
 	void Technique::SetInputLayout(unsigned int VAO)
 	{
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
+		for (PassStruct& p : m_passes)
 		{
-			ps->second.SetInputLayout(VAO);
+			p.m_pass.SetInputLayout(VAO);
 		}
 	}
 #endif
@@ -366,32 +380,56 @@ namespace GraphicsModule
 #if defined(DX11)
 	void Technique::AddTrackValue(string name, unsigned int id, unsigned int size)
 	{
-		m_values.push_back(Values(name, id, size));
+		//m_values.push_back(Values(name, id, size));
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.AddTrackValue(name, id, size);
+		}
 	}
 
 	void Technique::AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size)
 	{
-		m_passes[passName].AddTrackValue(name, id, size);
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddTrackValue(name, id, size);
+		}
 	}
 
 	void Technique::AddPassInputTexture(string passName, string textureName)
 	{
-		m_passes[passName].AddInputTexture(textureName);
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddInputTexture(textureName);
+		}
 	}
 
 	void Technique::SetPassInputTexture(string passName, string textureName, Texture tex)
 	{
-		m_passes[passName].SetInputTexture(textureName, tex);
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.SetInputTexture(textureName, tex);
+		}
 	}
 
-	void Technique::AddPassOutputTexture(string passName, string textureName)
+	void Technique::AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4])
 	{
-		m_passes[passName].AddOutputTexture(textureName);
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddOutputTexture(textureName, cleanRenderTarget, clearColor);
+		}
 	}
 
 	void Technique::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
 	{
-		m_passes[passName].SetOutputTexture(textureName, tex, dsv);
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.SetOutputTexture(textureName, tex, dsv);
+		}
 	}
 
 	void Technique::UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName)
@@ -408,6 +446,29 @@ namespace GraphicsModule
 		m_textureExchanges.push_back(TextureExchange( outputPassName, outpuTextureName, {inputPassName}, {inputTextureName}));
 	}
 
+	void Technique::UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName)
+	{
+		GetManager()->AddRedefinitionOfRenderTarget(outputPassName+outpuTextureName,newOutputPassName+newOutputTextureName);
+	}
+
+	void Technique::AddObjectToPass(string passName, OBJInstance* obj, bool useTextures)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddObject(obj, useTextures);
+		}		
+	}
+
+	void Technique::SetPassValue(string passName, string name, void* data)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.SetValue(name, data);
+		}		
+	}
+
 #elif defined(OGL)
 	void Technique::AddTrackValue(string name, string uniform, eDataType type)
 	{
@@ -420,12 +481,17 @@ namespace GraphicsModule
 #endif
 	void Technique::SetValue(string name, void* data)
 	{
-		for (Values& v : m_values)
+		/*for (Values& v : m_values)
 		{
 			if (v.m_name == name)
 			{
 				memcpy(v.m_data, data, v.m_size);
 			}
+		}/**/
+
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.SetValue(name, data);
 		}
 	}
 
@@ -439,7 +505,7 @@ namespace GraphicsModule
 		m_inputTexturesNames = inputTexturesNames;
 
 
-		Texture2D depth;
+		/*Texture2D depth;
 		TEXTURE2D_DESC descDepth;
 		ZeroMemory(&descDepth, sizeof(descDepth));
 		descDepth.Width = 1264;
@@ -487,6 +553,7 @@ namespace GraphicsModule
 			return;
 
 
+
 		for (int i = 0; i < m_inputTexturesNames.size(); i++)
 		{
 			m_inputTextures.push_back(Texture());
@@ -495,7 +562,9 @@ namespace GraphicsModule
 				Tex.Release();
 				return;
 			}
-		}
+		}/**/
+
+		GetManager()->AddRenderTargetAndTexture(outputPassName + outputTextureName);
 	}
 	//1982
 }

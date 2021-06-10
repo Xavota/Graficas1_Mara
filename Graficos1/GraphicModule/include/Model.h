@@ -22,8 +22,9 @@ public:
 	~Model() = default;
 
 	void AddMeshes(vector<Mesh> meshes);
-	bool LoadModel(const class aiScene* scene, string fileName, unsigned int Flags, MATRIX mat);
-	void Draw(class RenderManager* renderManager);
+	bool LoadModel(const class aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
+	void Draw(class RenderManager* renderManager, bool useTextures);
+	void SetResources(RenderManager* renderManager, bool useTextures);
 
 	Texture& getTexture(unsigned int index) { return m_textures[index]; }
 	void setTexture(Texture tex) { m_textures.push_back(tex); }

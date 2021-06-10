@@ -41,7 +41,7 @@ public:
 
 	static MATRIX getModelMatrix(Vector size, Vector pos, Vector rot);
 
-	bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat);
+	bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
 
 	void setSize(Vector size);
 	Vector getSize();
@@ -62,7 +62,8 @@ public:
 
 	void setColor(Color col) { m_color = col; }
 
-	void Draw(class RenderManager* renderManager);
+	void Draw(class RenderManager* renderManager, bool useTextures);
+	void SetResources(RenderManager* renderManager, bool useTextures);
 
 public:
 	Vector m_size{1,1,1};

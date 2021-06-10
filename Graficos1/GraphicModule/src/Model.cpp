@@ -8,7 +8,7 @@ void Model::AddMeshes(vector<Mesh> meshes)
 	m_modelMeshes = meshes;
 }
 
-bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat)
+bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
 {
 	m_filePath = fileName;
 	bool point = false;
@@ -59,26 +59,62 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 			setTexture(GraphicsModule::TextureManager::GetTexture("Base Texture"));
 		}
 	}*/
-	aiString completePath;
-	completePath.Append(fileName.c_str());
-	completePath.Append("/../../Textures/M_");
-	completePath.Append(m_name.c_str());
-	completePath.Append("_Albedo.jpg");
-	eSTATUS stat = TextureManager::CreateTextureFromFile(completePath.C_Str(), m_name, Flags);
+	aiString completePathDiffuse;
+	completePathDiffuse.Append(fileName.c_str());
+	completePathDiffuse.Append("/../../Textures/M_");
+	completePathDiffuse.Append(m_name.c_str());
+	completePathDiffuse.Append("_Albedo");
+	if (dim == eDIMENSION::TEXTURE2D)
+		completePathDiffuse.Append(".jpg");
+	else if (dim == eDIMENSION::TEX_CUBE)
+		completePathDiffuse.Append(".dds");
+	eSTATUS stat = TextureManager::CreateTextureFromFile(completePathDiffuse.C_Str(), m_name + "_Albedo", Flags, dim);
 	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
-	if (stat == OK || stat == REPITED)
+	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
 	{
-		setTexture(TextureManager::GetTexture(m_name));
+		setTexture(TextureManager::GetTexture(m_name + "_Albedo"));
 	}
-	else if (stat == FAIL)
+	else if (stat == eSTATUS::FAIL)
 	{
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
-	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Normal.jpg", "norm", MODEL_LOAD_FORMAT_BGRA);
-	setTexture(TextureManager::GetTexture("norm")); 
+
+	aiString completePathNormal;
+	completePathNormal.Append(fileName.c_str());
+	completePathNormal.Append("/../../Textures/M_");
+	completePathNormal.Append(m_name.c_str());
+	completePathNormal.Append("_Normal.jpg");
+	stat = TextureManager::CreateTextureFromFile(completePathNormal.C_Str(), m_name + "_Normal", Flags, dim);
+	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
+	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
+	{
+		setTexture(TextureManager::GetTexture(m_name + "_Normal"));
+	}
+	else if (stat == eSTATUS::FAIL)
+	{
+		setTexture(TextureManager::GetTexture("Base Texture"));
+	}
+
+	aiString completePathSpecular;
+	completePathSpecular.Append(fileName.c_str());
+	completePathSpecular.Append("/../../Textures/M_");
+	completePathSpecular.Append(m_name.c_str());
+	completePathSpecular.Append("_Metallic.jpg");
+	stat = TextureManager::CreateTextureFromFile(completePathSpecular.C_Str(), m_name + "_Specular", Flags, dim);
+	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
+	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
+	{
+		setTexture(TextureManager::GetTexture(m_name + "_Specular"));
+	}
+	else if (stat == eSTATUS::FAIL)
+	{
+		setTexture(TextureManager::GetTexture("Base Texture"));
+	}
+	//TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Normal.jpg", "norm", MODEL_LOAD_FORMAT_BGRA);
+	//setTexture(TextureManager::GetTexture("norm")); 
 	//GetManager()->getShader().AddPassInputTexture("Lights", "normal");
-	TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Metallic.jpg", "spec", MODEL_LOAD_FORMAT_BGRA);
-	setTexture(TextureManager::GetTexture("spec"));
+	//TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Metallic.jpg", "spec", MODEL_LOAD_FORMAT_BGRA);
+	//setTexture(TextureManager::GetTexture("spec"));
 	//GetManager()->getShader().AddPassInputTexture("Lights", "specular");
 
 	HRESULT hr;
@@ -204,7 +240,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	return true;
 }
 
-void Model::Draw(RenderManager* renderManager)
+void Model::Draw(RenderManager* renderManager, bool useTextures)
 {
 	for (int i = 0; i < m_modelMeshes.size(); ++i)
 	{
@@ -212,12 +248,10 @@ void Model::Draw(RenderManager* renderManager)
 		//renderManager->PSSetShaderResources(0, 1, m_textures[m_modelMeshes[i].getMaterialID()].getBuffer());
 #if defined(DX11)
 		/*Set primitive topology*/
-		renderManager->IASetPrimitiveTopology(m_topology);
+		//renderManager->IASetPrimitiveTopology(m_topology);
 
 		//renderManager->PSSetShaderResources(0, m_textures);
-		renderManager->getShader().SetPassInputTexture("GBuffer", "diffuse", m_textures[0]);
-		renderManager->getShader().SetPassInputTexture("GBuffer", "normal", m_textures[1]);
-		renderManager->getShader().SetPassInputTexture("GBuffer", "specular", m_textures[2]);
+
 #elif defined(OGL)
 		/*Set primitive topology*/
 		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
@@ -239,6 +273,28 @@ void Model::Draw(RenderManager* renderManager)
 #endif
 
 		m_modelMeshes[i].Draw(renderManager);
+	}
+}
+void Model::SetResources(RenderManager* renderManager, bool useTextures)
+{
+	renderManager->IASetPrimitiveTopology(m_topology);
+
+	if (useTextures)
+	{
+		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "diffuse", m_textures[0]);
+		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "normal", m_textures[1]);
+		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "specular", m_textures[2]);
+
+		renderManager->getShader("Deferred").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);
+
+
+
+		renderManager->getShader("Forward").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);
+	}
+
+	for (int i = 0; i < m_modelMeshes.size(); ++i)
+	{
+		m_modelMeshes[i].SetResources(renderManager);
 	}
 }
 }

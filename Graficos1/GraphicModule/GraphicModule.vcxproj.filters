@@ -102,6 +102,9 @@
     <ClInclude Include="include\Technique.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\RasterizeState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test.cpp">
@@ -183,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Technique.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RasterizeState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

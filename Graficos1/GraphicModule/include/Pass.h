@@ -4,6 +4,8 @@
 #include "RenderTargetView.h"
 #include "DepthStencilView.h"
 
+#include "RasterizeState.h"
+
 #include <map>
 
 namespace GraphicsModule
@@ -53,15 +55,14 @@ namespace GraphicsModule
 class Pass
 {
 public:
-	Pass() = default;
+	Pass(CULL_MODE cull);
 	~Pass() = default;
-
-	void DrawPass();
 
 	void Compile(const char* vertexShaderString, const char* pixelShaderString);
 
 	void Use();
-	void Draw(unsigned int indexCount);
+	//void Draw(unsigned int indexCount);
+	void Draw();
 
 #if defined(DX11)
 	void SetBuffer(int slot, Buffer buff, void* data);
@@ -103,29 +104,48 @@ public:
 	
 	void AddInputTexture(string name);
 	void SetInputTexture(string name, Texture tex);
-	void AddOutputTexture(string name);
+	void AddOutputTexture(string name, bool cleanRenderTarget, float clearColor[4]);
 	void SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv);
 
 	void SetValue(string name, void* data);
 
+	void AddObject(OBJInstance* obj, bool useTextures);
 
 private:
 	struct OutputTexture
 	{
+		OutputTexture(string name, RenderTargetView* renderTarget, bool cleanRenderTarget, const float clearColor[4])
+		{
+			m_name = name;
+			m_renderTarget = renderTarget;
+			m_cleanRenderTarget = cleanRenderTarget;
+			memcpy(m_clearColor, clearColor, sizeof(float) * 4);
+		}
 		string m_name;
 		RenderTargetView* m_renderTarget;
-		DepthStencilView m_depthStencil;
+		bool m_cleanRenderTarget;
+		float m_clearColor[4];
 	};
-	Shader m_shaders;
-	std::vector<Values> m_values;
-
 	struct InputTexture
 	{
 		string m_name;
 		Texture m_texture;
 	};
+	struct ObjectStruct
+	{
+		OBJInstance* m_obj;
+		bool m_useTextures;
+	};
+
+	Shader m_shaders;
+	std::vector<Values> m_values;
 
 	std::vector<InputTexture> m_inputTextures;
 	std::vector<OutputTexture> m_outputTextures;
+	DepthStencilView m_depthStencil;
+
+	std::vector<ObjectStruct> m_objects;
+
+	RasterizeState m_rsState;
 };
 }

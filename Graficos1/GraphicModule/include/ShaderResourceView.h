@@ -18,7 +18,11 @@ public:
 	void Release() 
 	{
 #if defined(DX11)
-		if (m_shaderResourceView) m_shaderResourceView->Release();
+		if (m_shaderResourceView) 
+		{
+		m_shaderResourceView->Release();
+		m_shaderResourceView = nullptr;
+		}
 #endif           
 	}
 

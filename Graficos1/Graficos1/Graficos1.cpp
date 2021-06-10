@@ -319,7 +319,7 @@ string OpenFileGetName(HWND owner = NULL)
     return "";
 }
 
-void OpenMesh(string fileName, unsigned int Flags, MATRIX mat);
+void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim);
 
 HRESULT Init(unsigned int width, unsigned int height)
 {
@@ -328,19 +328,32 @@ HRESULT Init(unsigned int width, unsigned int height)
 	g_Cameras.push_back(GraphicsModule::Camara({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
 		width, height, 0.01f, 100.0f, false, PIDIV4));
 
-	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA);
+	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA, GraphicsModule::eDIMENSION::TEXTURE2D);
     //"Models/Models/CuboPuzzle.obj"
-    OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
-	
+    OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(75,0,0,0, 0,75,0,0, 0,0,75,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
+    //OpenMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
+	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 1), GraphicsModule::eDIMENSION::TEX_CUBE);
+	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1), GraphicsModule::eDIMENSION::TEXTURE2D);
+
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+
+
 	return S_OK;
 }
 
-void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat)
+void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
 {    
     g_ObjInstances.push_back(GraphicsModule::OBJInstance());
     size_t lastOBJ = g_ObjInstances.size() - 1;
 
-	g_ObjInstances[lastOBJ].LoadModel(scene, fileName, Flags, mat);
+	g_ObjInstances[lastOBJ].LoadModel(scene, fileName, Flags, mat, dim);
 	for (int i = 0; i < lastOBJ; i++)
 	{
 		if (g_ObjInstances[i].m_OBJModel.m_name == g_ObjInstances[lastOBJ].m_OBJModel.m_name)
@@ -356,7 +369,7 @@ void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX 
 	g_ObjInstances[lastOBJ].setSize({ 1,1,1 });
 }
 
-void OpenMesh(string fileName, unsigned int Flags, MATRIX mat)
+void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
 {
     //string fileName = OpenFileGetName();
 
@@ -368,7 +381,7 @@ void OpenMesh(string fileName, unsigned int Flags, MATRIX mat)
         return;
     }
 
-	LoadMesh(scene, fileName, Flags, mat);
+	LoadMesh(scene, fileName, Flags, mat, dim);
 }
 
 bool TryLoadMesh(string fileName)
@@ -397,6 +410,31 @@ void UIRender()
 
 	if (!g_SelectingLoadMode)
 	{
+		if (ImGui::Begin("RenderTargets"))
+		{
+			std::vector<GraphicsModule::RenderTargetStruct>* rtvs;
+			rtvs = g_Test.GetRenderManager()->GetRenderTargets();
+			for (int i = 0; i < rtvs->size(); i++)
+			{
+				/*float my_tex_w = 256;
+				float my_tex_h = 256;
+				ImTextureID my_tex_id = ImTextureID();*/
+#if defined(DX11)
+				//my_tex_id = (*rtvs)[i].m_tex.getBuffer().getPtr();
+				ImGui::Text((*rtvs)[i].m_names[0].c_str());
+				ImGui::ImageButton((void*)(*rtvs)[i].m_tex.getBuffer().getPtr(), ImVec2(1920 / 4, 1080 / 4));
+#elif defined(OGL)
+				my_tex_id = (void*)rtvs[i].m_tex.getID();
+#endif           
+				/*ImVec2 pos = ImGui::GetCursorScreenPos();
+				ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+				ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+				ImGui::ImageButton(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);*/
+			}
+		}
+		ImGui::End();
 		if (ImGui::Begin("Lights"))
 		{
 			/*Ambient light*/
@@ -406,7 +444,25 @@ void UIRender()
 			ImGui::PushID("ambient");
 
 			static float ambient = .1;
-			ImGui::DragFloat("Intensity", &ambient, 0.001f, 0.0f, 1.0f);
+			ImGui::DragFloat("Ambient", &ambient, 0.001f, 0.0f, 1.0f);
+
+			static float specular = .5;
+			ImGui::DragFloat("Specular", &specular, 0.001f, 0.0f, 1.0f);
+
+			static float diffuse = 1.0f;
+			ImGui::DragFloat("Diffuse", &diffuse, 0.001f, 0.0f, 1.0f);
+
+			static float shininess = 32;
+			ImGui::DragFloat("Shininnes", &shininess, 0.01f, 0.0f, 200.0f);
+
+			Material mat;
+
+			mat.ambient = ambient;
+			mat.specular = specular;
+			mat.diffuse = diffuse;
+			mat.shininess = shininess;
+
+			g_Test.GetRenderManager()->UpdateMaterial(mat);
 
 			ImGui::PopID();
 			ImGui::Separator();
@@ -417,7 +473,7 @@ void UIRender()
 
 			ImGui::PushID("directional");
 
-			static float dir[3]{ 0.0f, 0.5f, -1.0f };
+			/*static float dir[3]{ 0.0f, 0.5f, -1.0f };
 			ImGui::DragFloat3("Light Direction", dir, 0.001f, -1.0f, 1.0f);
 
 			static float specular = .5;
@@ -434,7 +490,20 @@ void UIRender()
 			dirDesc.lightDir = Vector4{ dir[0], dir[1], dir[2], 0 };
 			dirDesc.ambient = Vector4{ambient, ambient, ambient, 1};
 			dirDesc.diffuse = Vector4{1,1,1,1};
-			dirDesc.specular = Vector4{ specular, specular, specular, 1 };
+			dirDesc.specular = Vector4{ specular, specular, specular, 1 };/**/
+
+			static float dir[3]{ 0.0f, 0.5f, -1.0f };
+			ImGui::DragFloat3("Light Direction", dir, 0.001f, -1.0f, 1.0f);
+
+			static float color[3]{ 0.0f, 0.5f, -1.0f };
+			ImGui::DragFloat3("Light Color", color, 0.001f, 0.0f, 1.0f);
+
+			ImGui::PopID();
+			ImGui::Separator();
+
+			DirectionalLight dirDesc;
+			dirDesc.lightDir = Vector4{ dir[0], dir[1], dir[2], 0 };
+			dirDesc.color = Vector4{ color[0], color[1], color[2], 1 };
 
 			g_Test.GetRenderManager()->UpdateDirectionalLight(dirDesc);
 
@@ -444,7 +513,7 @@ void UIRender()
 
 			ImGui::PushID("point");
 
-			static float pointPos[3]{ 0.0f, 0.0f, 10.0f };
+			/*static float pointPos[3]{ 0.0f, 0.0f, 10.0f };
 			ImGui::DragFloat3("Light Position", pointPos, 0.5f, -20.0f, 20.0f);
 
 			static float pointDiff = 1;
@@ -463,7 +532,24 @@ void UIRender()
 			pointDesc.lightPos = Vector4{ pointPos[0], pointPos[1], pointPos[2], 0 };
 			pointDesc.diffuse = Vector4{ pointDiff, pointDiff, pointDiff, 1 };
 			pointDesc.specular = Vector4{ pointSpecular, pointSpecular, pointSpecular, 1 };
-			pointDesc.blurDistance = pointBlurDist;
+			pointDesc.blurDistance = pointBlurDist;*/
+
+			static float pointPos[3]{ 0.0f, 0.0f, 10.0f };
+			ImGui::DragFloat3("Light Position", pointPos, 0.5f, -20.0f, 20.0f);
+
+			static float pointColor[3]{ 1.0f, 0.0f, 0.0f };
+			ImGui::DragFloat3("Light Color", pointColor, 0.5f, 0.0f, 1.0f);
+
+			static float pointAtt = 20;
+			ImGui::DragFloat("Light Attenuation", &pointAtt, 0.001f, 0.0f, 100.0f);
+
+			ImGui::PopID();
+			ImGui::Separator();
+
+			PointLight pointDesc;
+			pointDesc.point_lightPos = Vector4{ pointPos[0], pointPos[1], pointPos[2], 0 };
+			pointDesc.point_lightColor = Vector4{ pointColor[0], pointColor[1], pointColor[2], 1 };
+			pointDesc.point_lightAtt = pointAtt;
 
 			g_Test.GetRenderManager()->UpdatePointLight(pointDesc);
 
@@ -473,7 +559,7 @@ void UIRender()
 
 			ImGui::PushID("spot");
 
-			static float spotDiff[3]{ 1.0f, 1.0f, 1.0f };
+			/*static float spotDiff[3]{ 1.0f, 1.0f, 1.0f };
 			ImGui::DragFloat3("Intensity", spotDiff, 0.01f, 0.0f, 10.0f);
 
 			static float spotSpecular = .5;
@@ -500,14 +586,94 @@ void UIRender()
 			spotDesc.outerCutOff = outerCutOff;
 			spotDesc.diffuse = Vector4{ spotDiff[0], spotDiff[1], spotDiff[2], 1 };
 			spotDesc.specular = Vector4{ spotSpecular , spotSpecular , spotSpecular , 1};
-			spotDesc.blurDistance = spotBlurDist;
+			spotDesc.blurDistance = spotBlurDist;/**/
+
+			static float spotColor[3]{ 0.0f, 1.0f, 0.0f };
+			ImGui::DragFloat3("Light Color", spotColor, 0.01f, 0.0f, 1.0f);
+
+			static float spotAtt = .5;
+			ImGui::DragFloat("Light Attenuation", &spotAtt, 0.001f, 0.0f, 1.0f);
+
+			static float cutOff = 40;
+			static float outerCutOff = 45;
+			ImGui::DragFloat("Cut Off", &cutOff, 1.0f, 10.0f, outerCutOff);
+
+			ImGui::DragFloat("Outer Cut Off", &outerCutOff, 1.0f, cutOff, 80.0f);
+
+			ImGui::PopID();
+
+			SpotLight spotDesc;
+			GraphicsModule::Vector sportDir = g_Cameras[g_activeCamera].GetFrontVector();
+			GraphicsModule::Vector sportPos = g_Cameras[g_activeCamera].getEyePos();
+
+			spotDesc.lightPos = Vector4{ sportPos.x(), sportPos.y(), sportPos.z(), 1.0f };
+			spotDesc.lightDir = Vector4{ sportDir.x(), sportDir.y(), sportDir.z(), 1.0f };
+			spotDesc.lightColor = Vector4{ spotColor[0], spotColor[1], spotColor[2], 1 };
+			spotDesc.lightAtt = spotAtt;
+			spotDesc.cutOff = cutOff;
+			spotDesc.outerCutOff = outerCutOff;
 
 			g_Test.GetRenderManager()->UpdateSpotLight(spotDesc);
 		}
 		ImGui::End();
+		if (ImGui::Begin("Buffers"))
+		{
+			/*Tone Correction*/
+
+			ImGui::Text("Tone Correction:");
+			ImGui::Separator();
+
+			ImGui::PushID("exposure");
+
+			static Vector4 exposure = Vector4{0.6f,0.0f,0.0f,0.0f};
+			ImGui::DragFloat("Exposure", &exposure.x, 0.001f, 0.0f, 10.0f);
+
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("ToneMap", "Exposure", &exposure);
+
+			ImGui::PopID();
+
+			ImGui::Separator();
+
+
+			/*SSAO*/
+
+			ImGui::Text("SSAO:");
+			ImGui::Separator();
+
+			ImGui::PushID("sample radious");
+
+			static float sampleRadious = .34f;
+			ImGui::DragFloat("Sample Radious", &sampleRadious, 0.001f, 0.0f, 1.0f);
+
+			static float scale = .01f;
+			ImGui::DragFloat("Scale", &scale, 0.001f, 0.0f, 1.0f);
+
+			static float bias = .23f;
+			ImGui::DragFloat("Bias", &bias, 0.001f, 0.0f, 1.0f);
+
+			static float intensity = 4.0f;
+			ImGui::DragFloat("Intensity", &intensity, 0.1f, 0.0f, 50.0f);
+
+			static int sampleInteractions = 5;
+			ImGui::DragInt("Sample Iterations", &sampleInteractions, 1.0f, 0.0f, 100.0f);
+
+			SSAO ssao;
+			ssao.sampleRadius = sampleRadious;
+			ssao.scale = scale;
+			ssao.bias = bias;
+			ssao.intensity = intensity;
+			ssao.sampleIterations = sampleInteractions;
+
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO", &ssao);
+
+			ImGui::PopID();
+
+			ImGui::Separator();
+		}
+		ImGui::End();
 		if (ImGui::Begin("Defines"))
 		{		
-			static int lightTypeIndex = 0;
+/*			static int lightTypeIndex = 0;
 			const char* lightTypes[] = { "None", "Vertex light", "Pixel light" };
 			ImGui::Combo("Light Type", &lightTypeIndex, lightTypes, IM_ARRAYSIZE(lightTypes));
 
@@ -523,9 +689,14 @@ void UIRender()
 			ImGui::Checkbox("Normal map", &normalMap);
 			ImGui::Checkbox("Specular map", &specularMap);
 
+			static int toneMapTypeIndex = 0;
+			const char* toneMapType[] = { "None", "BASIC", "REINHARD", "BURGESS DAWSON", "UNCHARTED2" };
+			ImGui::Combo("Tone Correction Type", &toneMapTypeIndex, toneMapType, IM_ARRAYSIZE(toneMapType));
+
 			eNORMAL_TECHNIQUES normalTech = eNORMAL_TECHNIQUES::NONE;
 			eSPECULAR_TECHNIQUES specularTech = eSPECULAR_TECHNIQUES::NONE;
 			unsigned int mapFlags = 0;
+			eTONE_CORRECTION_TECHNIQUES toneMapTech = eTONE_CORRECTION_TECHNIQUES::NONE;
 
 			if (lightTypeIndex == 1)
 			{
@@ -558,7 +729,24 @@ void UIRender()
 				mapFlags |= TEXTURE_MAP_SPECULAR;				
 			}
 
-			g_Test.GetRenderManager()->SetShaderFlags(normalTech, specularTech, mapFlags);
+			if (toneMapTypeIndex == 1)
+			{
+				toneMapTech = eTONE_CORRECTION_TECHNIQUES::BASIC;
+			}
+			else if (toneMapTypeIndex == 2)
+			{
+				toneMapTech = eTONE_CORRECTION_TECHNIQUES::REINHARD;
+			}
+			else if (toneMapTypeIndex == 3)
+			{
+				toneMapTech = eTONE_CORRECTION_TECHNIQUES::BURGESS_DAWSON;
+			}
+			else if (toneMapTypeIndex == 4)
+			{
+				toneMapTech = eTONE_CORRECTION_TECHNIQUES::UNCHARTED2;
+			}
+
+			g_Test.GetRenderManager()->SetShaderFlags(normalTech, specularTech, mapFlags, toneMapTech);*/
 		}
 		ImGui::End();
 		if (ImGui::Begin("Models"))
@@ -630,8 +818,9 @@ void UIRender()
 		            }
 		            ImGui::PopID();
 		        }
-		    }
+		    }	
 		}
+		ImGui::End();
 	}
 	else
 	{
@@ -689,15 +878,15 @@ void UIRender()
 				float piOver180 = 3.1415 / 180;
 
 				auto mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
-				OpenMesh(fileName, Flags, mat);
+				OpenMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
 
 				g_SelectingLoadMode = false;
 			}
 		}
+		ImGui::End();
 	}/**/
 
     //ImGui::ShowDemoWindow();
-    ImGui::End();
 
     // render UI
     ImGui::Render();
@@ -739,7 +928,7 @@ void Render()
 	size_t countOBJs = g_ObjInstances.size();
 	for (int i = 0; i < countOBJs/**//*(countOBJs == 0 ? 0 : 1)/**/; i++)
 	{
-        g_ObjInstances[i].Draw(GraphicsModule::GetManager());
+        //g_ObjInstances[i].Draw(GraphicsModule::GetManager());
     }
 
 	UIRender();

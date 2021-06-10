@@ -24,6 +24,16 @@ enum class eSPECULAR_TECHNIQUES
 	COUNT
 };
 
+enum class eTONE_CORRECTION_TECHNIQUES
+{
+	NONE = -1,
+	BASIC,
+	REINHARD,
+	BURGESS_DAWSON,
+	UNCHARTED2,
+	COUNT
+};
+
 namespace GraphicsModule
 {
 class Effect
@@ -33,12 +43,13 @@ public:
 	~Effect() = default;
 
 	//void CompileShader(const char* vertexShaderPath, const char* pixelShaderPath);
-	void CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath);
+	void CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull);
 	
-	void SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags);
+	void SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags, eTONE_CORRECTION_TECHNIQUES toneMap/**/);
 
 	void Use(); 
-	void Draw(unsigned int indexCount);
+	//void Draw(unsigned int indexCount);
+	void Draw();
 
 #if defined(DX11)
 	//void SetBuffer(int slot, Buffer buff, void* data);
@@ -76,14 +87,18 @@ public:
 	void AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size);
 	void AddPassInputTexture(string passName, string textureName);
 	void SetPassInputTexture(string passName, string textureName, Texture tex);
-	void AddPassOutputTexture(string passName, string textureName);
+	void AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4]);
 	void SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv);
 	void UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName);
+	void UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName);
 #elif defined(OGL)
 	void AddEffectTrackValue(string name, string uniform, Technique::eDataType type);
 #endif
 
 	void SetEffectValue(string name, void* data);
+	void SetPassValue(string passName, string name, void* data);
+
+	void AddObjectToPass(string passName, OBJInstance* obj, bool useTextures);
 private:
 	void GenerateEffects();
 
@@ -93,6 +108,7 @@ private:
 		eNORMAL_TECHNIQUES normalTech;
 		eSPECULAR_TECHNIQUES specularTech;
 		unsigned int texFlagsTech;
+		eTONE_CORRECTION_TECHNIQUES m_toneMap;
 		Technique tech;
 	};
 	std::vector<Techs> m_techniques;

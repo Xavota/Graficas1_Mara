@@ -144,18 +144,17 @@ HRESULT Mesh::setIndices(vector<unsigned int> indices)
 }
 void Mesh::Draw(RenderManager* renderManager)
 {
-#if defined(DX11)
+#if defined(DX11)/*
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	renderManager->IASetVertexBuffers(0, 1, m_pVertexBuffer, &stride, &offset);
-	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);
+	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);*/
 
 	//renderManager->getShader().Use();
-	renderManager->getShader().Draw(m_indicesCount);
-	// TODO: Cambiar a que el Use() pida la cantidad de índices a renderizar para llamar a la función desde dentro
-	// (o cambiar la función de Use() a un drawCall con la misma cantidad de índices
+	//renderManager->getShader().Draw(m_indicesCount);
+	// TODO: Hacer que funcione lo de que tengas los modelos dentro de los pases y les digan que se dibujen.
 
-	//renderManager->DrawIndexed(m_indicesCount, 0, 0);
+	renderManager->DrawIndexed(m_indicesCount, 0, 0);
 
 #elif defined(OGL)
 	glBindVertexArray(VAO);
@@ -166,5 +165,12 @@ void Mesh::Draw(RenderManager* renderManager)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 #endif           
+}
+void Mesh::SetResources(RenderManager* renderManager)
+{
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	renderManager->IASetVertexBuffers(0, 1, m_pVertexBuffer, &stride, &offset);
+	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);
 }
 }

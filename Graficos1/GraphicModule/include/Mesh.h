@@ -43,6 +43,7 @@ public:
 	unsigned int getMaterialID() { return m_materialID; }
 
 	void Draw(class RenderManager* renderManager);
+	void SetResources(RenderManager* renderManager);
 
 public:
 	//vector<Vertex> m_vertices;

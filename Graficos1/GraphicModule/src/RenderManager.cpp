@@ -52,9 +52,9 @@ HRESULT RenderManager::CreateSamplerState(const SAMPLER_DESC* pSamplerDesc, Samp
 	return m_device.CreateSamplerState(reinterpret_cast<const D3D11_SAMPLER_DESC*>(pSamplerDesc), ppSamplerState);
 }
 
-HRESULT RenderManager::CreateRasterizerState(const RASTERIZER_DESC* pRasterizerDesc, ID3D11RasterizerState** ppRasterizerState)
+HRESULT RenderManager::CreateRasterizerState(const RASTERIZER_DESC* pRasterizerDesc, RasterizeState& ppRasterizerState)
 {
-	return m_device.CreateRasterizerState(reinterpret_cast<const D3D11_RASTERIZER_DESC*>(pRasterizerDesc), ppRasterizerState);
+	return m_device.CreateRasterizerState(reinterpret_cast<const D3D11_RASTERIZER_DESC*>(pRasterizerDesc), &ppRasterizerState.getRasterizerState());
 }
 
 HRESULT RenderManager::CreateShaderResourceView(Texture2D& pResource, const SHADER_RESOURCE_VIEW_DESC* pDesc, ShaderResourceView& ppSRView)
@@ -86,11 +86,12 @@ void RenderManager::OMSetRenderTargets(unsigned int count, RenderTargetView* ppR
 	m_deviceContext.OMSetRenderTargets(count, ppRenderTargetViews, pDepthStencilView);
 }
 
-void RenderManager::ClearAndSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4])
+void RenderManager::ClearAndSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView, std::vector<float*> ColorRGBA, std::vector<bool> cleans)
 {
 	for (int i = 0; i < count; i++)
 	{
-		ClearRenderTargetView(ppRenderTargetViews[i], ColorRGBA);
+		if (cleans[i])
+			ClearRenderTargetView(ppRenderTargetViews[i], ColorRGBA[i]);
 	}
 	ClearDepthStencilView(pDepthStencilView, CLEAR_DEPTH, 1.0f, 0);
 	OMSetRenderTargets(count, ppRenderTargetViews, pDepthStencilView);
@@ -161,9 +162,9 @@ void RenderManager::PSSetSamplers(unsigned int StartSlot, unsigned int NumSample
 	m_deviceContext.PSSetSamplers(StartSlot, NumSamplers, ppSamplers);
 }
 
-void RenderManager::RSSetState(ID3D11RasterizerState* pRasterizerState)
+void RenderManager::RSSetState(RasterizeState pRasterizerState)
 {
-	m_deviceContext.RSSetState(pRasterizerState);
+	m_deviceContext.RSSetState(pRasterizerState.getRasterizerState());
 }
 
 void RenderManager::Flush()
@@ -501,6 +502,22 @@ void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 
 #endif
 
+void RenderManager::AddEffect(string name)
+{
+	m_effects.push_back({name, Effect()});
+}
+
+Effect& RenderManager::getShader(string name)
+{
+	for (EffectStruct& e : m_effects)
+	{
+		if (e.m_name == name)
+		{
+			return e.m_effect;
+		}
+	}
+}
+
 HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFileName)
 {
 	/*m_effect.CompileShader(vsFileName, psFileName);
@@ -508,9 +525,15 @@ HRESULT RenderManager::CompileShaders(const char* vsFileName, const char* psFile
 	return S_OK;
 }
 
-void RenderManager::SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags)
+void RenderManager::SetShaderFlags(string EffectName, eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags, eTONE_CORRECTION_TECHNIQUES toneMap/**/)
 {
-	m_effect.SetShaderFlags(nor, spec, texFlags);
+	for (EffectStruct& e : m_effects)
+	{
+		if (e.m_name == EffectName)
+		{
+			e.m_effect.SetShaderFlags(nor, spec, texFlags, toneMap);
+		}
+	}
 }
 
 void RenderManager::setViewport(unsigned int width, unsigned int height)
@@ -531,96 +554,215 @@ void RenderManager::setViewport(unsigned int width, unsigned int height)
 
 void RenderManager::UpdateViewMatrix(MATRIX view)
 {
+	for (EffectStruct& e : m_effects)
+	{
 #if defined(DX11)
-	ViewMat cbNeverChanges;
-	cbNeverChanges.view = view.TransposeMatrix();
-	//m_effect.SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
-	m_effect.SetEffectValue("ViewMatrix", &cbNeverChanges);
+		ViewMat cbNeverChanges;
+		cbNeverChanges.view = view.TransposeMatrix();
+		//m_effect.SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
+		e.m_effect.SetEffectValue("ViewMatrix", &cbNeverChanges);
 #elif defined(OGL)
-	m_effect.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14,
-											 view._21, view._22, view._23, view._24, 
-											 view._31, view._32, view._33, view._34, 
-											 view._41, view._42, view._43, view._44));
-#endif           
+		e.m_effect.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14,
+												 view._21, view._22, view._23, view._24, 
+												 view._31, view._32, view._33, view._34, 
+												 view._41, view._42, view._43, view._44));
+#endif    
+	}
 }
 
 void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 {
+	for (EffectStruct& e : m_effects)
+	{
 #if defined(DX11)
-	ProjectionMat cbChangesOnResize;
-	cbChangesOnResize.projection = projection.TransposeMatrix();
-	//m_effect.SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
-	m_effect.SetEffectValue("ProjectionMatrix", &cbChangesOnResize);
+		ProjectionMat cbChangesOnResize;
+		cbChangesOnResize.projection = projection.TransposeMatrix();
+		//m_effect.SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
+		e.m_effect.SetEffectValue("ProjectionMatrix", &cbChangesOnResize);
 #elif defined(OGL)
-	m_effect.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14,
-											 projection._21, projection._22, projection._23, projection._24, 
-											 projection._31, projection._32, projection._33, projection._34, 
-											 projection._41, projection._42, projection._43, projection._44));
-#endif          
+		e.m_effect.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14,
+												 projection._21, projection._22, projection._23, projection._24, 
+												 projection._31, projection._32, projection._33, projection._34, 
+												 projection._41, projection._42, projection._43, projection._44));
+#endif   
+	}
 }
 
 void RenderManager::UpdateModelMatrix(MATRIX model)
 {
+	for (EffectStruct& e : m_effects)
+	{
 #if defined(DX11)
-	ModelMat modl;
-	modl.model = model;
-	//m_effect.SetBuffer(2, m_pCBChangesEveryFrame, &model);
-	m_effect.SetEffectValue("ModelMatrix", &model);
+		ModelMat modl;
+		modl.model = model;
+		//m_effect.SetBuffer(2, m_pCBChangesEveryFrame, &model);
+		e.m_effect.SetEffectValue("ModelMatrix", &model);
 #elif defined(OGL)
-	m_effect.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
-										model._21, model._22, model._23, model._24,
-										model._31, model._32, model._33, model._34,
-										model._41, model._42, model._43, model._44));
+		e.m_effect.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
+											model._21, model._22, model._23, model._24,
+											model._31, model._32, model._33, model._34,
+											model._41, model._42, model._43, model._44));
 #endif   
+	}
+}
+
+void RenderManager::UpdateMaterial(Material matDesc)
+{
+	for (EffectStruct& e : m_effects)
+	{
+#if defined(DX11)
+		e.m_effect.SetEffectValue("Material", &matDesc);
+#endif
+	}
 }
 
 void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 {
+	for (EffectStruct& e : m_effects)
+	{
 #if defined(DX11)
-	//m_effect.SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
-	m_effect.SetEffectValue("DirectionalLight", &dirDesc);
+		//m_effect.SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
+		e.m_effect.SetEffectValue("DirectionalLight", &dirDesc);
 #elif defined(OGL)
-	m_effect.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
-	m_effect.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
-	m_effect.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
-	m_effect.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);
+		e.m_effect.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
+		e.m_effect.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
+		e.m_effect.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
+		e.m_effect.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);
 #endif
+	}
 }
 
 void RenderManager::UpdatePointLight(PointLight pointDesc)
 {
+	for (EffectStruct& e : m_effects)
+	{
 #if defined(DX11)
-	//m_effect.SetBuffer(6, m_PointLightBuffer, &pointDesc);
-	m_effect.SetEffectValue("PointLight", &pointDesc);
+		//m_effect.SetBuffer(6, m_PointLightBuffer, &pointDesc);
+		e.m_effect.SetEffectValue("PointLight", &pointDesc);
 #elif defined(OGL)
-	m_effect.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
-	m_effect.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
-	m_effect.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
-	m_effect.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);
+		e.m_effect.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
+		e.m_effect.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
+		e.m_effect.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
+		e.m_effect.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);
 #endif
+	}
 }
 
 void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 {
+	for (EffectStruct& e : m_effects)
+	{
 #if defined(DX11)
-	spotDesc.cutOff = cos((spotDesc.cutOff * 2) * 3.1415 / 180 - 45);
-	spotDesc.outerCutOff = cos((spotDesc.outerCutOff * 2) * 3.1415 / 180 - 45);
-	//m_effect.SetBuffer(7, m_SpotLightBuffer, &spotDesc);
-	m_effect.SetEffectValue("SpotLight", &spotDesc);
+		//spotDesc.cutOff = cos((spotDesc.cutOff * 2) * 3.1415 / 180 - 45);
+		spotDesc.cutOff = spotDesc.cutOff;// * 3.1415 / 180;
+		//spotDesc.outerCutOff = cos((spotDesc.outerCutOff * 2) * 3.1415 / 180 - 45);
+		spotDesc.outerCutOff = spotDesc.outerCutOff;// * 3.1415 / 180;
+		//m_effect.SetBuffer(7, m_SpotLightBuffer, &spotDesc);
+		e.m_effect.SetEffectValue("SpotLight", &spotDesc);
 #elif defined(OGL)
-	m_effect.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
-	m_effect.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
-	m_effect.SetFloat("spotLight.cutOff", glm::cos(glm::radians(spotDesc.cutOff)));
-	m_effect.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotDesc.outerCutOff)));
-	m_effect.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
-	m_effect.SetFloat4("spotLight.specular", spotDesc.specular.x, spotDesc.specular.y, spotDesc.specular.z, 1);
-	m_effect.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);
+		e.m_effect.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
+		e.m_effect.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
+		e.m_effect.SetFloat("spotLight.cutOff", glm::cos(glm::radians(spotDesc.cutOff)));
+		e.m_effect.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotDesc.outerCutOff)));
+		e.m_effect.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
+		e.m_effect.SetFloat4("spotLight.specular", spotDesc.specular.x, spotDesc.specular.y, spotDesc.specular.z, 1);
+		e.m_effect.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);
 #endif
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Release*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool RenderManager::RenderTargetExist(string name)
+{
+	for (RenderTargetStruct rts : m_rtvs)
+	{
+		for (string& n : rts.m_names)
+		{
+			if (n == name)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool RenderManager::AddRenderTargetAndTexture(string name)
+{
+	if (!RenderTargetExist(name))
+	{
+		m_rtvs.push_back(RenderTargetStruct(name));
+		return true;
+	}
+	return false;
+}
+
+void RenderManager::AddRedefinitionOfRenderTarget(string name, string newName)
+{
+	for (RenderTargetStruct& rts : m_rtvs)
+	{
+		for (string& n : rts.m_names)
+		{
+			if (n == name)
+			{
+				rts.m_names.push_back(newName);
+			}
+		}
+	}	
+}
+
+std::vector<RenderTargetStruct>* RenderManager::GetRenderTargets()
+{
+	return &m_rtvs;
+}
+
+RenderTargetView* RenderManager::GetRenderTarget(string name)
+{
+	for (RenderTargetStruct& rts : m_rtvs)
+	{
+		for (string& n : rts.m_names)
+		{
+			if (n == name)
+			{
+				return &rts.m_rtv;
+			}
+		}
+	}
+	return nullptr;
+}
+
+DepthStencilView* RenderManager::GetDepthStencil(string name)
+{
+	for (RenderTargetStruct& rts : m_rtvs)
+	{
+		for (string& n : rts.m_names)
+		{
+			if (n == name)
+			{
+				return &rts.m_dsv;
+			}
+		}
+	}
+	return nullptr;
+}
+
+Texture* RenderManager::GetTexture(string name)
+{
+	for (RenderTargetStruct& rts : m_rtvs)
+	{
+		for (string& n : rts.m_names)
+		{
+			if (n == name)
+			{
+				return &rts.m_tex;
+			}
+		}
+	}
+	return nullptr;
+}
 
 void RenderManager::Release()
 {
@@ -646,5 +788,153 @@ extern RenderManager* GetManager()
 		manager = new RenderManager();
 	}
 	return manager;
+}
+
+RenderTargetStruct::RenderTargetStruct(string name, RenderTargetView rtv, DepthStencilView dst, Texture tex)
+{
+	m_names.push_back(name);
+	m_rtv = rtv;
+	m_dsv = dst;
+	m_tex = tex;
+}
+
+RenderTargetStruct::RenderTargetStruct(string name)
+{
+	m_names.push_back(name);
+
+	Texture2D depth;
+	TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = 1264;
+	descDepth.Height = 681;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = USAGE_DEFAULT;
+	descDepth.BindFlags = BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	if (FAILED(GetManager()->CreateTexture2D(&descDepth, NULL, depth)))
+		return;
+
+	DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	if (FAILED(GetManager()->CreateDepthStencilView(depth, &descDSV, m_dsv)))
+		return;
+
+	depth.Release();
+
+	Texture2D Tex;
+	TEXTURE2D_DESC descTextRT;
+	ZeroMemory(&descTextRT, sizeof(descTextRT));
+	descTextRT.Width = 1264;
+	descTextRT.Height = 681;
+	descTextRT.MipLevels = 1;
+	descTextRT.ArraySize = 1;
+	descTextRT.Format = FORMAT_R8G8B8A8_UNORM;
+	descTextRT.SampleDesc.Count = 1;
+	descTextRT.SampleDesc.Quality = 0;
+	descTextRT.Usage = USAGE_DEFAULT;
+	descTextRT.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
+	descTextRT.CPUAccessFlags = 0;
+	descTextRT.MiscFlags = 0;
+	if (FAILED(GetManager()->CreateTexture2D(&descTextRT, NULL, Tex)))
+	{
+		Tex.Release();
+		return;
+	}
+
+	if (FAILED(GetManager()->CreateRenderTargetView(Tex, NULL, m_rtv)))
+	{
+		Tex.Release();
+		return;
+	}
+
+	if (m_tex.CreateTextureFromBuffer(Tex))
+	{
+		Tex.Release();
+		return;
+	}
+
+	Tex.Release();
+
+}
+
+RenderTargetStruct::RenderTargetStruct(const RenderTargetStruct& other)
+{
+	this->m_names = other.m_names;
+	
+	Texture2D depth;
+	TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = 1264;	
+	descDepth.Height = 681;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = USAGE_DEFAULT;
+	descDepth.BindFlags = BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	if (FAILED(GetManager()->CreateTexture2D(&descDepth, NULL, depth)))
+		return;
+
+	DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	if (FAILED(GetManager()->CreateDepthStencilView(depth, &descDSV, this->m_dsv)))
+		return;
+
+	depth.Release();
+
+	Texture2D Tex;
+	TEXTURE2D_DESC descTextRT;
+	ZeroMemory(&descTextRT, sizeof(descTextRT));
+	descTextRT.Width = 1264;
+	descTextRT.Height = 681;
+	descTextRT.MipLevels = 1;
+	descTextRT.ArraySize = 1;
+	descTextRT.Format = FORMAT_R8G8B8A8_UNORM;
+	descTextRT.SampleDesc.Count = 1;
+	descTextRT.SampleDesc.Quality = 0;
+	descTextRT.Usage = USAGE_DEFAULT;
+	descTextRT.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
+	descTextRT.CPUAccessFlags = 0;
+	descTextRT.MiscFlags = 0;
+	if (FAILED(GetManager()->CreateTexture2D(&descTextRT, NULL, Tex)))
+	{
+		Tex.Release();
+		return;
+	}
+
+	if (FAILED(GetManager()->CreateRenderTargetView(Tex, NULL, this->m_rtv)))
+	{
+		Tex.Release();
+		return;
+	}
+
+	if (this->m_tex.CreateTextureFromBuffer(Tex))
+	{
+		Tex.Release();
+		return;
+	}
+
+	Tex.Release();
+}
+
+RenderTargetStruct::~RenderTargetStruct()
+{
+	m_rtv.Release();
+	m_dsv.Release();
+	m_tex.~Texture();
 }
 }

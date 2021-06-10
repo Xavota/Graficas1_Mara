@@ -20,20 +20,20 @@ Texture& TextureManager::GetTexture(string name)
 	return t;
 }
 
-eSTATUS TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name, unsigned int Flags)
+eSTATUS TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name, unsigned int Flags, eDIMENSION dim)
 {
 	if (m_textures.find(name) != m_textures.end())
 	{
 		std::cout << "Nombre de textura ya existente: " << name << std::endl;
-		return REPITED;
+		return eSTATUS::REPITED;
 	}
 	m_textures.insert(make_pair(name, Texture()));
-	if (!m_textures[name].CreateTextureFromFile(pSrcFile, Flags))
+	if (!m_textures[name].CreateTextureFromFile(pSrcFile, Flags, dim))
 	{
 		m_textures.erase(name);
-		return FAIL;
+		return eSTATUS::FAIL;
 	}
-	return OK;
+	return eSTATUS::OK;
 }
 
 #if defined(DX11)
@@ -42,15 +42,15 @@ eSTATUS TextureManager::CreateTextureFromBuffer(Texture2D buffer, string name)
 	if (m_textures.find(name) != m_textures.end())
 	{
 		std::cout << "Nombre de textura ya existente: " << name << std::endl;
-		return REPITED;
+		return eSTATUS::REPITED;
 	}
 	m_textures.insert(make_pair(name, Texture()));
 	if (!m_textures[name].CreateTextureFromBuffer(buffer))
 	{
 		m_textures.erase(name);
-		return FAIL;
+		return eSTATUS::FAIL;
 	}
-	return OK;
+	return eSTATUS::OK;
 }
 #endif
 }

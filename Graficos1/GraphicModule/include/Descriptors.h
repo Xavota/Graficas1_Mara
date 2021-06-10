@@ -391,6 +391,19 @@ enum CREATE_DEVICE_FLAG
 	CREATE_DEVICE_BGRA_SUPPORT = 0x20
 };
 
+enum RESOURCE_MISC_FLAG
+{
+	RESOURCE_MISC_GENERATE_MIPS = 0x1L,
+	RESOURCE_MISC_SHARED = 0x2L,
+	RESOURCE_MISC_TEXTURECUBE = 0x4L,
+	RESOURCE_MISC_DRAWINDIRECT_ARGS = 0x10L,
+	RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS = 0x20L,
+	RESOURCE_MISC_BUFFER_STRUCTURED = 0x40L,
+	RESOURCE_MISC_RESOURCE_CLAMP = 0x80L,
+	RESOURCE_MISC_SHARED_KEYEDMUTEX = 0x100L,
+	RESOURCE_MISC_GDI_COMPATIBLE = 0x200L
+};
+
 struct Vector4
 {
 	float x;
@@ -492,12 +505,30 @@ struct Color
 	float a;
 };
 
+struct SSAO
+{
+	float sampleRadius;
+	float scale;
+	float bias;
+	float intensity;
+	int sampleIterations;
+	Vector3 unused;
+};
+
 struct Material
 {
-	float specular;
+	/*float specular;
 	float shininess;
 	float unused1;
-	float unused2;
+	float unused2;/**/
+
+	float ambient;
+
+	float specular;
+
+	float diffuse;
+
+	float shininess;
 };
 
 struct ViewPosition
@@ -507,16 +538,20 @@ struct ViewPosition
 
 struct DirectionalLight
 {
-	Vector4 lightDir;
+	/*Vector4 lightDir;
 
 	Vector4 ambient;
 	Vector4 diffuse;
-	Vector4 specular;
+	Vector4 specular;*/
+
+	Vector4 lightDir;
+
+	Vector4 color;
 };
 
 struct PointLight
 {
-	Vector4 lightPos;
+	/*Vector4 lightPos;
 
 	Vector4 diffuse;
 	Vector4 specular;
@@ -525,12 +560,18 @@ struct PointLight
 
 	float unused1;
 	float unused2;
-	float unused3;
+	float unused3;/**/
+
+
+	Vector4 point_lightPos;
+	Vector4 point_lightColor;
+	Vector3 point_unused;
+	float point_lightAtt;
 };
 
 struct SpotLight
 {
-	Vector4 lightPos;
+	/*Vector4 lightPos;
 	Vector4 lightDir;
 
 	Vector4 diffuse;
@@ -541,7 +582,18 @@ struct SpotLight
 
 	float blurDistance;
 	
-	float unused1;
+	float unused1;/**/
+
+	Vector4 lightPos;
+	Vector4 lightDir;
+
+	Vector4 lightColor;
+	float   lightAtt;
+
+	float   cutOff;
+	float   outerCutOff;
+
+	float   unused;
 };
 
 struct ModelMat

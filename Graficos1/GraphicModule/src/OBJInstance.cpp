@@ -64,9 +64,9 @@ namespace GraphicsModule
 		return MATRIX();
 	}
 	
-	bool OBJInstance::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat)
+	bool OBJInstance::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
 	{
-		return m_OBJModel.LoadModel(scene, fileName, Flags, mat);
+		return m_OBJModel.LoadModel(scene, fileName, Flags, mat, dim);
 	}
 	
 	void OBJInstance::setSize(Vector size)
@@ -99,10 +99,16 @@ namespace GraphicsModule
 		return m_rot;
 	}
 	
-	void OBJInstance::Draw(RenderManager* renderManager)
+	void OBJInstance::Draw(RenderManager* renderManager, bool useTextures)
+	{
+		//renderManager->UpdateModelMatrix(getModelMatrix());
+	
+		m_OBJModel.Draw(renderManager, useTextures);
+	}
+	void OBJInstance::SetResources(RenderManager* renderManager, bool useTextures)
 	{
 		renderManager->UpdateModelMatrix(getModelMatrix());
-	
-		m_OBJModel.Draw(renderManager);
+
+		m_OBJModel.SetResources(renderManager, useTextures);
 	}
 }

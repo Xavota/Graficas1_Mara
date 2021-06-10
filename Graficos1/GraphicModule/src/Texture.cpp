@@ -4,7 +4,7 @@
 
 namespace GraphicsModule
 {
-bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags)
+bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENSION dim)
 {
 	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -44,40 +44,78 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags)
 	if ((bits == 0) || (width == 0) || (height == 0))
 		return false;
 #if defined(DX11)
-	Texture2D tex;
-	TEXTURE2D_DESC texD;
-	ZeroMemory(&texD, sizeof(texD));
-	texD.Width = width;
-	texD.Height = height;
-	texD.MipLevels = 1;
-	texD.ArraySize = 1;
-	if (Flags & MODEL_LOAD_FORMAT_RGBA)
-		texD.Format = FORMAT_R8G8B8A8_UNORM;
-	else if (Flags & MODEL_LOAD_FORMAT_BGRA)
-		texD.Format = FORMAT_B8G8R8A8_UNORM;
-	texD.SampleDesc.Count = 1;
-	texD.SampleDesc.Quality = 0;
-	texD.Usage = USAGE_DEFAULT;
-	texD.BindFlags = BIND_SHADER_RESOURCE;
-	texD.CPUAccessFlags = 0;
-	texD.MiscFlags = 0;
-	
-	if (FAILED(GetManager()->CreateTexture2D(&texD, NULL, tex)))
+	if (dim == eDIMENSION::TEXTURE2D)
 	{
-		return false;
-	}
-	GetManager()->UpdateTexture2D(tex, bits, FreeImage_GetPitch(dib));
+		Texture2D tex;
+		TEXTURE2D_DESC texD;
+		ZeroMemory(&texD, sizeof(texD));
+		texD.Width = width;
+		texD.Height = height;
+		texD.MipLevels = 1;
+		texD.ArraySize = 1;
+		if (Flags & MODEL_LOAD_FORMAT_RGBA)
+			texD.Format = FORMAT_R8G8B8A8_UNORM;
+		else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+			texD.Format = FORMAT_B8G8R8A8_UNORM;
+		texD.SampleDesc.Count = 1;
+		texD.SampleDesc.Quality = 0;
+		texD.Usage = USAGE_DEFAULT;
+		texD.BindFlags = BIND_SHADER_RESOURCE;
+		texD.CPUAccessFlags = 0;
+		texD.MiscFlags = 0;
+		
+		if (FAILED(GetManager()->CreateTexture2D(&texD, NULL, tex)))
+		{
+			return false;
+		}
+		GetManager()->UpdateTexture2D(tex, bits, FreeImage_GetPitch(dib));
 
-	SHADER_RESOURCE_VIEW_DESC srvd;
-	ZeroMemory(&srvd, sizeof(srvd));
-	if (Flags & MODEL_LOAD_FORMAT_RGBA)
-		srvd.Format = FORMAT_R8G8B8A8_UNORM;
-	else if (Flags & MODEL_LOAD_FORMAT_BGRA)
-		srvd.Format = FORMAT_B8G8R8A8_UNORM;
-	srvd.ViewDimension = SRV_DIMENSION_TEXTURE2D;
-	srvd.Texture2D.MipLevels = 1; // same as orig texture
-	GetManager()->CreateShaderResourceView(tex, &srvd, m_texture);
-	tex.Release();
+		
+		SHADER_RESOURCE_VIEW_DESC srvd;
+		ZeroMemory(&srvd, sizeof(srvd));
+		if (Flags & MODEL_LOAD_FORMAT_RGBA)
+			srvd.Format = FORMAT_R8G8B8A8_UNORM;
+		else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+			srvd.Format = FORMAT_B8G8R8A8_UNORM;
+		srvd.ViewDimension = SRV_DIMENSION_TEXTURE2D;
+		srvd.Texture2D.MipLevels = 1; // same as orig texture
+
+		/*if (dim == eDIMENSION::TEX_CUBE)
+		{	
+			texD.ArraySize = 6;
+			texD.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+		}/**/
+
+		GetManager()->CreateShaderResourceView(tex, &srvd, m_texture);
+		tex.Release();
+	}
+	else if (dim == eDIMENSION::TEX_CUBE)
+	{
+		Texture2D SMTexture;
+		HRESULT hr = D3DX11CreateTextureFromFile(GetManager()->getDevicePtr(), pSrcFile,
+			NULL, 0, (ID3D11Resource**)&SMTexture.GetTexturePtr(), 0);
+
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		TEXTURE2D_DESC SMTextureDesc;
+		SMTexture.GetTexturePtr()->GetDesc((D3D11_TEXTURE2D_DESC*)&SMTextureDesc);
+
+		SHADER_RESOURCE_VIEW_DESC SMViewDesc;
+		SMViewDesc.Format = SMTextureDesc.Format;
+		SMViewDesc.ViewDimension = SRV_DIMENSION_TEXTURECUBE;
+		SMViewDesc.TextureCube.MipLevels = SMTextureDesc.MipLevels;
+		SMViewDesc.TextureCube.MostDetailedMip = 0;
+
+		hr = GetManager()->CreateShaderResourceView(SMTexture, &SMViewDesc, m_texture);
+
+		if (FAILED(hr))
+		{
+			return false;
+		}
+	}
 
 	
 #elif defined(OGL)
@@ -103,7 +141,7 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags)
 #endif           
 	//Free FreeImage's copy of the data
 	FreeImage_Unload(dib);
-	return true;
+ 	return true;
 }
 
 #if defined(DX11)

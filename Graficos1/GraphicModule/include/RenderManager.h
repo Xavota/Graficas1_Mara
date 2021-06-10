@@ -20,6 +20,8 @@ using std::string;
 #include "PixelShader.h"
 #include "SamplerState.h"
 
+#include "RasterizeState.h"
+
 #include "OBJInstance.h"
 
 #if defined(DX11)
@@ -35,6 +37,19 @@ using std::string;
 
 namespace GraphicsModule
 {
+
+	struct RenderTargetStruct
+	{
+		RenderTargetStruct(string name, RenderTargetView rtv, DepthStencilView dst, Texture tex);
+		RenderTargetStruct(string name);
+		RenderTargetStruct(const RenderTargetStruct& other);
+		~RenderTargetStruct();
+		std::vector<string> m_names;
+		RenderTargetView m_rtv;
+		DepthStencilView m_dsv;
+		Texture m_tex;
+	};
+
 class RenderManager
 {
 public:
@@ -57,7 +72,7 @@ public:
 		PixelShader& ppPixelShader);
 	HRESULT CreateBuffer( const BUFFER_DESC* pDesc, const SUBRESOURCE_DATA* pInitialData, Buffer& ppBuffer);
 	HRESULT CreateSamplerState(const SAMPLER_DESC* pSamplerDesc, SamplerState& ppSamplerState);
-	HRESULT CreateRasterizerState( const RASTERIZER_DESC* pRasterizerDesc, ID3D11RasterizerState** ppRasterizerState);
+	HRESULT CreateRasterizerState( const RASTERIZER_DESC* pRasterizerDesc, RasterizeState& ppRasterizerState);
 	HRESULT CreateShaderResourceView( Texture2D& pResource, const SHADER_RESOURCE_VIEW_DESC* pDesc, ShaderResourceView& ppSRView);
 
 	/*Device context functions*/
@@ -66,7 +81,7 @@ public:
 	void UpdateTexture2D( Texture2D& image, const void* data, unsigned int rowSize);
 	void DrawIndexed( unsigned int IndexCount, unsigned int StartIndexLocation, int BaseVertexLocation );
 	void OMSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView);
-	void ClearAndSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView, const float ColorRGBA[4]);
+	void ClearAndSetRenderTargets(unsigned int count, RenderTargetView* ppRenderTargetViews, DepthStencilView& pDepthStencilView, std::vector<float*> ColorRGBA, std::vector<bool> cleans);
 	void RSSetViewports( unsigned int NumViewports, const VIEWPORT* pViewports );
 	void IASetInputLayout( InputLayout& pInputLayout );
 	void IASetVertexBuffers( unsigned int StartSlot, unsigned int NumBuffers, Buffer& ppVertexBuffers, 
@@ -81,7 +96,7 @@ public:
 	void PSSetConstantBuffers( unsigned int StartSlot, unsigned int NumBuffers, Buffer ppConstantBuffers);
 	void PSSetShaderResources( unsigned int StartSlot, std::vector<Texture> ppShaderResourceViews);
 	void PSSetSamplers( unsigned int StartSlot, unsigned int NumSamplers, SamplerState& ppSamplers);
-	void RSSetState( ID3D11RasterizerState* pRasterizerState);
+	void RSSetState( RasterizeState pRasterizerState);
 	void Flush();
 	void ClearState();
 
@@ -138,10 +153,11 @@ public:
 
 #endif
 	//Shader& getShader() { return m_shader; }
-	Effect& getShader() { return m_effect; }
+	void AddEffect(string name);
+	Effect& getShader(string name);
 
 	HRESULT CompileShaders(const char* vsFileName, const char* psFileName);
-	void SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags);
+	void SetShaderFlags(string EffectName, eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags, eTONE_CORRECTION_TECHNIQUES toneMap/**/);
 
 	void setViewport(unsigned int width, unsigned int height);
 
@@ -149,6 +165,7 @@ public:
 	void UpdateProjectionMatrix(MATRIX projection);
 	void UpdateModelMatrix(MATRIX model);
 
+	void UpdateMaterial(Material matDesc);
 	void UpdateDirectionalLight(DirectionalLight dirDesc);
 	void UpdatePointLight(PointLight pointDesc);
 	void UpdateSpotLight(SpotLight spotDesc);
@@ -159,14 +176,20 @@ public:
 	Buffer& GetChangesEveryFrameBuffer() { return m_pCBChangesEveryFrame; }
 
 	Buffer& GetViewPositionBuffer() { return m_ViewPositionBuffer; }
-	Buffer& GetMaterialShininessBuffer() { 
-	return m_MaterialShininessBuffer; 
-	}
+	Buffer& GetMaterialShininessBuffer() { return m_MaterialShininessBuffer; }
 
 	Buffer& GetDirectionalLightBuffer() { return m_DirectionalLightBuffer; }
 	Buffer& GetPointLightBuffer() { return m_PointLightBuffer; }
 	Buffer& GetSpotLightBuffer() { return m_SpotLightBuffer; }
-#endif
+#endif	
+	bool RenderTargetExist(string name);
+	bool AddRenderTargetAndTexture(string name);
+	void AddRedefinitionOfRenderTarget(string name, string newName);
+	std::vector<RenderTargetStruct>* GetRenderTargets();
+	RenderTargetView* GetRenderTarget(string name);
+	DepthStencilView* GetDepthStencil(string name);
+	Texture* GetTexture(string name);
+
 #if !defined(OGL)
 	HWND& GetWindow() { return m_hwnd; }
 	void SetWindow(HWND window) { m_hwnd = window; }
@@ -190,8 +213,17 @@ private:
 	GLFWwindow* m_window;
 #endif
 
+	struct EffectStruct
+	{
+		string m_name;
+		Effect m_effect;
+	};
+
+	std::vector<EffectStruct> m_effects;
+
 	//Shader m_shader;
-	Effect m_effect;
+
+	std::vector<RenderTargetStruct> m_rtvs;
 
 public:
 #if defined(DX11)

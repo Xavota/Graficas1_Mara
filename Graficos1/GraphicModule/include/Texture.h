@@ -6,13 +6,23 @@
 
 namespace GraphicsModule
 {
+	enum class eDIMENSION
+	{
+		NONE = -1,
+		TEXTURE2D,
+		TEX_CUBE,
+		COUNT
+	};
 class Texture
 {
 public:
 	Texture() = default;
-	~Texture() = default;
+	~Texture()
+	{
+		//m_texture.Release();
+	}
 
-	bool CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags);
+	bool CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENSION dim);
 #if defined(DX11)
 	bool CreateTextureFromBuffer(Texture2D& buffer);
 
