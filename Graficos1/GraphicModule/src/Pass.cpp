@@ -5,6 +5,7 @@ namespace GraphicsModule
 {
 	Pass::Pass(CULL_MODE cull)
 	{
+#if defined(DX11)
 		RASTERIZER_DESC rsDesc;
 		ZeroMemory(&rsDesc, sizeof(RASTERIZER_DESC));
 		rsDesc.FillMode = FILL_SOLID;
@@ -15,6 +16,21 @@ namespace GraphicsModule
 		{
 			cout << "mal" << endl;
 		}
+#elif defined(OGL)
+		switch (cull)
+		{
+		case CULL_NONE:
+			m_rsState.setCullingMode(GL_FRONT_AND_BACK);
+			break;
+		case CULL_FRONT:
+			m_rsState.setCullingMode(GL_FRONT);
+			break;
+		case CULL_BACK:
+			m_rsState.setCullingMode(GL_BACK);
+			break;
+		}
+	//TODO
+#endif
 	}
 
 	void Pass::Compile(const char* vertexShaderString, const char* pixelShaderString)
@@ -120,6 +136,7 @@ namespace GraphicsModule
 #endif
 		}*/
 
+#if defined(DX11)
 		std::vector<RenderTargetView> rtvs;
 		std::vector<bool> cleans;
 		std::vector<float*> clearColors;
@@ -134,18 +151,35 @@ namespace GraphicsModule
 		}
 		if (rtvs.size() > 0 && m_depthStencil.getStencilViewPtr() != NULL)
 			GetManager()->ClearAndSetRenderTargets(rtvs.size(), rtvs.data(), m_depthStencil, clearColors, cleans);
+#elif defined(OGL)
 
-		/*int slot = 0;
-		for (InputTexture& it : m_inputTextures)
+		glBindRenderbuffer(GL_RENDERBUFFER, m_depthStencil.getID());
+		GLenum *DrawBuffers = new GLenum[m_outputTextures.size() ];
+		for (int i = 0; i < m_outputTextures.size(); i++)
 		{
-			GetManager()->PSSetShaderResources(slot++, {it.m_texture});
-		}*/
+			glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[i].m_renderTarget->getID());
+
+			glClearColor(m_outputTextures[i].m_clearColor[0] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[1] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[2] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[3]);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// Set "renderedTexture" as our colour attachement #0
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_outputTextures[i].m_renderTarget->getTextureAtatchedID(), 0);
+
+			DrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+		}
+		// Set the list of draw buffers.
+		glDrawBuffers(m_outputTextures.size(), DrawBuffers); // "1" is the size of DrawBuffers
+		delete[] DrawBuffers;
+#endif
 	}
 
 	//void Pass::Draw(unsigned int indexCount)/*
 	void Pass::Draw()/**/
 	{
+#if defined(DX11)
 		GetManager()->RSSetState(m_rsState);
+#elif defined(OGL)
+		glCullFace(m_rsState.getCullingMode());
+#endif
 		//GetManager()->DrawIndexed(indexCount, 0, 0);/*
 		for (ObjectStruct obj : m_objects)
 		{
@@ -242,6 +276,11 @@ namespace GraphicsModule
 					m_shaders.SetUint4(v.m_uniform, data[0], data[1], data[2], data[3]);
 					break;
 				}
+				case eDataType::MAT:
+				{
+					glm::mat4* data = (glm::mat4*)v.m_data;
+					m_shaders.SetMat4(v.m_uniform, *data);
+				}
 				}
 #endif
 			}
@@ -249,7 +288,14 @@ namespace GraphicsModule
 			int slot = 0;
 			for (InputTexture& it : m_inputTextures)
 			{
+#if defined(DX11)
 				GetManager()->PSSetShaderResources(slot++, { it.m_texture });
+#elif defined(OGL)
+				GetManager()->ShaderSetFloat(it.m_uniform, slot);
+
+				glActiveTexture(GL_TEXTURE0 + slot++);
+				glBindTexture(GL_TEXTURE_2D, it.m_texture.getID());
+#endif
 			}
 
 			
@@ -346,16 +392,34 @@ namespace GraphicsModule
 	{
 		m_values.push_back(Values(name, id, size));
 	}
+
+	void Pass::AddInputTexture(string name)
+	{
+		m_inputTextures.push_back({ name, Texture() });
+	}
 #elif defined(OGL)
 	void Pass::AddTrackValue(string name, string uniform, eDataType type)
 	{
 		m_values.push_back(Values(name, uniform, type));
 	}
+
+	void Pass::AddInputTexture(string name, string uniform)
+	{
+		m_inputTextures.push_back({ name, uniform, Texture() });
+	}
 #endif
 
-	void Pass::AddInputTexture(string name)
+	void Pass::SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv)
 	{
-		m_inputTextures.push_back({name, Texture()});
+		for (OutputTexture& ot : m_outputTextures)
+		{
+			if (ot.m_name == name)
+			{
+				ot.m_renderTarget = tex;
+				break;
+			}
+		}
+		m_depthStencil = dsv;
 	}
 
 	void Pass::SetInputTexture(string name, Texture tex)
@@ -372,26 +436,72 @@ namespace GraphicsModule
 		m_outputTextures.push_back(OutputTexture( name, nullptr, cleanRenderTarget, clearColor ));
 	}
 
-	void Pass::SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv)
-	{
-		for (OutputTexture& ot : m_outputTextures)
-		{		
-			if (ot.m_name == name)
-			{
-				ot.m_renderTarget = tex;
-				break;
-			}
-		}
-		m_depthStencil = dsv;
-	}
-
 	void Pass::SetValue(string name, void* data)
 	{
 		for (Values& v : m_values)
 		{
 			if (v.m_name == name)
 			{
+#if defined(DX11)
 				memcpy(v.m_data, data, v.m_size);
+#elif defined(OGL)
+				size_t size;
+				switch (v.m_type)
+				{
+				case eDataType::BOOL:
+					size = sizeof(bool);
+					break;
+				case eDataType::INT:
+					size = sizeof(int);
+					break;
+				case eDataType::FLOAT:
+					size = sizeof(float);
+					break;
+				case eDataType::UINT:
+					size = sizeof(unsigned int);
+					break;
+				case eDataType::BOOL2:
+					size = sizeof(bool) * 2;
+					break;
+				case eDataType::INT2:
+					size = sizeof(int) * 2;
+					break;
+				case eDataType::FLOAT2:
+					size = sizeof(float) * 2;
+					break;
+				case eDataType::UNIT2:
+					size = sizeof(unsigned int) * 2;
+					break;
+				case eDataType::BOOL3:
+					size = sizeof(bool) * 3;
+					break;
+				case eDataType::INT3:
+					size = sizeof(int) * 3;
+					break;
+				case eDataType::FLOAT3:
+					size = sizeof(float) * 3;
+					break;
+				case eDataType::UINT3:
+					size = sizeof(unsigned int) * 3;
+					break;
+				case eDataType::BOOL4:
+					size = sizeof(bool) * 4;
+					break;
+				case eDataType::INT4:
+					size = sizeof(int) * 4;
+					break;
+				case eDataType::FLOAT4:
+					size = sizeof(float) * 4;
+					break;
+				case eDataType::UINT4:
+					size = sizeof(unsigned int) * 4;
+					break;
+				case eDataType::MAT:
+					size = sizeof(float) * 4 * 4;
+					break;
+				}
+				memcpy(v.m_data, data, size);
+#endif
 			}
 		}
 	}
@@ -430,15 +540,17 @@ namespace GraphicsModule
 			delete m_data;
 			m_data = nullptr;
 		}
+#if defined(DX11)
 		m_buff.Release();
+#endif
 	}
 
 	Values::Values(const Values& other)
 	{
 	
 		m_name = other.m_name;
-		m_data = (void*)new char[other.m_size];
 #if defined(DX11)
+		m_data = (void*)new char[other.m_size];
 		m_id = other.m_id;
 		m_size = other.m_size;
 	
@@ -450,9 +562,64 @@ namespace GraphicsModule
 		bd.CPUAccessFlags = 0;
 		GetManager()->CreateBuffer(&bd, NULL, m_buff);
 #elif defined(OGL)
+		size_t size = 0u;
+		switch (other.m_type)
+		{
+		case eDataType::BOOL:
+			size = sizeof(bool);
+			break;
+		case eDataType::INT:
+			size = sizeof(int);
+			break;
+		case eDataType::FLOAT:
+			size = sizeof(float);
+			break;
+		case eDataType::UINT:
+			size = sizeof(unsigned int);
+			break;
+		case eDataType::BOOL2:
+			size = sizeof(bool) * 2;
+			break;
+		case eDataType::INT2:
+			size = sizeof(int) * 2;
+			break;
+		case eDataType::FLOAT2:
+			size = sizeof(float) * 2;
+			break;
+		case eDataType::UNIT2:
+			size = sizeof(unsigned int) * 2;
+			break;
+		case eDataType::BOOL3:
+			size = sizeof(bool) * 3;
+			break;
+		case eDataType::INT3:
+			size = sizeof(int) * 3;
+			break;
+		case eDataType::FLOAT3:
+			size = sizeof(float) * 3;
+			break;
+		case eDataType::UINT3:
+			size = sizeof(unsigned int) * 3;
+			break;
+		case eDataType::BOOL4:
+			size = sizeof(bool) * 4;
+			break;
+		case eDataType::INT4:
+			size = sizeof(int) * 4;
+			break;
+		case eDataType::FLOAT4:
+			size = sizeof(float) * 4;
+			break;
+		case eDataType::UINT4:
+			size = sizeof(unsigned int) * 4;
+			break;
+		case eDataType::MAT:
+			size = sizeof(float) * 4 * 4;
+			break;
+		}
+		m_data = (void*)new char[size];
 		m_uniform = other.m_uniform;
 		m_type = other.m_type;
-	}
 #endif
 	}
 }

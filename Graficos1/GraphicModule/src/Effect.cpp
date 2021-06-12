@@ -284,47 +284,26 @@ namespace GraphicsModule
 			ps.tech.AddPassInputTexture(passName, textureName);
 		}
 	}
-	void Effect::SetPassInputTexture(string passName, string textureName, Texture tex)
-	{
-		for (Techs& ps : m_techniques)
-		{
-			ps.tech.SetPassInputTexture(passName, textureName, tex);
-		}
-	}
-	void Effect::AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4])
-	{
-		for (Techs& ps : m_techniques)
-		{
-			ps.tech.AddPassOutputTexture(passName, textureName, cleanRenderTarget, clearColor);
-		}
-	}
-	void Effect::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
-	{
-		for (Techs& ps : m_techniques)
-		{
-			ps.tech.SetPassOutputTexture(passName, textureName, tex, dsv);
-		}
-	}
-	void Effect::UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName)
-	{
-		for (Techs& ps : m_techniques)
-		{
-			ps.tech.UniteInputOutputTextures( outputPassName, outpuTextureName, inputPassName, inputTextureName );
-		}
-	}
-	void Effect::UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName)
-	{
-		for (Techs& ps : m_techniques)
-		{
-			ps.tech.UniteOutputOutputTextures(outputPassName, outpuTextureName, newOutputPassName, newOutputTextureName);
-		}
-	}
 #elif defined(OGL)
-	void Effect::AddEffectTrackValue(string name, string uniform, Technique::eDataType type)
+	void Effect::AddEffectTrackValue(string name, string uniform, eDataType type)
 	{
 		for (Techs& ps : m_techniques)
 		{
 			ps.tech.AddTrackValue(name, uniform, type);
+		}
+	}
+	void Effect::AddPassTrackValue(string passName, string name, string uniform, eDataType type)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddPassTrackValue(passName, name, uniform, type);
+		}
+	}
+	void Effect::AddPassInputTexture(string passName, string textureName, string uniform)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddPassInputTexture(passName, textureName, uniform);
 		}
 	}
 #endif
@@ -347,6 +326,41 @@ namespace GraphicsModule
 		for (Techs& ps : m_techniques)
 		{
 			ps.tech.AddObjectToPass(passName, obj, useTextures);
+		}
+	}
+	void Effect::UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.UniteInputOutputTextures(outputPassName, outpuTextureName, inputPassName, inputTextureName);
+		}
+	}
+	void Effect::UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.UniteOutputOutputTextures(outputPassName, outpuTextureName, newOutputPassName, newOutputTextureName);
+		}
+	}
+	void Effect::SetPassInputTexture(string passName, string textureName, Texture tex)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetPassInputTexture(passName, textureName, tex);
+		}
+	}
+	void Effect::AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4])
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.AddPassOutputTexture(passName, textureName, cleanRenderTarget, clearColor);
+		}
+	}
+	void Effect::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.SetPassOutputTexture(passName, textureName, tex, dsv);
 		}
 	}
 }

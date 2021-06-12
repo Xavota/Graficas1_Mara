@@ -56,20 +56,23 @@ public:
 	void AddTrackValue(string name, unsigned int id, unsigned int size);
 	void AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size);
 	void AddPassInputTexture(string passName, string textureName);
-	void SetPassInputTexture(string passName, string textureName, Texture tex);
-	void AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4]);
-	void SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv);
-	void UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName);
-	void UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName);
 #elif defined(OGL)
 	void AddTrackValue(string name, string uniform, eDataType type);
 	void AddPassTrackValue(string passName, string name, string uniform, eDataType type);
+	void AddPassInputTexture(string passName, string textureName, string uniform);
 #endif
 
 	void SetValue(string name, void* data);
 	void SetPassValue(string passName, string name, void* data);
 
 	void AddObjectToPass(string passName, OBJInstance* obj, bool useTextures);
+
+	void SetPassInputTexture(string passName, string textureName, Texture tex);
+	void AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4]);
+
+	void SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv);
+	void UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName);
+	void UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName);
 private:
 	struct TextureExchange
 	{

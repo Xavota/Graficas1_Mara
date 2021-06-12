@@ -316,7 +316,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(DEVLIBS)ASSIMP\lib\Debug\x86;$(DEVLIBS)FreeImage\Win32\Debug;$(DEVLIBS)OpenGL\Libs\Debug\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc142-mtd.lib;FreeImaged.lib;glfw3.lib;</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mtd.lib;FreeImaged.lib;glfw3.lib;opengl32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -391,7 +391,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(DEVLIBS)ASSIMP\lib\Release\x86;$(DEVLIBS)FreeImage\Win32\Release;$(DEVLIBS)OpenGL\Libs\Release\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc142-mt.lib;FreeImage.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mt.lib;FreeImage.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -454,7 +454,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(DEVLIBS)ASSIMP\lib\Debug\x64;$(DEVLIBS)FreeImage\x64\Debug;$(DEVLIBS)OpenGL\Libs\Debug\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc142-mtd.lib;FreeImaged.lib;glfw3.lib;legacy_stdio_definitions.lib</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mtd.lib;FreeImaged.lib;glfw3.lib;opengl32.lib;legacy_stdio_definitions.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -529,7 +529,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(DEVLIBS)ASSIMP\lib\Release\x64;$(DEVLIBS)FreeImage\x64\Release;$(DEVLIBS)OpenGL\Libs\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc142-mt.lib;FreeImage.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mt.lib;FreeImage.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

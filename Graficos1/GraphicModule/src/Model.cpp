@@ -110,6 +110,22 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	{
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
+
+	aiString completePathAO;
+	completePathAO.Append(fileName.c_str());
+	completePathAO.Append("/../../Textures/M_");
+	completePathAO.Append(m_name.c_str());
+	completePathAO.Append("_AO.jpg");
+	stat = TextureManager::CreateTextureFromFile(completePathAO.C_Str(), m_name + "_AO", Flags, dim);
+	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
+	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
+	{
+		setTexture(TextureManager::GetTexture(m_name + "_AO"));
+	}
+	else if (stat == eSTATUS::FAIL)
+	{
+		setTexture(TextureManager::GetTexture("Base Texture"));
+	}
 	//TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Normal.jpg", "norm", MODEL_LOAD_FORMAT_BGRA);
 	//setTexture(TextureManager::GetTexture("norm")); 
 	//GetManager()->getShader().AddPassInputTexture("Lights", "normal");
@@ -254,7 +270,7 @@ void Model::Draw(RenderManager* renderManager, bool useTextures)
 
 #elif defined(OGL)
 		/*Set primitive topology*/
-		glPolygonMode(GL_FRONT_AND_BACK, m_topology);
+		/*glPolygonMode(GL_FRONT_AND_BACK, m_topology);
 
 		renderManager->ShaderSetFloat("mat1.normalMap", 1);
 
@@ -269,7 +285,7 @@ void Model::Draw(RenderManager* renderManager, bool useTextures)
 		renderManager->ShaderSetFloat("mat1.specularMap", 2);
 
 		glActiveTexture(GL_TEXTURE0 + 2);
-		glBindTexture(GL_TEXTURE_2D, m_textures[2].getID());
+		glBindTexture(GL_TEXTURE_2D, m_textures[2].getID());*/
 #endif
 
 		m_modelMeshes[i].Draw(renderManager);
@@ -277,10 +293,15 @@ void Model::Draw(RenderManager* renderManager, bool useTextures)
 }
 void Model::SetResources(RenderManager* renderManager, bool useTextures)
 {
+#if defined(DX11)
 	renderManager->IASetPrimitiveTopology(m_topology);
+#elif defined(OGL)
+	glPolygonMode(GL_FRONT_AND_BACK, m_topology);
+#endif
 
 	if (useTextures)
 	{
+#if defined(DX11)
 		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "diffuse", m_textures[0]);
 		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "normal", m_textures[1]);
 		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "specular", m_textures[2]);
@@ -288,8 +309,15 @@ void Model::SetResources(RenderManager* renderManager, bool useTextures)
 		renderManager->getShader("Deferred").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);
 
 
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "diffuse", m_textures[0]);
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "normal", m_textures[1]);
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "specular", m_textures[2]);
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "AO", m_textures[3]);
 
 		renderManager->getShader("Forward").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);
+#elif defined(OGL)
+		
+#endif
 	}
 
 	for (int i = 0; i < m_modelMeshes.size(); ++i)

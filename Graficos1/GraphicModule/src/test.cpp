@@ -168,71 +168,45 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 		g_RenderManager->PSSetSamplers(0, 1, g_pSamplerLinear);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		Texture2D g_pTextRT2;
-		TEXTURE2D_DESC descTextRT;
-		ZeroMemory(&descTextRT, sizeof(descTextRT));
-		descTextRT.Width = 1264;
-		descTextRT.Height = 681;
-		descTextRT.MipLevels = 1;
-		descTextRT.ArraySize = 1;
-		descTextRT.Format = FORMAT_R8G8B8A8_UNORM;
-		descTextRT.SampleDesc.Count = 1;
-		descTextRT.SampleDesc.Quality = 0;
-		descTextRT.Usage = USAGE_DEFAULT;
-		descTextRT.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
-		descTextRT.CPUAccessFlags = 0;
-		descTextRT.MiscFlags = 0;
-		if (FAILED(g_RenderManager->CreateTexture2D(&descTextRT, NULL, g_pTextRT2)))
-			return E_FAIL;
-
-		// create the rt Shader resource view
-		SHADER_RESOURCE_VIEW_DESC descViewRT;
-		ZeroMemory(&descViewRT, sizeof(descViewRT));
-		descViewRT.Format = FORMAT_R8G8B8A8_UNORM;
-		descViewRT.ViewDimension = SRV_DIMENSION_TEXTURE2D;
-		descViewRT.Texture2D.MostDetailedMip = 0;
-		descViewRT.Texture2D.MipLevels = 1;
-		if (FAILED(g_RenderManager->CreateShaderResourceView(g_pTextRT2, &descViewRT, srv)))
-			return E_FAIL;
-
-		// Create the render target view
-		if (FAILED(g_RenderManager->CreateRenderTargetView(g_pTextRT2, NULL, RTV2)))
-			return E_FAIL;
-
-		g_pTextRT2.Release();
 #elif defined(OGL)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+	glEnable(GL_CULL_FACE);
+
+	int width = 0, height = 0;
+	glfwGetFramebufferSize(g_RenderManager->GetWindow(), &width, &height);
+
+	g_pRenderTargetView.Init(0, 0);
+	g_pDepthStencilView.Init(width, height);
 
 	//g_RenderManager->CompileShaders("miVertex.fx", "miPixel.fx");
 #endif
 
+
+	float color[4] = { 0.0f,0.0f,0.0f,1.0f };
+	float SSAOcolor[4] = { 1.0f,1.0f,1.0f,1.0f };
+
+#if defined(DX11)
 		g_RenderManager->AddEffect("Deferred");
+		g_RenderManager->AddEffect("Forward");/**/
+
 		g_RenderManager->getShader("Deferred").CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
 		g_RenderManager->getShader("Deferred").CreatePass("SkyBox", "SkyBoxVertex.fx", "SkyBoxPixel.fx", CULL_BACK);
 		g_RenderManager->getShader("Deferred").CreatePass("Lights", "LightVertex.fx", "LightPixel.fx", CULL_FRONT);
 		g_RenderManager->getShader("Deferred").CreatePass("SSAO", "SSAOVertex.fx", "SSAOPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Deferred").CreatePass("ToneMap", "ToneMapVertex.fx", "ToneMapPixel.fx", CULL_FRONT);/**/
+		g_RenderManager->getShader("Deferred").CreatePass("ToneMap", "ToneMapVertex.fx", "ToneMapPixel.fx", CULL_FRONT);
 		g_RenderManager->getShader("Deferred").CreatePass("Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
 
-		g_RenderManager->AddEffect("Forward");
 		g_RenderManager->getShader("Forward").CreatePass("SkyBox", "SkyBoxFwdVertex.fx", "SkyBoxFwdPixel.fx", CULL_BACK);
+		g_RenderManager->getShader("Forward").CreatePass("Lights", "LightFwdVertex.fx", "LightFwdPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("ToneMap", "ToneMapFwdVertex.fx", "ToneMapFwdPixel.fx", CULL_FRONT);
 		g_RenderManager->getShader("Forward").CreatePass("Copy", "CopyFwdVertex.fx", "CopyFwdPixel.fx", CULL_FRONT);/**/
+#elif defined(OGL)
+	g_RenderManager->AddEffect("Deferred");
+
+	g_RenderManager->getShader("Deferred").CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
+#endif
+
 #if defined(DX11)
 		g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewMatrix", 0, sizeof(ViewMat));
 		g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", 1, sizeof(ProjectionMat));
@@ -246,9 +220,6 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO", 0, sizeof(SSAO));
 
 		g_RenderManager->getShader("Deferred").AddPassTrackValue("ToneMap", "Exposure", 0, sizeof(Vector4));/**/
-
-		float color[4] = { 0.0f,0.0f,0.0f,1.0f };
-		float SSAOcolor[4] = { 1.0f,1.0f,1.0f,1.0f };
 
 		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "diffuse");
 		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "normal");
@@ -296,38 +267,63 @@ namespace GraphicsModule
 
 		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SSAO", "Final", "Copy", "Input");/**/
 
-
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("SkyBox", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Position", &g_pRenderTargetView, g_pDepthStencilView);/**/
+#elif defined(OGL)
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewMatrix", "model", eDataType::MAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", "view", eDataType::MAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ModelMatrix", "projection", eDataType::MAT);
+
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Final", true, color);/**/
+	g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Final", &g_pRenderTargetView, g_pDepthStencilView);
+#endif
 
 
 
 		/*Forward*/
-
+#if defined(DX11)
 		g_RenderManager->getShader("Forward").AddEffectTrackValue("ViewMatrix", 0, sizeof(ViewMat));
 		g_RenderManager->getShader("Forward").AddEffectTrackValue("ProjectionMatrix", 1, sizeof(ProjectionMat));
 		g_RenderManager->getShader("Forward").AddEffectTrackValue("ModelMatrix", 2, sizeof(ModelMat));
-		/*g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewPosition", 3, sizeof(Vector4));
-		g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material", 4, sizeof(Material));
-		g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight", 5, sizeof(DirectionalLight));
-		g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight", 6, sizeof(PointLight));
-		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));/**/
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("ViewPosition", 3, sizeof(Vector4));
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("Material", 4, sizeof(Material));
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("DirectionalLight", 5, sizeof(DirectionalLight));
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight", 6, sizeof(PointLight));
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));/**/
+
+		g_RenderManager->getShader("Forward").AddPassTrackValue("ToneMap", "Exposure", 0, sizeof(Vector4));/**/
 
 
 
 		g_RenderManager->getShader("Forward").AddPassInputTexture("SkyBox", "diffuse");
 		g_RenderManager->getShader("Forward").AddPassOutputTexture("SkyBox", "Final", false, color);/**/
 
+
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "diffuse");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "AO");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "normal");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "specular");
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("Lights", "Final", true, color);/**/
+
+
+		g_RenderManager->getShader("Forward").AddPassInputTexture("ToneMap", "Light");
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
+
+
 		g_RenderManager->getShader("Forward").AddPassInputTexture("Copy", "Input");
 		g_RenderManager->getShader("Forward").AddPassOutputTexture("Copy", "Final", true, color);/**/
 
 
-		g_RenderManager->getShader("Forward	").UniteInputOutputTextures("SkyBox", "Final", "Copy", "Input");
+		g_RenderManager->getShader("Forward").UniteInputOutputTextures("SkyBox", "Final", "ToneMap", "Light");
+		g_RenderManager->getShader("Forward").UniteInputOutputTextures("ToneMap", "Final", "Copy", "Input");
+
+		g_RenderManager->getShader("Forward").UniteOutputOutputTextures("SkyBox", "Final", "Lights", "Final");/**/
 
 		g_RenderManager->getShader("Forward").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);
 #elif defined(OGL)
 #endif
+
 		return S_OK;
 	}
 
@@ -349,20 +345,12 @@ namespace GraphicsModule
 
 	void test::Clear()
 	{
-		//g_RenderManager->getShader().Use();
+		g_RenderManager->getShader(m_Technique).Draw();
 #if defined(DX11)
 
-		/*std::vector<RenderTargetView> rtvs;
-		rtvs.push_back(g_pRenderTargetView);
-		rtvs.push_back(RTV2);
-
-		g_RenderManager->ClearAndSetRenderTargets(rtvs, g_pDepthStencilView, g_ClearColor);*/
-		//g_RenderManager->getShader().SetPassOutputTexture("GBuffer", "Final", &g_pRenderTargetView, g_pDepthStencilView);
-
-		g_RenderManager->getShader("Forward").Draw();
 #elif defined(OGL)
-		glClearColor(g_ClearColor[0] * g_ClearColor[3], g_ClearColor[1] * g_ClearColor[3], g_ClearColor[2] * g_ClearColor[3], g_ClearColor[3]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClearColor(g_ClearColor[0] * g_ClearColor[3], g_ClearColor[1] * g_ClearColor[3], g_ClearColor[2] * g_ClearColor[3], g_ClearColor[3]);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 	}
 

@@ -28,7 +28,8 @@ namespace GraphicsModule
 		BOOL4,
 		INT4,
 		FLOAT4,
-		UINT4
+		UINT4, 
+		MAT
 	};
 
 	struct Values
@@ -98,14 +99,15 @@ public:
 
 #if defined(DX11)
 	void AddTrackValue(string name, unsigned int id, unsigned int size);
+	void AddInputTexture(string name);
 #elif defined(OGL)
 	void AddTrackValue(string name, string uniform, eDataType type);
+	void AddInputTexture(string name, string uniform);
 #endif
-	
-	void AddInputTexture(string name);
+
+	void SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv);
 	void SetInputTexture(string name, Texture tex);
 	void AddOutputTexture(string name, bool cleanRenderTarget, float clearColor[4]);
-	void SetOutputTexture(string name, RenderTargetView* tex, DepthStencilView dsv);
 
 	void SetValue(string name, void* data);
 
@@ -129,6 +131,9 @@ private:
 	struct InputTexture
 	{
 		string m_name;
+#if defined(OGL)
+		string m_uniform;
+#endif
 		Texture m_texture;
 	};
 	struct ObjectStruct

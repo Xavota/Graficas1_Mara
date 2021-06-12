@@ -168,9 +168,13 @@ void Mesh::Draw(RenderManager* renderManager)
 }
 void Mesh::SetResources(RenderManager* renderManager)
 {
+#if defined(DX11)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	renderManager->IASetVertexBuffers(0, 1, m_pVertexBuffer, &stride, &offset);
 	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);
+#elif defined(OGL)
+// TODO
+#endif
 }
 }

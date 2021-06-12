@@ -1,6 +1,11 @@
 #include "Texture.h"
 #include "RenderManager.h"
 #include "FreeImage.h"
+#if defined(OGL)
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+#include <gl/GL.h>
+#endif
 
 namespace GraphicsModule
 {
@@ -124,7 +129,7 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENS
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	//OpenGL's image ID to map to
-	GLuint gl_texID;
+	GLuint gl_texID = 0;
 	//generate an OpenGL texture ID for this texture	
 	glGenTextures(1, &gl_texID);
 	//store the texture ID mapping
@@ -156,6 +161,21 @@ bool Texture::CreateTextureFromBuffer(Texture2D& buffer)
 	if (FAILED(hr))
 		return false;
 	return true;
+}
+#elif defined(OGL)
+void Texture::CreateEmptyTexture(int width, int height)
+{
+	glGenTextures(1, &m_ID);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, m_ID);
+
+	// Give an empty image to OpenGL ( the last "0" )
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	// Poor filtering. Needed !
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 #endif
 }

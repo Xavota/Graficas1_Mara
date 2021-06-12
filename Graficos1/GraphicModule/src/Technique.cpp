@@ -18,8 +18,8 @@ namespace GraphicsModule
 #if defined(DX11)
 		vsString << "#define DX11" << '\n';
 #elif defined(OGL)
-		//vsString << "#version 330 core" << '\n';
-		//vsString << "#define OGL" << '\n';
+		vsString << "#version 330 core" << '\n';
+		vsString << "#define OGL" << '\n';
 #endif
 
 		for (string& s : m_defines)
@@ -42,8 +42,8 @@ namespace GraphicsModule
 #if defined(DX11)
 		psString << "#define DX11" << '\n';
 #elif defined(OGL)
-		//psString << "#version 330 core" << '\n';
-		//psString << "#define OGL" << '\n';
+		psString << "#version 330 core" << '\n';
+		psString << "#define OGL" << '\n';
 #endif
 
 		for (string& s : m_defines)
@@ -245,22 +245,14 @@ namespace GraphicsModule
 	{
 		for (PassStruct& p : m_passes)
 		{
-			p.m_pass.Unuse();
-		}
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
-		{
-			ps->second.SetBool(name, value);
+			p.m_pass.SetBool(name, value);
 		}
 	}
 	void Technique::SetInt(const string name, int value)
 	{
 		for (PassStruct& p : m_passes)
 		{
-			p.m_pass.Unuse();
-		}
-		for (map<string, Pass>::iterator ps; ps != m_passes.end(); ps++)
-		{
-			ps->second.SetInt(name, value);
+			p.m_pass.SetInt(name, value);
 		}
 	}
 	void Technique::SetFloat(const string name, float value)
@@ -405,6 +397,59 @@ namespace GraphicsModule
 		}
 	}
 
+#elif defined(OGL)
+	void Technique::AddTrackValue(string name, string uniform, eDataType type)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.AddTrackValue(name, uniform, type);
+		}
+	}
+
+	void Technique::AddPassTrackValue(string passName, string name, string uniform, eDataType type)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddTrackValue(name, uniform, type);
+		}
+	}
+
+	void Technique::AddPassInputTexture(string passName, string textureName, string uniform)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddInputTexture(textureName, uniform);
+		}
+	}
+#endif
+	void Technique::SetValue(string name, void* data)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.SetValue(name, data);
+		}
+	}
+
+	void Technique::SetPassValue(string passName, string name, void* data)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.SetValue(name, data);
+		}
+	}
+
+	void Technique::AddObjectToPass(string passName, OBJInstance* obj, bool useTextures)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddObject(obj, useTextures);
+		}
+	}
+
 	void Technique::SetPassInputTexture(string passName, string textureName, Texture tex)
 	{
 		for (PassStruct& p : m_passes)
@@ -414,21 +459,21 @@ namespace GraphicsModule
 		}
 	}
 
-	void Technique::AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4])
-	{
-		for (PassStruct& p : m_passes)
-		{
-			if (p.m_name == passName)
-				p.m_pass.AddOutputTexture(textureName, cleanRenderTarget, clearColor);
-		}
-	}
-
 	void Technique::SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv)
 	{
 		for (PassStruct& p : m_passes)
 		{
 			if (p.m_name == passName)
 				p.m_pass.SetOutputTexture(textureName, tex, dsv);
+		}
+	}
+
+	void Technique::AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4])
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.AddOutputTexture(textureName, cleanRenderTarget, clearColor);
 		}
 	}
 
@@ -443,56 +488,12 @@ namespace GraphicsModule
 				return;
 			}
 		}
-		m_textureExchanges.push_back(TextureExchange( outputPassName, outpuTextureName, {inputPassName}, {inputTextureName}));
+		m_textureExchanges.push_back(TextureExchange(outputPassName, outpuTextureName, { inputPassName }, { inputTextureName }));
 	}
 
 	void Technique::UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName)
 	{
-		GetManager()->AddRedefinitionOfRenderTarget(outputPassName+outpuTextureName,newOutputPassName+newOutputTextureName);
-	}
-
-	void Technique::AddObjectToPass(string passName, OBJInstance* obj, bool useTextures)
-	{
-		for (PassStruct& p : m_passes)
-		{
-			if (p.m_name == passName)
-				p.m_pass.AddObject(obj, useTextures);
-		}		
-	}
-
-	void Technique::SetPassValue(string passName, string name, void* data)
-	{
-		for (PassStruct& p : m_passes)
-		{
-			if (p.m_name == passName)
-				p.m_pass.SetValue(name, data);
-		}		
-	}
-
-#elif defined(OGL)
-	void Technique::AddTrackValue(string name, string uniform, eDataType type)
-	{
-		m_values.push_back(Values(name, uniform, type));
-	}
-	void Technique::AddPassTrackValue(string passName, string name, string uniform, eDataType type)
-	{
-		m_passes[passName].AddTrackValue(name, uniform, type);
-	}
-#endif
-	void Technique::SetValue(string name, void* data)
-	{
-		/*for (Values& v : m_values)
-		{
-			if (v.m_name == name)
-			{
-				memcpy(v.m_data, data, v.m_size);
-			}
-		}/**/
-
-		for (PassStruct& p : m_passes)
-		{
-			p.m_pass.SetValue(name, data);
-		}
+		GetManager()->AddRedefinitionOfRenderTarget(outputPassName + outpuTextureName, newOutputPassName + newOutputTextureName);
 	}
 
 

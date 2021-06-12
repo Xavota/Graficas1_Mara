@@ -28,6 +28,7 @@ public:
 
 	ShaderResourceView getBuffer() { return m_texture; }
 #elif defined(OGL)
+	void CreateEmptyTexture(int width, int height);
 	unsigned int getID() { return m_ID; }
 #endif
 

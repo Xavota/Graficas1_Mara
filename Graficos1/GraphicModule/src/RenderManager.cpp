@@ -417,87 +417,154 @@ HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* 
 
 void RenderManager::ShaderSetBool(const string name, bool value)
 {
-	m_effect.SetBool(name, value);
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetBool(name, value);
+	}
 }
 
 void RenderManager::ShaderSetInt(const string name, int value)
 {
-	m_effect.SetInt(name, value);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetInt(name, value);
+	}
 }
 
 void RenderManager::ShaderSetFloat(const string name, float value)
 {
-	m_effect.SetFloat(name, value);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetFloat(name, value);
+	}
 }
 
 void RenderManager::ShaderSetUint(const string name, unsigned int value)
 {
-	m_effect.SetUint(name, value);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetUint(name, value);
+	}
 }
 
 void RenderManager::ShaderSetBool2(const string name, bool value1, bool value2)
 {
-	m_effect.SetBool2(name, value1, value2);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetBool2(name, value1, value2);
+	}
 }
 
 void RenderManager::ShaderSetInt2(const string name, int value1, int value2)
 {
-	m_effect.SetInt2(name, value1, value2);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetInt2(name, value1, value2);
+	}
 }
 
 void RenderManager::ShaderSetFloat2(const string name, float value1, float value2)
 {
-	m_effect.SetFloat2(name, value1, value2);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetFloat2(name, value1, value2);
+	}
 }
 
 void RenderManager::ShaderSetUint2(const string name, unsigned int value1, unsigned int value2)
 {
-	m_effect.SetUint2(name, value1, value2);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetUint2(name, value1, value2);
+	}
 }
 
 void RenderManager::ShaderSetBool3(const string name, bool value1, bool value2, bool value3)
 {
-	m_effect.SetBool3(name, value1, value2, value3);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetBool3(name, value1, value2, value3);
+	}
 }
 
 void RenderManager::ShaderSetInt3(const string name, int value1, int value2, int value3)
 {
-	m_effect.SetInt3(name, value1, value2, value3);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetInt3(name, value1, value2, value3);
+	}
 }
 
 void RenderManager::ShaderSetFloat3(const string name, float value1, float value2, float value3)
 {
-	m_effect.SetFloat3(name, value1, value2, value3);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetFloat3(name, value1, value2, value3);
+	}
 }
 
 void RenderManager::ShaderSetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3)
 {
-	m_effect.SetUint3(name, value1, value2, value3);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetUint3(name, value1, value2, value3);
+	}
 }
 
 void RenderManager::ShaderSetBool4(const string name, bool value1, bool value2, bool value3, bool value4)
 {
-	m_effect.SetBool4(name, value1, value2, value3, value4);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetBool4(name, value1, value2, value3, value4);
+	}
 }
 
 void RenderManager::ShaderSetInt4(const string name, int value1, int value2, int value3, int value4)
 {
-	m_effect.SetInt4(name, value1, value2, value3, value4);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetInt4(name, value1, value2, value3, value4);
+	}
 }
 
 void RenderManager::ShaderSetFloat4(const string name, float value1, float value2, float value3, float value4)
 {
-	m_effect.SetFloat4(name, value1, value2, value3, value4);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetFloat4(name, value1, value2, value3, value4);
+	}
 }
 
 void RenderManager::ShaderSetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4)
 {
-	m_effect.SetUint4(name, value1, value2, value3, value4);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetUint4(name, value1, value2, value3, value4);
+	}
 }
 
 void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
 {
-	m_effect.SetMat4(name, value);
+
+	for (EffectStruct& e : m_effects)
+	{
+		e.m_effect.SetMat4(name, value);
+	}
 }
 
 #endif
@@ -624,10 +691,12 @@ void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 		//m_effect.SetBuffer(5, m_DirectionalLightBuffer, &dirDesc);
 		e.m_effect.SetEffectValue("DirectionalLight", &dirDesc);
 #elif defined(OGL)
-		e.m_effect.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
+		/*e.m_effect.SetFloat4("dirLight.lightDir", dirDesc.lightDir.x, dirDesc.lightDir.y, dirDesc.lightDir.z, dirDesc.lightDir.w);
 		e.m_effect.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
 		e.m_effect.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
-		e.m_effect.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);
+		e.m_effect.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);/**/
+		e.m_effect.SetEffectValue("DirectionalLight_Dir", &dirDesc.lightDir);
+		e.m_effect.SetEffectValue("DirectionalLight_Color", &dirDesc.color);
 #endif
 	}
 }
@@ -640,10 +709,13 @@ void RenderManager::UpdatePointLight(PointLight pointDesc)
 		//m_effect.SetBuffer(6, m_PointLightBuffer, &pointDesc);
 		e.m_effect.SetEffectValue("PointLight", &pointDesc);
 #elif defined(OGL)
-		e.m_effect.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
+		/*e.m_effect.SetFloat4("pointLight.lightPos", pointDesc.lightPos.x, pointDesc.lightPos.y, pointDesc.lightPos.z, 0);
 		e.m_effect.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
 		e.m_effect.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
-		e.m_effect.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);
+		e.m_effect.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);/**/
+		e.m_effect.SetEffectValue("PointLight_Pos", &pointDesc.point_lightPos);
+		e.m_effect.SetEffectValue("PointLight_Color", &pointDesc.point_lightColor);
+		e.m_effect.SetEffectValue("PointLight_Att", &pointDesc.point_lightAtt);
 #endif
 	}
 }
@@ -660,13 +732,19 @@ void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 		//m_effect.SetBuffer(7, m_SpotLightBuffer, &spotDesc);
 		e.m_effect.SetEffectValue("SpotLight", &spotDesc);
 #elif defined(OGL)
-		e.m_effect.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
+		/*e.m_effect.SetFloat4("spotLight.lightPos", spotDesc.lightPos.x, spotDesc.lightPos.y, spotDesc.lightPos.z, 0);
 		e.m_effect.SetFloat4("spotLight.lightDir", spotDesc.lightDir.x, spotDesc.lightDir.y, spotDesc.lightDir.z, 1);
 		e.m_effect.SetFloat("spotLight.cutOff", glm::cos(glm::radians(spotDesc.cutOff)));
 		e.m_effect.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotDesc.outerCutOff)));
 		e.m_effect.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
 		e.m_effect.SetFloat4("spotLight.specular", spotDesc.specular.x, spotDesc.specular.y, spotDesc.specular.z, 1);
-		e.m_effect.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);
+		e.m_effect.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);/**/
+		e.m_effect.SetEffectValue("SpotLight_Pos", &spotDesc.lightPos);
+		e.m_effect.SetEffectValue("SpotLight_Dir", &spotDesc.lightDir);
+		e.m_effect.SetEffectValue("SpotLight_Color", &spotDesc.lightColor);
+		e.m_effect.SetEffectValue("SpotLight_Att", &spotDesc.lightAtt);
+		e.m_effect.SetEffectValue("SpotLight_Inner", &spotDesc.cutOff);
+		e.m_effect.SetEffectValue("SpotLight_Outer", &spotDesc.outerCutOff);
 #endif
 	}
 }
@@ -801,6 +879,7 @@ RenderTargetStruct::RenderTargetStruct(string name, RenderTargetView rtv, DepthS
 RenderTargetStruct::RenderTargetStruct(string name)
 {
 	m_names.push_back(name);
+#if defined(DX11)
 
 	Texture2D depth;
 	TEXTURE2D_DESC descDepth;
@@ -862,11 +941,16 @@ RenderTargetStruct::RenderTargetStruct(string name)
 	}
 
 	Tex.Release();
-
+#elif defined(OGL)
+	m_dsv.Init(1264, 681);
+	m_tex.CreateEmptyTexture(1264, 681);
+	m_rtv.Init(m_tex.getID());
+#endif
 }
 
 RenderTargetStruct::RenderTargetStruct(const RenderTargetStruct& other)
 {
+#if defined(DX11)
 	this->m_names = other.m_names;
 	
 	Texture2D depth;
@@ -929,12 +1013,15 @@ RenderTargetStruct::RenderTargetStruct(const RenderTargetStruct& other)
 	}
 
 	Tex.Release();
+#endif
 }
 
 RenderTargetStruct::~RenderTargetStruct()
 {
 	m_rtv.Release();
+#if defined(DX11)
 	m_dsv.Release();
+#endif
 	m_tex.~Texture();
 }
 }

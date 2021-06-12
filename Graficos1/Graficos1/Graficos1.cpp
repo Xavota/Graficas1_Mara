@@ -335,14 +335,20 @@ HRESULT Init(unsigned int width, unsigned int height)
 	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 1), GraphicsModule::eDIMENSION::TEX_CUBE);
 	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1), GraphicsModule::eDIMENSION::TEXTURE2D);
 
+#if defined(DX11)
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[0], true);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[1], true);
 	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[1], true);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
+#elif defined(OGL)
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);	
+#endif
 
 
 	return S_OK;
@@ -416,22 +422,12 @@ void UIRender()
 			rtvs = g_Test.GetRenderManager()->GetRenderTargets();
 			for (int i = 0; i < rtvs->size(); i++)
 			{
-				/*float my_tex_w = 256;
-				float my_tex_h = 256;
-				ImTextureID my_tex_id = ImTextureID();*/
-#if defined(DX11)
-				//my_tex_id = (*rtvs)[i].m_tex.getBuffer().getPtr();
 				ImGui::Text((*rtvs)[i].m_names[0].c_str());
+#if defined(DX11)
 				ImGui::ImageButton((void*)(*rtvs)[i].m_tex.getBuffer().getPtr(), ImVec2(1920 / 4, 1080 / 4));
 #elif defined(OGL)
-				my_tex_id = (void*)rtvs[i].m_tex.getID();
+				ImGui::ImageButton((void*)(*rtvs)[i].m_tex.getID(), ImVec2(1920 / 4, 1080 / 4));
 #endif           
-				/*ImVec2 pos = ImGui::GetCursorScreenPos();
-				ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-				ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-				ImGui::ImageButton(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);*/
 			}
 		}
 		ImGui::End();
@@ -629,6 +625,9 @@ void UIRender()
 			ImGui::DragFloat("Exposure", &exposure.x, 0.001f, 0.0f, 10.0f);
 
 			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("ToneMap", "Exposure", &exposure);
+#if defined(DX11)
+			g_Test.GetRenderManager()->getShader("Forward").SetPassValue("ToneMap", "Exposure", &exposure);
+#endif
 
 			ImGui::PopID();
 
@@ -747,6 +746,20 @@ void UIRender()
 			}
 
 			g_Test.GetRenderManager()->SetShaderFlags(normalTech, specularTech, mapFlags, toneMapTech);*/
+
+
+			static int techniqueIndex = 0;
+			const char* techniques[] = { "Deferred", "Forward" };
+			ImGui::Combo("Technique", &techniqueIndex, techniques, IM_ARRAYSIZE(techniques));
+
+			if (techniqueIndex == 0)
+			{
+				g_Test.SetTechnique("Deferred");
+			}
+			else if (techniqueIndex == 1)
+			{
+				g_Test.SetTechnique("Forward");
+			}
 		}
 		ImGui::End();
 		if (ImGui::Begin("Models"))
