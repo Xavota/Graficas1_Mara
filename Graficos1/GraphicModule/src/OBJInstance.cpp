@@ -34,7 +34,7 @@ namespace GraphicsModule
 		res = glm::rotate(res, glm::radians(m_rot.x() * 180 / 3.1415f), glm::vec3(1, 0, 0));
 		res = glm::rotate(res, glm::radians(m_rot.y() * 180 / 3.1415f), glm::vec3(0, 1, 0));
 		res = glm::rotate(res, glm::radians(m_rot.z() * 180 / 3.1415f), glm::vec3(0, 0, 1));
-	
+		
 		return MATRIX((float*)&res);
 #endif
 		return MATRIX();
@@ -110,5 +110,5 @@ namespace GraphicsModule
 		renderManager->UpdateModelMatrix(getModelMatrix());
 
 		m_OBJModel.SetResources(renderManager, useTextures);
-	}
+ 	}
 }

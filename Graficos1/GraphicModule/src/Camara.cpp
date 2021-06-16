@@ -98,6 +98,7 @@ Vector Camara::getUpVector()
 
 float* Camara::getViewMatrix()
 {
+//#if defined(DX11)
 	m_viewMatrix[0 * 4 + 0] = m_right.x();
 	m_viewMatrix[0 * 4 + 1] = m_up.x();
 	m_viewMatrix[0 * 4 + 2] = m_front.x();
@@ -114,6 +115,27 @@ float* Camara::getViewMatrix()
 	m_viewMatrix[3 * 4 + 1] = -m_up.Dot(m_eye);
 	m_viewMatrix[3 * 4 + 2] = -m_front.Dot(m_eye);
 	m_viewMatrix[3 * 4 + 3] = 1;
+/*#elif defined(OGL)
+	glm::mat4 view = glm::lookAt(glm::vec3(m_eye.x(), m_eye.y(), m_eye.z()), glm::vec3(m_lookAt.x(), m_lookAt.y(), m_lookAt.z()), glm::vec3(m_up.x(), m_up.y(), m_up.z()));
+	
+	m_viewMatrix[0 * 4 + 0] = view[0][0];
+	m_viewMatrix[0 * 4 + 1] = view[0][1];
+	m_viewMatrix[0 * 4 + 2] = view[0][2];
+	m_viewMatrix[0 * 4 + 3] = view[0][3];
+	m_viewMatrix[1 * 4 + 0] = view[1][0];
+	m_viewMatrix[1 * 4 + 1] = view[1][1];
+	m_viewMatrix[1 * 4 + 2] = view[1][2];
+	m_viewMatrix[1 * 4 + 3] = view[1][3];
+	m_viewMatrix[2 * 4 + 0] = view[2][0];
+	m_viewMatrix[2 * 4 + 1] = view[2][1];
+	m_viewMatrix[2 * 4 + 2] = view[2][2];
+	m_viewMatrix[2 * 4 + 3] = view[2][3];
+	m_viewMatrix[3 * 4 + 0] = view[3][0];
+	m_viewMatrix[3 * 4 + 1] = view[3][1];
+	m_viewMatrix[3 * 4 + 2] = view[3][2];
+	m_viewMatrix[3 * 4 + 3] = view[3][3];
+
+#endif*/
 
     return m_viewMatrix;
 }
@@ -157,6 +179,7 @@ float* Camara::getPerspectiveMatrix()
 	if (m_resized)
 	{
 		float AspectRatio = m_viewWidth / m_viewHeight;
+//#if defined(DX11)
 		float fovCos = cosf(m_fovAngleY * .5f), fovSin = sinf(m_fovAngleY * .5f);
 		float height = fovCos / fovSin;
 		float width = AspectRatio * height;
@@ -175,9 +198,29 @@ float* Camara::getPerspectiveMatrix()
 		m_perspectiveMatrix[2 * 4 + 3] = 1;
 		m_perspectiveMatrix[3 * 4 + 0] = 0;
 		m_perspectiveMatrix[3 * 4 + 1] = 0;
-		m_perspectiveMatrix[3 * 4 + 2] = -m_farZ / (m_farZ - m_nearZ) * m_nearZ;
+		m_perspectiveMatrix[3 * 4 + 2] = (-m_farZ * m_nearZ) / (m_farZ - m_nearZ) ;
 		m_perspectiveMatrix[3 * 4 + 3] = 1;
 
+/*#elif defined(OGL)
+		glm::mat4 per = glm::perspective(m_fovAngleY, AspectRatio, m_nearZ, m_farZ);
+
+		m_perspectiveMatrix[0 * 4 + 0] = per[0][0];
+		m_perspectiveMatrix[0 * 4 + 1] = per[0][1];
+		m_perspectiveMatrix[0 * 4 + 2] = per[0][2];
+		m_perspectiveMatrix[0 * 4 + 3] = per[0][3];
+		m_perspectiveMatrix[1 * 4 + 0] = per[1][0];
+		m_perspectiveMatrix[1 * 4 + 1] = per[1][1];
+		m_perspectiveMatrix[1 * 4 + 2] = per[1][2];
+		m_perspectiveMatrix[1 * 4 + 3] = per[1][3];
+		m_perspectiveMatrix[2 * 4 + 0] = per[2][0];
+		m_perspectiveMatrix[2 * 4 + 1] = per[2][1];
+		m_perspectiveMatrix[2 * 4 + 2] = per[2][2];
+		m_perspectiveMatrix[2 * 4 + 3] = per[2][3];
+		m_perspectiveMatrix[3 * 4 + 0] = per[3][0];
+		m_perspectiveMatrix[3 * 4 + 1] = per[3][1];
+		m_perspectiveMatrix[3 * 4 + 2] = per[3][2];
+		m_perspectiveMatrix[3 * 4 + 3] = per[3][3];
+#endif*/
 		m_resized = false;
 	}
 

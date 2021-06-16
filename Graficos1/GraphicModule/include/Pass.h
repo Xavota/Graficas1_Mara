@@ -116,17 +116,20 @@ public:
 private:
 	struct OutputTexture
 	{
-		OutputTexture(string name, RenderTargetView* renderTarget, bool cleanRenderTarget, const float clearColor[4])
+		OutputTexture(string name, RenderTargetView* renderTarget, bool cleanRenderTarget, const float clearColor[4], DepthStencilView stencil)
 		{
 			m_name = name;
 			m_renderTarget = renderTarget;
 			m_cleanRenderTarget = cleanRenderTarget;
 			memcpy(m_clearColor, clearColor, sizeof(float) * 4);
+
+			m_depthStencil = stencil;
 		}
 		string m_name;
 		RenderTargetView* m_renderTarget;
 		bool m_cleanRenderTarget;
 		float m_clearColor[4];
+		DepthStencilView m_depthStencil;
 	};
 	struct InputTexture
 	{

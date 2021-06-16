@@ -154,6 +154,11 @@ void Mesh::Draw(RenderManager* renderManager)
 	//renderManager->getShader().Draw(m_indicesCount);
 	// TODO: Hacer que funcione lo de que tengas los modelos dentro de los pases y les digan que se dibujen.
 
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	renderManager->IASetVertexBuffers(0, 1, m_pVertexBuffer, &stride, &offset);
+	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);
+
 	renderManager->DrawIndexed(m_indicesCount, 0, 0);
 
 #elif defined(OGL)
@@ -162,19 +167,17 @@ void Mesh::Draw(RenderManager* renderManager)
 
 	glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, (const void*)0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
 #endif           
 }
 void Mesh::SetResources(RenderManager* renderManager)
 {
 #if defined(DX11)
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	renderManager->IASetVertexBuffers(0, 1, m_pVertexBuffer, &stride, &offset);
-	renderManager->IASetIndexBuffer(g_pIndexBuffer, FORMAT_R32_UINT, offset);
 #elif defined(OGL)
-// TODO
+	//glBindVertexArray(VAO);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, (const void*)0);
 #endif
 }
 }

@@ -1,6 +1,10 @@
 #pragma once
 #include "Vector.h"
-
+#if defined(OGL)
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#endif
 
 namespace GraphicsModule
 {

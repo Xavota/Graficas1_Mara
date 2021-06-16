@@ -153,22 +153,34 @@ namespace GraphicsModule
 			GetManager()->ClearAndSetRenderTargets(rtvs.size(), rtvs.data(), m_depthStencil, clearColors, cleans);
 #elif defined(OGL)
 
-		glBindRenderbuffer(GL_RENDERBUFFER, m_depthStencil.getID());
-		GLenum *DrawBuffers = new GLenum[m_outputTextures.size() ];
-		for (int i = 0; i < m_outputTextures.size(); i++)
+		// Set the render buffer
+
+		if (m_outputTextures.size() > 0)
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[i].m_renderTarget->getID());
+			GLenum* DrawBuffers = new GLenum[m_outputTextures.size()];
+			for (int i = 0; i < m_outputTextures.size(); i++)
+			{
+				// TODO: Hacer que se pueda renderizar en varios render targets. Posiblemente con el depth stencil.
+				glBindRenderbuffer(GL_RENDERBUFFER, m_outputTextures[i].m_depthStencil.getID());
+				// Bind the frame buffer (one of them, for now it's just 1)
+				glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[i].m_renderTarget->getID());
 
-			glClearColor(m_outputTextures[i].m_clearColor[0] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[1] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[2] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[3]);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			// Set "renderedTexture" as our colour attachement #0
-			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_outputTextures[i].m_renderTarget->getTextureAtatchedID(), 0);
+				if (m_outputTextures[i].m_cleanRenderTarget)
+				{
+					glClearColor(m_outputTextures[i].m_clearColor[0] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[1] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[2] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[3]);
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				}
 
-			DrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+				// Set "renderedTexture" as our colour attachement #0 + i
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_outputTextures[i].m_renderTarget->getTextureAtatchedID(), 0);
+
+				DrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+			}
+
+			// Set the list of draw buffers.
+			glDrawBuffers(m_outputTextures.size(), DrawBuffers);
+			delete[] DrawBuffers;
 		}
-		// Set the list of draw buffers.
-		glDrawBuffers(m_outputTextures.size(), DrawBuffers); // "1" is the size of DrawBuffers
-		delete[] DrawBuffers;
 #endif
 	}
 
@@ -180,11 +192,12 @@ namespace GraphicsModule
 #elif defined(OGL)
 		glCullFace(m_rsState.getCullingMode());
 #endif
-		//GetManager()->DrawIndexed(indexCount, 0, 0);/*
+
 		for (ObjectStruct obj : m_objects)
 		{
-			obj.m_obj->SetResources(GetManager(), obj.m_useTextures); 
+			obj.m_obj->SetResources(GetManager(), obj.m_useTextures);
 
+			// Sets the values stored for the shader
 			for (Values& v : m_values)
 			{
 #if defined(DX11)
@@ -285,20 +298,22 @@ namespace GraphicsModule
 #endif
 			}
 
+			// Sets the textures of the shader in order
 			int slot = 0;
 			for (InputTexture& it : m_inputTextures)
 			{
 #if defined(DX11)
 				GetManager()->PSSetShaderResources(slot++, { it.m_texture });
 #elif defined(OGL)
-				GetManager()->ShaderSetFloat(it.m_uniform, slot);
+				GetManager()->ShaderSetInt(it.m_uniform, slot);
 
+				// Uses GL_TEXTURE0 as base, and increment it with 'slot' to GL_TEXTURE1, GL_TEXTURE2, etc., because its values are consecutive.
 				glActiveTexture(GL_TEXTURE0 + slot++);
 				glBindTexture(GL_TEXTURE_2D, it.m_texture.getID());
 #endif
 			}
 
-			
+			// Draws the object	
 			obj.m_obj->Draw(GetManager(), obj.m_useTextures);
 		}
 		/**/
@@ -416,6 +431,7 @@ namespace GraphicsModule
 			if (ot.m_name == name)
 			{
 				ot.m_renderTarget = tex;
+				ot.m_depthStencil = dsv;
 				break;
 			}
 		}
@@ -433,7 +449,7 @@ namespace GraphicsModule
 
 	void Pass::AddOutputTexture(string name, bool cleanRenderTarget, float clearColor[4])
 	{
-		m_outputTextures.push_back(OutputTexture( name, nullptr, cleanRenderTarget, clearColor ));
+		m_outputTextures.push_back(OutputTexture( name, nullptr, cleanRenderTarget, clearColor, DepthStencilView() ));
 	}
 
 	void Pass::SetValue(string name, void* data)

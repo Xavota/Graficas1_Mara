@@ -316,7 +316,9 @@ void Model::SetResources(RenderManager* renderManager, bool useTextures)
 
 		renderManager->getShader("Forward").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);
 #elif defined(OGL)
-		
+		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "diffuse", m_textures[0]);
+		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "normal", m_textures[1]);
+		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "specular", m_textures[2]);
 #endif
 	}
 

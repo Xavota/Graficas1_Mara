@@ -331,9 +331,14 @@ HRESULT Init(unsigned int width, unsigned int height)
 	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA, GraphicsModule::eDIMENSION::TEXTURE2D);
     //"Models/Models/CuboPuzzle.obj"
     OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(75,0,0,0, 0,75,0,0, 0,0,75,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
-    //OpenMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
-	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 1), GraphicsModule::eDIMENSION::TEX_CUBE);
-	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1), GraphicsModule::eDIMENSION::TEXTURE2D);
+
+	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(10,0,0,0, 0,10,0,0, 0,0,10,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEX_CUBE);
+#if defined(DX11)
+	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
+#elif defined(OGL)
+	OpenMesh("Models/Models/SAQ_OGL.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
+#endif
+
 
 #if defined(DX11)
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
@@ -347,7 +352,8 @@ HRESULT Init(unsigned int width, unsigned int height)
 	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
 #elif defined(OGL)
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);	
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 #endif
 
 
@@ -488,10 +494,10 @@ void UIRender()
 			dirDesc.diffuse = Vector4{1,1,1,1};
 			dirDesc.specular = Vector4{ specular, specular, specular, 1 };/**/
 
-			static float dir[3]{ 0.0f, 0.5f, -1.0f };
+			static float dir[3]{ 0.0f, -1.0f, 0.0f };
 			ImGui::DragFloat3("Light Direction", dir, 0.001f, -1.0f, 1.0f);
 
-			static float color[3]{ 0.0f, 0.5f, -1.0f };
+			static float color[3]{ 1.0f, 1.5f, 1.0f };
 			ImGui::DragFloat3("Light Color", color, 0.001f, 0.0f, 1.0f);
 
 			ImGui::PopID();

@@ -205,6 +205,7 @@ namespace GraphicsModule
 	g_RenderManager->AddEffect("Deferred");
 
 	g_RenderManager->getShader("Deferred").CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
+	g_RenderManager->getShader("Deferred").CreatePass("Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
 #endif
 
 #if defined(DX11)
@@ -271,12 +272,35 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("SkyBox", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Position", &g_pRenderTargetView, g_pDepthStencilView);/**/
 #elif defined(OGL)
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewMatrix", "model", eDataType::MAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", "view", eDataType::MAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ModelMatrix", "projection", eDataType::MAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewMatrix", "view", eDataType::MAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", "projection", eDataType::MAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ModelMatrix", "model", eDataType::MAT);
 
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Final", true, color);/**/
-	g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Final", &g_pRenderTargetView, g_pDepthStencilView);
+
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "diffuse", "diffuseMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "normal", "normalMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "specular", "specularMap");
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Position", true, color);/**/
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Color", true, color);/**/
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Normal", true, color);/**/
+	//g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Specular", true, color);/**/
+
+
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "position", "positionMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "color", "colorMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "normal", "normalMap");
+	//g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "specular", "specularMap");
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("Copy", "Final", true, color);/**/
+
+
+
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "Copy", "position");
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Color", "Copy", "color");
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "Copy", "normal");
+//	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Specular", "Copy", "specular");
+
+	//g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
+	g_RenderManager->getShader("Deferred").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/**/
 #endif
 
 
@@ -345,13 +369,13 @@ namespace GraphicsModule
 
 	void test::Clear()
 	{
-		g_RenderManager->getShader(m_Technique).Draw();
 #if defined(DX11)
 
 #elif defined(OGL)
-		//glClearColor(g_ClearColor[0] * g_ClearColor[3], g_ClearColor[1] * g_ClearColor[3], g_ClearColor[2] * g_ClearColor[3], g_ClearColor[3]);
+		//glClearColor(0, 0, 0,1);
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+		g_RenderManager->getShader(m_Technique).Draw();
 	}
 
 	void test::Display()

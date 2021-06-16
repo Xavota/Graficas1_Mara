@@ -624,16 +624,10 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 	for (EffectStruct& e : m_effects)
 	{
 #if defined(DX11)
-		ViewMat cbNeverChanges;
-		cbNeverChanges.view = view.TransposeMatrix();
-		//m_effect.SetBuffer(0, m_pCBNeverChanges, &cbNeverChanges);
-		e.m_effect.SetEffectValue("ViewMatrix", &cbNeverChanges);
+		view = view.TransposeMatrix();
 #elif defined(OGL)
-		e.m_effect.SetMat4("view", glm::mat4(view._11, view._12, view._13, view._14,
-												 view._21, view._22, view._23, view._24, 
-												 view._31, view._32, view._33, view._34, 
-												 view._41, view._42, view._43, view._44));
 #endif    
+		e.m_effect.SetEffectValue("ViewMatrix", &view);
 	}
 }
 
@@ -642,16 +636,10 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 	for (EffectStruct& e : m_effects)
 	{
 #if defined(DX11)
-		ProjectionMat cbChangesOnResize;
-		cbChangesOnResize.projection = projection.TransposeMatrix();
-		//m_effect.SetBuffer(1, m_pCBChangeOnResize, &cbChangesOnResize);
-		e.m_effect.SetEffectValue("ProjectionMatrix", &cbChangesOnResize);
+		projection = projection.TransposeMatrix();
 #elif defined(OGL)
-		e.m_effect.SetMat4("projection", glm::mat4(projection._11, projection._12, projection._13, projection._14,
-												 projection._21, projection._22, projection._23, projection._24, 
-												 projection._31, projection._32, projection._33, projection._34, 
-												 projection._41, projection._42, projection._43, projection._44));
 #endif   
+		e.m_effect.SetEffectValue("ProjectionMatrix", &projection);
 	}
 }
 
@@ -659,17 +647,7 @@ void RenderManager::UpdateModelMatrix(MATRIX model)
 {
 	for (EffectStruct& e : m_effects)
 	{
-#if defined(DX11)
-		ModelMat modl;
-		modl.model = model;
-		//m_effect.SetBuffer(2, m_pCBChangesEveryFrame, &model);
 		e.m_effect.SetEffectValue("ModelMatrix", &model);
-#elif defined(OGL)
-		e.m_effect.SetMat4("model", glm::mat4(model._11, model._12, model._13, model._14,
-											model._21, model._22, model._23, model._24,
-											model._31, model._32, model._33, model._34,
-											model._41, model._42, model._43, model._44));
-#endif   
 	}
 }
 
@@ -1013,6 +991,12 @@ RenderTargetStruct::RenderTargetStruct(const RenderTargetStruct& other)
 	}
 
 	Tex.Release();
+
+#elif defined(OGL) 
+	this->m_names = other.m_names;
+	this->m_dsv = other.m_dsv;
+	this->m_rtv = other.m_rtv;
+	this->m_tex = other.m_tex;
 #endif
 }
 
