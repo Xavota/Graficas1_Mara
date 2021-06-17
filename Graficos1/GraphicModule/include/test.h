@@ -84,23 +84,23 @@ namespace GraphicsModule
 			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("ViewPosition", &pos);
 			GraphicsModule::GetManager()->getShader("Forward").SetEffectValue("ViewPosition", &pos);
 #elif defined(OGL)
-			g_RenderManager->ShaderSetFloat4("viewPos", pos.x, pos.y, pos.z, pos.w);
-			g_RenderManager->ShaderSetFloat4("viewDir2", dir.x, dir.y, dir.z, dir.w);
+			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("ViewPosition", &pos);
+			//GraphicsModule::GetManager()->getShader("Forward").SetEffectValue("ViewPosition", &pos);
 #endif
 		}
 
 		inline void SetLightScatering(float scatering)
 		{
-#if defined(DX11)
 			Material mat;
 			mat.shininess = scatering;
+#if defined(DX11)
 			/*g_RenderManager->UpdateSubresource(g_RenderManager->GetMaterialShininessBuffer(), 0, NULL, &mat, 0, 0);
 			g_RenderManager->PSSetConstantBuffers(4, 1, g_RenderManager->GetMaterialShininessBuffer());/**/
 			//ShaderChange
 			//GraphicsModule::GetManager()->getShader().SetBuffer(4, g_RenderManager->GetMaterialShininessBuffer(), &mat);
 			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("Material", &mat);
 #elif defined(OGL)
-			g_RenderManager->ShaderSetFloat("shininess", scatering);
+			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("Material", &mat);
 #endif
 		}
 

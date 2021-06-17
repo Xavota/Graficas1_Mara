@@ -657,6 +657,11 @@ void RenderManager::UpdateMaterial(Material matDesc)
 	{
 #if defined(DX11)
 		e.m_effect.SetEffectValue("Material", &matDesc);
+#elif defined(OGL)
+		e.m_effect.SetEffectValue("Material_ambient", &matDesc.ambient);
+		e.m_effect.SetEffectValue("Material_specular", &matDesc.specular);
+		e.m_effect.SetEffectValue("Material_diffuse", &matDesc.diffuse);
+		e.m_effect.SetEffectValue("Material_shininess", &matDesc.shininess);		
 #endif
 	}
 }
@@ -673,8 +678,8 @@ void RenderManager::UpdateDirectionalLight(DirectionalLight dirDesc)
 		e.m_effect.SetFloat4("dirLight.ambient", dirDesc.ambient.x, dirDesc.ambient.y, dirDesc.ambient.z, dirDesc.ambient.w);
 		e.m_effect.SetFloat4("dirLight.diffuse", dirDesc.diffuse.x, dirDesc.diffuse.y, dirDesc.diffuse.z, dirDesc.diffuse.w);
 		e.m_effect.SetFloat4("dirLight.specular", dirDesc.specular.x, dirDesc.specular.y, dirDesc.specular.z, dirDesc.specular.w);/**/
-		e.m_effect.SetEffectValue("DirectionalLight_Dir", &dirDesc.lightDir);
-		e.m_effect.SetEffectValue("DirectionalLight_Color", &dirDesc.color);
+		e.m_effect.SetEffectValue("DirectionalLight_dir", &dirDesc.lightDir);
+		e.m_effect.SetEffectValue("DirectionalLight_color", &dirDesc.color);
 #endif
 	}
 }
@@ -691,9 +696,9 @@ void RenderManager::UpdatePointLight(PointLight pointDesc)
 		e.m_effect.SetFloat4("pointLight.diffuse", pointDesc.diffuse.x, pointDesc.diffuse.y, pointDesc.diffuse.z, 1);
 		e.m_effect.SetFloat4("pointLight.specular", pointDesc.specular.x, pointDesc.specular.y, pointDesc.specular.z, 1);
 		e.m_effect.SetFloat("pointLight.blurDistance", pointDesc.blurDistance);/**/
-		e.m_effect.SetEffectValue("PointLight_Pos", &pointDesc.point_lightPos);
-		e.m_effect.SetEffectValue("PointLight_Color", &pointDesc.point_lightColor);
-		e.m_effect.SetEffectValue("PointLight_Att", &pointDesc.point_lightAtt);
+		e.m_effect.SetEffectValue("PointLight_pos", &pointDesc.point_lightPos);
+		e.m_effect.SetEffectValue("PointLight_color", &pointDesc.point_lightColor);
+		e.m_effect.SetEffectValue("PointLight_att", &pointDesc.point_lightAtt);
 #endif
 	}
 }
@@ -717,12 +722,12 @@ void RenderManager::UpdateSpotLight(SpotLight spotDesc)
 		e.m_effect.SetFloat4("spotLight.diffuse", spotDesc.diffuse.x, spotDesc.diffuse.y, spotDesc.diffuse.z, 1);
 		e.m_effect.SetFloat4("spotLight.specular", spotDesc.specular.x, spotDesc.specular.y, spotDesc.specular.z, 1);
 		e.m_effect.SetFloat("spotLight.blurDistance", spotDesc.blurDistance);/**/
-		e.m_effect.SetEffectValue("SpotLight_Pos", &spotDesc.lightPos);
-		e.m_effect.SetEffectValue("SpotLight_Dir", &spotDesc.lightDir);
-		e.m_effect.SetEffectValue("SpotLight_Color", &spotDesc.lightColor);
-		e.m_effect.SetEffectValue("SpotLight_Att", &spotDesc.lightAtt);
-		e.m_effect.SetEffectValue("SpotLight_Inner", &spotDesc.cutOff);
-		e.m_effect.SetEffectValue("SpotLight_Outer", &spotDesc.outerCutOff);
+		e.m_effect.SetEffectValue("SpotLight_pos", &spotDesc.lightPos);
+		e.m_effect.SetEffectValue("SpotLight_dir", &spotDesc.lightDir);
+		e.m_effect.SetEffectValue("SpotLight_color", &spotDesc.lightColor);
+		e.m_effect.SetEffectValue("SpotLight_att", &spotDesc.lightAtt);
+		e.m_effect.SetEffectValue("SpotLight_inner", &spotDesc.cutOff);
+		e.m_effect.SetEffectValue("SpotLight_outer", &spotDesc.outerCutOff);
 #endif
 	}
 }

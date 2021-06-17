@@ -205,6 +205,7 @@ namespace GraphicsModule
 	g_RenderManager->AddEffect("Deferred");
 
 	g_RenderManager->getShader("Deferred").CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
+	g_RenderManager->getShader("Deferred").CreatePass("Lights", "LightVertex.fx", "LightPixel.fx", CULL_FRONT);
 	g_RenderManager->getShader("Deferred").CreatePass("Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
 #endif
 
@@ -276,6 +277,28 @@ namespace GraphicsModule
 	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", "projection", eDataType::MAT);
 	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ModelMatrix", "model", eDataType::MAT);
 
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewPosition", "view_pos", eDataType::FLOAT4);
+
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_ambient", "mat.ambient", eDataType::FLOAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_specular", "mat.specular", eDataType::FLOAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_diffuse", "mat.diffuse", eDataType::FLOAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_shininess", "mat.shininess", eDataType::FLOAT);
+
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight_dir", "dirL.lightDir", eDataType::FLOAT4);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight_color", "dirL.color", eDataType::FLOAT4);
+
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_pos", "pointL.lightPos", eDataType::FLOAT4);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_color", "pointL.lightColor", eDataType::FLOAT4);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_att", "pointL.lightAtt", eDataType::FLOAT);
+
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_pos", "spotL.lightPos", eDataType::FLOAT4);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_dir", "spotL.lightDir", eDataType::FLOAT4);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_color", "spotL.lightColor", eDataType::FLOAT4);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_att", "spotL.lightAtt", eDataType::FLOAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_inner", "spotL.cutOff", eDataType::FLOAT);
+	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_outer", "spotL.outerCutOff", eDataType::FLOAT);
+
+
 
 	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "diffuse", "diffuseMap");
 	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "normal", "normalMap");
@@ -283,21 +306,27 @@ namespace GraphicsModule
 	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Position", true, color);/**/
 	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Color", true, color);/**/
 	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Normal", true, color);/**/
-	//g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Specular", true, color);/**/
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Specular", true, color);/**/
 
 
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "position", "positionMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "color", "colorMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "normal", "normalMap");
-	//g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "specular", "specularMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "position", "positionMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "diffuse", "colorMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "normal", "normalMap");
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "specular", "specularMap");
+	g_RenderManager->getShader("Deferred").AddPassOutputTexture("Lights", "Final", true, color);/**/
+
+
+	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "Input", "inputMap");
 	g_RenderManager->getShader("Deferred").AddPassOutputTexture("Copy", "Final", true, color);/**/
 
 
 
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "Copy", "position");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Color", "Copy", "color");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "Copy", "normal");
-//	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Specular", "Copy", "specular");
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "Lights", "position");
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Color", "Lights", "diffuse");
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "Lights", "normal");
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Specular", "Lights", "specular");
+
+	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("Lights", "Final", "Copy", "Input");
 
 	//g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 	g_RenderManager->getShader("Deferred").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/**/

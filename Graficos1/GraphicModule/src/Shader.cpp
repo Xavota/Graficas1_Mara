@@ -288,13 +288,23 @@ void Shader::Unuse()
 void Shader::SetBool(const string name, bool value)
 {
 	//Use();
-	glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)value);
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
+	glUniform1i(i, (int)value);
 	//Unuse();
 }
 
 void Shader::SetInt(const string name, int value)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
 	//Unuse();
 }
@@ -302,6 +312,11 @@ void Shader::SetInt(const string name, int value)
 void Shader::SetFloat(const string name, float value)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform1f(glGetUniformLocation(m_ID, name.c_str()), value);
 	//Unuse();
 }
@@ -309,6 +324,11 @@ void Shader::SetFloat(const string name, float value)
 void Shader::SetUint(const string name, unsigned int value)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform1ui(glGetUniformLocation(m_ID, name.c_str()), value);
 	//Unuse();
 }
@@ -316,6 +336,11 @@ void Shader::SetUint(const string name, unsigned int value)
 void Shader::SetBool2(const string name, bool value1, bool value2)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform2i(glGetUniformLocation(m_ID, name.c_str()), (int)value1, (int)value2);
 	//Unuse();
 }
@@ -323,6 +348,11 @@ void Shader::SetBool2(const string name, bool value1, bool value2)
 void Shader::SetInt2(const string name, int value1, int value2)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform2i(glGetUniformLocation(m_ID, name.c_str()), value1, value2);
 	//Unuse();
 }
@@ -330,6 +360,11 @@ void Shader::SetInt2(const string name, int value1, int value2)
 void Shader::SetFloat2(const string name, float value1, float value2)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform2f(glGetUniformLocation(m_ID, name.c_str()), value1, value2);
 	//Unuse();
 }
@@ -337,6 +372,11 @@ void Shader::SetFloat2(const string name, float value1, float value2)
 void Shader::SetUint2(const string name, unsigned int value1, unsigned int value2)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform2ui(glGetUniformLocation(m_ID, name.c_str()), value1, value2);
 	//Unuse();
 }
@@ -344,6 +384,11 @@ void Shader::SetUint2(const string name, unsigned int value1, unsigned int value
 void Shader::SetBool3(const string name, bool value1, bool value2, bool value3)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform3i(glGetUniformLocation(m_ID, name.c_str()), (int)value1, (int)value2, (int)value3);
 	//Unuse();
 }
@@ -351,6 +396,11 @@ void Shader::SetBool3(const string name, bool value1, bool value2, bool value3)
 void Shader::SetInt3(const string name, int value1, int value2, int value3)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform3i(glGetUniformLocation(m_ID, name.c_str()), value1, value2, value3);
 	//Unuse();
 }
@@ -358,6 +408,11 @@ void Shader::SetInt3(const string name, int value1, int value2, int value3)
 void Shader::SetFloat3(const string name, float value1, float value2, float value3)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform3f(glGetUniformLocation(m_ID, name.c_str()), value1, value2, value3);
 	//Unuse();
 }
@@ -365,6 +420,11 @@ void Shader::SetFloat3(const string name, float value1, float value2, float valu
 void Shader::SetUint3(const string name, unsigned int value1, unsigned int value2, unsigned int value3)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform3ui(glGetUniformLocation(m_ID, name.c_str()), value1, value2, value3);
 	//Unuse();
 }
@@ -372,6 +432,11 @@ void Shader::SetUint3(const string name, unsigned int value1, unsigned int value
 void Shader::SetBool4(const string name, bool value1, bool value2, bool value3, bool value4)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform4i(glGetUniformLocation(m_ID, name.c_str()), (int)value1, (int)value2, (int)value3, (int)value4);
 	//Unuse();
 }
@@ -379,6 +444,11 @@ void Shader::SetBool4(const string name, bool value1, bool value2, bool value3, 
 void Shader::SetInt4(const string name, int value1, int value2, int value3, int value4)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform4i(glGetUniformLocation(m_ID, name.c_str()), value1, value2, value3, value4);
 	//Unuse();
 }
@@ -386,6 +456,11 @@ void Shader::SetInt4(const string name, int value1, int value2, int value3, int 
 void Shader::SetFloat4(const string name, float value1, float value2, float value3, float value4)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform4f(glGetUniformLocation(m_ID, name.c_str()), value1, value2, value3, value4);
 	//Unuse();
 }
@@ -393,6 +468,11 @@ void Shader::SetFloat4(const string name, float value1, float value2, float valu
 void Shader::SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniform4ui(glGetUniformLocation(m_ID, name.c_str()), value1, value2, value3, value4);
 	//Unuse();
 }
@@ -400,6 +480,11 @@ void Shader::SetUint4(const string name, unsigned int value1, unsigned int value
 void Shader::SetMat4(const string name, glm::mat4 value)
 {
 	//Use();
+	int i = glGetUniformLocation(m_ID, name.c_str());
+	if (i == -1)
+	{
+		//cout << "Uniform " << name << " no encontrado." << endl;
+	}
 	glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 	//Unuse();
 }

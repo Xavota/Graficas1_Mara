@@ -155,15 +155,15 @@ namespace GraphicsModule
 
 		// Set the render buffer
 
+
 		if (m_outputTextures.size() > 0)
 		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[0].m_renderTarget->getID());
+			glBindRenderbuffer(GL_RENDERBUFFER, m_depthStencil.getID());
+
 			GLenum* DrawBuffers = new GLenum[m_outputTextures.size()];
 			for (int i = 0; i < m_outputTextures.size(); i++)
 			{
-				// TODO: Hacer que se pueda renderizar en varios render targets. Posiblemente con el depth stencil.
-				glBindRenderbuffer(GL_RENDERBUFFER, m_outputTextures[i].m_depthStencil.getID());
-				// Bind the frame buffer (one of them, for now it's just 1)
-				glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[i].m_renderTarget->getID());
 
 				if (m_outputTextures[i].m_cleanRenderTarget)
 				{
@@ -209,13 +209,13 @@ namespace GraphicsModule
 					m_shaders.SetBool(v.m_uniform, *(bool*)v.m_data);
 					break;
 				case eDataType::INT:
-					m_shaders.SetBool(v.m_uniform, *(int*)v.m_data);
+					m_shaders.SetInt(v.m_uniform, *(int*)v.m_data);
 					break;
 				case eDataType::FLOAT:
-					m_shaders.SetBool(v.m_uniform, *(float*)v.m_data);
+					m_shaders.SetFloat(v.m_uniform, *(float*)v.m_data);
 					break;
 				case eDataType::UINT:
-					m_shaders.SetBool(v.m_uniform, *(unsigned int*)v.m_data);
+					m_shaders.SetUint(v.m_uniform, *(unsigned int*)v.m_data);
 					break;
 				case eDataType::BOOL2:
 				{

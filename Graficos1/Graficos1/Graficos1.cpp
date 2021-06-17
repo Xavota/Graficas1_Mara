@@ -353,6 +353,7 @@ HRESULT Init(unsigned int width, unsigned int height)
 	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
 #elif defined(OGL)
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 #endif
 
@@ -497,7 +498,7 @@ void UIRender()
 			static float dir[3]{ 0.0f, -1.0f, 0.0f };
 			ImGui::DragFloat3("Light Direction", dir, 0.001f, -1.0f, 1.0f);
 
-			static float color[3]{ 1.0f, 1.5f, 1.0f };
+			static float color[3]{ 1.0f, 1.0f, 1.0f };
 			ImGui::DragFloat3("Light Color", color, 0.001f, 0.0f, 1.0f);
 
 			ImGui::PopID();
