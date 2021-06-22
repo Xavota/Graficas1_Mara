@@ -20,7 +20,7 @@ Texture& TextureManager::GetTexture(string name)
 	return t;
 }
 
-eSTATUS TextureManager::CreateTextureFromFile(LPCSTR pSrcFile, string name, unsigned int Flags, eDIMENSION dim)
+eSTATUS TextureManager::CreateTextureFromFile(std::vector<string> pSrcFile, string name, unsigned int Flags, eDIMENSION dim)
 {
 	if (m_textures.find(name) != m_textures.end())
 	{

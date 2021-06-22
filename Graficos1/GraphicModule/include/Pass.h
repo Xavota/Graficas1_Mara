@@ -112,6 +112,7 @@ public:
 	void SetValue(string name, void* data);
 
 	void AddObject(OBJInstance* obj, bool useTextures);
+	void ResetObjects(std::vector<OBJInstance*> models);
 
 private:
 	struct OutputTexture

@@ -96,6 +96,7 @@ public:
 	void SetPassValue(string passName, string name, void* data);
 
 	void AddObjectToPass(string passName, OBJInstance* obj, bool useTextures);
+	void ResetObjectsOfPass(string passName, std::vector<OBJInstance*> models);
 
 	void SetPassOutputTexture(string passName, string textureName, RenderTargetView* tex, DepthStencilView dsv);
 	void UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName);

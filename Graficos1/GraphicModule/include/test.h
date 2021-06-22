@@ -85,22 +85,7 @@ namespace GraphicsModule
 			GraphicsModule::GetManager()->getShader("Forward").SetEffectValue("ViewPosition", &pos);
 #elif defined(OGL)
 			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("ViewPosition", &pos);
-			//GraphicsModule::GetManager()->getShader("Forward").SetEffectValue("ViewPosition", &pos);
-#endif
-		}
-
-		inline void SetLightScatering(float scatering)
-		{
-			Material mat;
-			mat.shininess = scatering;
-#if defined(DX11)
-			/*g_RenderManager->UpdateSubresource(g_RenderManager->GetMaterialShininessBuffer(), 0, NULL, &mat, 0, 0);
-			g_RenderManager->PSSetConstantBuffers(4, 1, g_RenderManager->GetMaterialShininessBuffer());/**/
-			//ShaderChange
-			//GraphicsModule::GetManager()->getShader().SetBuffer(4, g_RenderManager->GetMaterialShininessBuffer(), &mat);
-			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("Material", &mat);
-#elif defined(OGL)
-			GraphicsModule::GetManager()->getShader("Deferred").SetEffectValue("Material", &mat);
+			GraphicsModule::GetManager()->getShader("Forward").SetEffectValue("ViewPosition", &pos);
 #endif
 		}
 

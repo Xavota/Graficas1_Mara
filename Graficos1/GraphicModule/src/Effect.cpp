@@ -328,6 +328,13 @@ namespace GraphicsModule
 			ps.tech.AddObjectToPass(passName, obj, useTextures);
 		}
 	}
+	void Effect::ResetObjectsOfPass(string passName, std::vector<OBJInstance*> models)
+	{
+		for (Techs& ps : m_techniques)
+		{
+			ps.tech.ResetObjectsOfPass(passName, models);
+		}
+	}
 	void Effect::UniteInputOutputTextures(string outputPassName, string outpuTextureName, string inputPassName, string inputTextureName)
 	{
 		for (Techs& ps : m_techniques)

@@ -22,7 +22,7 @@ public:
 
 	static Texture& GetTexture(string name);
 
-	static eSTATUS CreateTextureFromFile(LPCSTR pSrcFile, string name, unsigned int Flags, eDIMENSION dim);
+	static eSTATUS CreateTextureFromFile(std::vector<string> pSrcFile, string name, unsigned int Flags, eDIMENSION dim);
 #if defined(DX11)
 	static eSTATUS CreateTextureFromBuffer(Texture2D buffer, string name);
 #endif

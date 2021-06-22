@@ -158,28 +158,43 @@ namespace GraphicsModule
 
 		if (m_outputTextures.size() > 0)
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[0].m_renderTarget->getID());
-			glBindRenderbuffer(GL_RENDERBUFFER, m_depthStencil.getID());
-
-			GLenum* DrawBuffers = new GLenum[m_outputTextures.size()];
+			bool setRender = false;
 			for (int i = 0; i < m_outputTextures.size(); i++)
 			{
-
-				if (m_outputTextures[i].m_cleanRenderTarget)
+				if (m_outputTextures[i].m_renderTarget != nullptr)
 				{
-					glClearColor(m_outputTextures[i].m_clearColor[0] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[1] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[2] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[3]);
-					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+					glBindFramebuffer(GL_FRAMEBUFFER, m_outputTextures[i].m_renderTarget->getID());
+					glBindRenderbuffer(GL_RENDERBUFFER, m_depthStencil.getID());
+					setRender = true;
+					break;
 				}
-
-				// Set "renderedTexture" as our colour attachement #0 + i
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_outputTextures[i].m_renderTarget->getTextureAtatchedID(), 0);
-
-				DrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 			}
 
-			// Set the list of draw buffers.
-			glDrawBuffers(m_outputTextures.size(), DrawBuffers);
-			delete[] DrawBuffers;
+			if (setRender)
+			{
+				GLenum* DrawBuffers = new GLenum[m_outputTextures.size()];
+				for (int i = 0; i < m_outputTextures.size(); i++)
+				{
+					if (m_outputTextures[i].m_renderTarget != nullptr)
+					{
+						if (m_outputTextures[i].m_cleanRenderTarget);
+						{
+							glClearColor(m_outputTextures[i].m_clearColor[0] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[1] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[2] * m_outputTextures[i].m_clearColor[3], m_outputTextures[i].m_clearColor[3]);
+							glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+						}
+
+						// Set "renderedTexture" as our colour attachement #0 + i
+
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_outputTextures[i].m_renderTarget->getTextureAtatchedID(), 0);
+
+						DrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+					}
+				}
+
+				// Set the list of draw buffers.
+				glDrawBuffers(m_outputTextures.size(), DrawBuffers);
+				delete[] DrawBuffers;
+			}
 		}
 #endif
 	}
@@ -201,6 +216,7 @@ namespace GraphicsModule
 			for (Values& v : m_values)
 			{
 #if defined(DX11)
+				MATRIX* A = (MATRIX*)v.m_data;
 				m_shaders.SetBuffer(v.m_id, v.m_buff, v.m_data);
 #elif defined(OGL)
 				switch (v.m_type)
@@ -525,6 +541,15 @@ namespace GraphicsModule
 	void GraphicsModule::Pass::AddObject(OBJInstance* obj, bool useTextures)
 	{
 		m_objects.push_back({obj, useTextures});
+	}
+
+	void GraphicsModule::Pass::ResetObjects(std::vector<OBJInstance*> models)
+	{
+		m_objects.clear();
+		for (int i = 0; i < models.size(); i++)
+		{
+			m_objects.push_back({ models[i], true });
+		}
 	}
 
 

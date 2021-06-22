@@ -9,53 +9,60 @@
 
 namespace GraphicsModule
 {
-bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENSION dim)
+bool Texture::CreateTextureFromFile(std::vector<std::string> pSrcFile, unsigned int Flags, eDIMENSION dim)
 {
-	//image format
-	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-	//pointer to the image, once loaded
-	FIBITMAP* dib(0);
-	//pointer to the image data
-	BYTE* bits(0);
-	//image width and height
-	unsigned int width(0), height(0);
-
-	//check the file signature and deduce its format
-	fif = FreeImage_GetFileType(pSrcFile, 0);
-	//if still unknown, try to guess the file format from the file extension
-	if (fif == FIF_UNKNOWN)
-		fif = FreeImage_GetFIFFromFilename(pSrcFile);
-	//if still unkown, return failure
-	if (fif == FIF_UNKNOWN)
-		return false;
-
-	//check that the plugin has reading capabilities and load the file
-	if (FreeImage_FIFSupportsReading(fif))
+	std::vector<BYTE*> bits;
+	std::vector<FIBITMAP*> dib;
+	std::vector<unsigned int> width, height;
+	for (int i = 0; i < pSrcFile.size(); i++)
 	{
-		dib = FreeImage_Load(fif, pSrcFile);
-		dib = FreeImage_ConvertTo32Bits(dib);
+		bits.push_back(0);
+		width.push_back(0);
+		height.push_back(0);
+		//image format
+		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+		//pointer to the image, once loaded
+		dib.push_back(0);
+		//pointer to the image data
+		//image width and height
+
+		//check the file signature and deduce its format
+		fif = FreeImage_GetFileType(pSrcFile[i].c_str(), 0);
+		//if still unknown, try to guess the file format from the file extension
+		if (fif == FIF_UNKNOWN)
+			fif = FreeImage_GetFIFFromFilename(pSrcFile[i].c_str());
+		//if still unkown, return failure
+		if (fif == FIF_UNKNOWN)
+			return false;
+
+		//check that the plugin has reading capabilities and load the file
+		if (FreeImage_FIFSupportsReading(fif))
+		{
+			dib[i] = FreeImage_Load(fif, pSrcFile[i].c_str());
+			dib[i] = FreeImage_ConvertTo32Bits(dib[i]);
+		}
+
+		//if the image failed to load, return failure
+		if (!dib[i])
+			return false;
+
+		//retrieve the image data
+		bits[i] = FreeImage_GetBits(dib[i]);
+		//get the image width and height
+		width[i] = FreeImage_GetWidth(dib[i]);
+		height[i] = FreeImage_GetHeight(dib[i]);
+		//if this somehow one of these failed (they shouldn't), return failure
+		if ((bits[i] == 0) || (width[i] == 0) || (height[i] == 0))
+			return false;
 	}
-
-	//if the image failed to load, return failure
-	if (!dib)
-		return false;
-
-	//retrieve the image data
-	bits = FreeImage_GetBits(dib);
-	//get the image width and height
-	width = FreeImage_GetWidth(dib);
-	height = FreeImage_GetHeight(dib);
-	//if this somehow one of these failed (they shouldn't), return failure
-	if ((bits == 0) || (width == 0) || (height == 0))
-		return false;
 #if defined(DX11)
 	if (dim == eDIMENSION::TEXTURE2D)
 	{
 		Texture2D tex;
 		TEXTURE2D_DESC texD;
 		ZeroMemory(&texD, sizeof(texD));
-		texD.Width = width;
-		texD.Height = height;
+		texD.Width = width[0];
+		texD.Height = height[0];
 		texD.MipLevels = 1;
 		texD.ArraySize = 1;
 		if (Flags & MODEL_LOAD_FORMAT_RGBA)
@@ -73,7 +80,7 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENS
 		{
 			return false;
 		}
-		GetManager()->UpdateTexture2D(tex, bits, FreeImage_GetPitch(dib));
+		GetManager()->UpdateTexture2D(tex, bits[0], FreeImage_GetPitch(dib[0]));
 
 		
 		SHADER_RESOURCE_VIEW_DESC srvd;
@@ -97,7 +104,7 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENS
 	else if (dim == eDIMENSION::TEX_CUBE)
 	{
 		Texture2D SMTexture;
-		HRESULT hr = D3DX11CreateTextureFromFile(GetManager()->getDevicePtr(), pSrcFile,
+		HRESULT hr = D3DX11CreateTextureFromFile(GetManager()->getDevicePtr(), pSrcFile[0].c_str(),
 			NULL, 0, (ID3D11Resource**)&SMTexture.GetTexturePtr(), 0);
 
 		if (FAILED(hr))
@@ -124,28 +131,58 @@ bool Texture::CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENS
 
 	
 #elif defined(OGL)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//OpenGL's image ID to map to
-	GLuint gl_texID = 0;
-	//generate an OpenGL texture ID for this texture	
-	glGenTextures(1, &gl_texID);
-	//store the texture ID mapping
-	m_ID = gl_texID;
-	//bind to the new texture ID
-	glBindTexture(GL_TEXTURE_2D, gl_texID);
-	//store the texture data for OpenGL use
-	if (Flags & MODEL_LOAD_FORMAT_RGBA)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
-	else if (Flags & MODEL_LOAD_FORMAT_BGRA)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, bits);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	if (dim == eDIMENSION::TEXTURE2D)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//OpenGL's image ID to map to
+		GLuint gl_texID = 0;
+		//generate an OpenGL texture ID for this texture	
+		glGenTextures(1, &gl_texID);
+		//store the texture ID mapping
+		m_ID = gl_texID;
+		//bind to the new texture ID
+		glBindTexture(GL_TEXTURE_2D, gl_texID);
+		//store the texture data for OpenGL use
+		if (Flags & MODEL_LOAD_FORMAT_RGBA)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, bits[0]);
+		else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_BGRA, GL_UNSIGNED_BYTE, bits[0]);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else if (dim == eDIMENSION::TEX_CUBE)
+	{
+		GLuint gl_texID;
+		glGenTextures(1, &gl_texID);
+
+		m_ID = gl_texID;
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+
+		for (unsigned int i = 0; i < bits.size(); i++)
+		{
+			if (Flags & MODEL_LOAD_FORMAT_RGBA)
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width[i], height[i], 0, GL_RGBA, GL_UNSIGNED_BYTE, bits[i]);
+			else if (Flags & MODEL_LOAD_FORMAT_BGRA)
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width[i], height[i], 0, GL_BGRA, GL_UNSIGNED_BYTE, bits[i]);
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	}
 
 #endif           
 	//Free FreeImage's copy of the data
-	FreeImage_Unload(dib);
+	for (int i = 0; i < dib.size(); i++)
+	{
+		FreeImage_Unload(dib[i]);
+	}
  	return true;
 }
 

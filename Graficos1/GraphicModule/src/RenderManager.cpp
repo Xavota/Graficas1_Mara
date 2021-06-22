@@ -623,11 +623,12 @@ void RenderManager::UpdateViewMatrix(MATRIX view)
 {
 	for (EffectStruct& e : m_effects)
 	{
+		MATRIX v = view;
 #if defined(DX11)
-		view = view.TransposeMatrix();
+		v = v.TransposeMatrix();
 #elif defined(OGL)
 #endif    
-		e.m_effect.SetEffectValue("ViewMatrix", &view);
+		e.m_effect.SetEffectValue("ViewMatrix", &v);
 	}
 }
 
@@ -635,11 +636,12 @@ void RenderManager::UpdateProjectionMatrix(MATRIX projection)
 {
 	for (EffectStruct& e : m_effects)
 	{
+		MATRIX p = projection;
 #if defined(DX11)
-		projection = projection.TransposeMatrix();
+		p = p.TransposeMatrix();
 #elif defined(OGL)
 #endif   
-		e.m_effect.SetEffectValue("ProjectionMatrix", &projection);
+		e.m_effect.SetEffectValue("ProjectionMatrix", &p);
 	}
 }
 

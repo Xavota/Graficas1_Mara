@@ -321,6 +321,8 @@ string OpenFileGetName(HWND owner = NULL)
 
 void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim);
 
+//GraphicsModule::OBJInstance SAQ;
+
 HRESULT Init(unsigned int width, unsigned int height)
 {
 	g_Cameras.push_back(GraphicsModule::Camara({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
@@ -328,33 +330,47 @@ HRESULT Init(unsigned int width, unsigned int height)
 	g_Cameras.push_back(GraphicsModule::Camara({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
 		width, height, 0.01f, 100.0f, false, PIDIV4));
 
-	GraphicsModule::TextureManager::CreateTextureFromFile("Models/Textures/M_BaseTexture_Albedo.jpg", "Base Texture", MODEL_LOAD_FORMAT_RGBA, GraphicsModule::eDIMENSION::TEXTURE2D);
+	GraphicsModule::TextureManager::CreateTextureFromFile({"Models/Textures/M_BaseTexture_Albedo.jpg"}, "Base Texture", MODEL_LOAD_FORMAT_RGBA, GraphicsModule::eDIMENSION::TEXTURE2D);
     //"Models/Models/CuboPuzzle.obj"
-    OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(75,0,0,0, 0,75,0,0, 0,0,75,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
+    OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 75,75,75 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+    OpenMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 
-	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(10,0,0,0, 0,10,0,0, 0,0,10,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEX_CUBE);
+	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 },{ 0,0,0 },{ 0,0,0 }) /*MATRIX(10,0,0,0, 0,10,0,0, 0,0,10,0, 0,0,0,1)*/, GraphicsModule::eDIMENSION::TEX_CUBE);
 #if defined(DX11)
-	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
+	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 #elif defined(OGL)
-	OpenMesh("Models/Models/SAQ_OGL.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, MATRIX(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), GraphicsModule::eDIMENSION::TEXTURE2D);
+	OpenMesh("Models/Models/SAQ_OGL.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 #endif
 
 
 #if defined(DX11)
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[0], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[1], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
 	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
 	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
 #elif defined(OGL)
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
 	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
+
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[0], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[1], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
 #endif
 
 
@@ -632,9 +648,8 @@ void UIRender()
 			ImGui::DragFloat("Exposure", &exposure.x, 0.001f, 0.0f, 10.0f);
 
 			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("ToneMap", "Exposure", &exposure);
-#if defined(DX11)
 			g_Test.GetRenderManager()->getShader("Forward").SetPassValue("ToneMap", "Exposure", &exposure);
-#endif
+
 
 			ImGui::PopID();
 
@@ -670,8 +685,15 @@ void UIRender()
 			ssao.intensity = intensity;
 			ssao.sampleIterations = sampleInteractions;
 
+#if defined(DX11)
 			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO", &ssao);
-
+#elif defined(OGL)
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO_rad", &ssao.sampleRadius);
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO_scale", &ssao.scale);
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO_bias", &ssao.bias);
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO_intens", &ssao.intensity);
+			g_Test.GetRenderManager()->getShader("Deferred").SetPassValue("SSAO", "SSAO_it", &ssao.sampleIterations);/**/
+#endif
 			ImGui::PopID();
 
 			ImGui::Separator();
@@ -899,6 +921,14 @@ void UIRender()
 
 				auto mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
 				OpenMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
+
+				std::vector<GraphicsModule::OBJInstance*> models;
+				for (int i = 0; i < g_ObjInstances.size() - 2; i++)
+				{
+					models.push_back(&g_ObjInstances[i]);
+				}
+				g_Test.GetRenderManager()->getShader("Deferred").ResetObjectsOfPass("GBuffer", models);
+				g_Test.GetRenderManager()->getShader("Forward").ResetObjectsOfPass("Lights", models);
 
 				g_SelectingLoadMode = false;
 			}

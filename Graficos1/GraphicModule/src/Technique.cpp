@@ -76,20 +76,23 @@ namespace GraphicsModule
 		{
 			for (TextureExchange& te : m_textureExchanges)
 			{
-				if (te.m_outputPassName == p.m_name)
+				for (int i = 0; i < te.m_outputPassName.size(); i++)
 				{
-					//p.m_pass.SetOutputTexture(te.m_outputTextureName, &te.m_outputTexture, te.m_depthStencil);
-					p.m_pass.SetOutputTexture(te.m_outputTextureName, GetManager()->GetRenderTarget(te.m_outputPassName + te.m_outputTextureName), *GetManager()->GetDepthStencil(te.m_outputPassName + te.m_outputTextureName));
-				}
-				else
-				{
-					for (int i = 0; i < te.m_inputPassesNames.size(); i++)
+					if (te.m_outputPassName[i] == p.m_name)
 					{
-						if (te.m_inputPassesNames[i] == p.m_name)
+						//p.m_pass.SetOutputTexture(te.m_outputTextureName, &te.m_outputTexture, te.m_depthStencil);
+						p.m_pass.SetOutputTexture(te.m_outputTextureName[i], GetManager()->GetRenderTarget(te.m_outputPassName[i] + te.m_outputTextureName[i]), *GetManager()->GetDepthStencil(te.m_outputPassName[i] + te.m_outputTextureName[i]));
+					}
+					else
+					{
+						for (int j = 0; j < te.m_inputPassesNames.size(); j++)
 						{
-							//p.m_pass.SetInputTexture(te.m_inputTexturesNames[i], te.m_inputTextures[i]);
-							p.m_pass.SetInputTexture(te.m_inputTexturesNames[i], *GetManager()->GetTexture(te.m_outputPassName + te.m_outputTextureName));
-							break;
+							if (te.m_inputPassesNames[j] == p.m_name)
+							{
+								//p.m_pass.SetInputTexture(te.m_inputTexturesNames[i], te.m_inputTextures[i]);
+								p.m_pass.SetInputTexture(te.m_inputTexturesNames[j], *GetManager()->GetTexture(te.m_outputPassName[i] + te.m_outputTextureName[i]));
+								break;
+							}
 						}
 					}
 				}
@@ -450,6 +453,15 @@ namespace GraphicsModule
 		}
 	}
 
+	void Technique::ResetObjectsOfPass(string passName, std::vector<OBJInstance*> model)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			if (p.m_name == passName)
+				p.m_pass.ResetObjects(model);
+		}
+	}
+
 	void Technique::SetPassInputTexture(string passName, string textureName, Texture tex)
 	{
 		for (PassStruct& p : m_passes)
@@ -481,11 +493,14 @@ namespace GraphicsModule
 	{
 		for (TextureExchange& te : m_textureExchanges)
 		{
-			if (te.m_outputPassName == outputPassName && te.m_outputTextureName == outpuTextureName)
+			for (int i = 0; i < te.m_outputPassName.size(); i++)
 			{
-				te.m_inputPassesNames.push_back(inputPassName);
-				te.m_inputTexturesNames.push_back(inputTextureName);
-				return;
+				if (te.m_outputPassName[i] == outputPassName && te.m_outputTextureName[i] == outpuTextureName)
+				{
+					te.m_inputPassesNames.push_back(inputPassName);
+					te.m_inputTexturesNames.push_back(inputTextureName);
+					return;
+				}
 			}
 		}
 		m_textureExchanges.push_back(TextureExchange(outputPassName, outpuTextureName, { inputPassName }, { inputTextureName }));
@@ -493,15 +508,27 @@ namespace GraphicsModule
 
 	void Technique::UniteOutputOutputTextures(string outputPassName, string outpuTextureName, string newOutputPassName, string newOutputTextureName)
 	{
-		GetManager()->AddRedefinitionOfRenderTarget(outputPassName + outpuTextureName, newOutputPassName + newOutputTextureName);
+		GetManager()->AddRedefinitionOfRenderTarget(outputPassName + outpuTextureName, newOutputPassName + newOutputTextureName); 
+		for (TextureExchange& te : m_textureExchanges)
+		{
+			for (int i = 0; i < te.m_outputPassName.size(); i++)
+			{
+				if (te.m_outputPassName[i] == outputPassName && te.m_outputTextureName[i] == outpuTextureName)
+				{
+					te.m_outputPassName.push_back(newOutputPassName);
+					te.m_outputTextureName.push_back(newOutputTextureName);
+					return;
+				}
+			}
+		}
 	}
 
 
 
 	Technique::TextureExchange::TextureExchange(string outputPassName, string outputTextureName, std::vector<string> inputPassesNames, std::vector<string> inputTexturesNames)
 	{
-		m_outputPassName = outputPassName;
-		m_outputTextureName = outputTextureName;
+		m_outputPassName.push_back(outputPassName);
+		m_outputTextureName.push_back(outputTextureName);
 		m_inputPassesNames = inputPassesNames;
 		m_inputTexturesNames = inputTexturesNames;
 

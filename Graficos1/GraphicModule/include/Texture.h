@@ -1,8 +1,11 @@
 #pragma once
 #include <windows.h>
+#include <string>
 
 #include "ShaderResourceView.h"
 #include "Texture2D.h"
+
+#include <vector>
 
 namespace GraphicsModule
 {
@@ -22,7 +25,7 @@ public:
 		//m_texture.Release();
 	}
 
-	bool CreateTextureFromFile(LPCSTR pSrcFile, unsigned int Flags, eDIMENSION dim);
+	bool CreateTextureFromFile(std::vector<std::string> pSrcFile, unsigned int Flags, eDIMENSION dim);
 #if defined(DX11)
 	bool CreateTextureFromBuffer(Texture2D& buffer);
 

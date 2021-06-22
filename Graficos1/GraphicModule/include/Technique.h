@@ -66,6 +66,7 @@ public:
 	void SetPassValue(string passName, string name, void* data);
 
 	void AddObjectToPass(string passName, OBJInstance* obj, bool useTextures);
+	void ResetObjectsOfPass(string passName, std::vector<OBJInstance*> model);
 
 	void SetPassInputTexture(string passName, string textureName, Texture tex);
 	void AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4]);
@@ -77,8 +78,8 @@ private:
 	struct TextureExchange
 	{
 		TextureExchange(string outputPassName, string outputTextureName, std::vector<string> inputPassesNames, std::vector<string> inputTexturesNames);
-		string m_outputPassName;
-		string m_outputTextureName;
+		std::vector<string> m_outputPassName;
+		std::vector<string> m_outputTextureName;
 		//RenderTargetView m_outputTexture;
 		//DepthStencilView m_depthStencil;
 		std::vector<string> m_inputPassesNames;

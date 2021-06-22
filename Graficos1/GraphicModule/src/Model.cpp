@@ -59,16 +59,29 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 			setTexture(GraphicsModule::TextureManager::GetTexture("Base Texture"));
 		}
 	}*/
-	aiString completePathDiffuse;
-	completePathDiffuse.Append(fileName.c_str());
-	completePathDiffuse.Append("/../../Textures/M_");
-	completePathDiffuse.Append(m_name.c_str());
-	completePathDiffuse.Append("_Albedo");
+	std::vector<string> completePathDiffuse(1);
+	completePathDiffuse[0].append(fileName.c_str());
+	completePathDiffuse[0].append("/../../Textures/M_");
+	completePathDiffuse[0].append(m_name.c_str());
+	completePathDiffuse[0].append("_Albedo");
 	if (dim == eDIMENSION::TEXTURE2D)
-		completePathDiffuse.Append(".jpg");
+		completePathDiffuse[0].append(".jpg");
 	else if (dim == eDIMENSION::TEX_CUBE)
-		completePathDiffuse.Append(".dds");
-	eSTATUS stat = TextureManager::CreateTextureFromFile(completePathDiffuse.C_Str(), m_name + "_Albedo", Flags, dim);
+	{
+#if defined(DX11)
+		completePathDiffuse[0].append(".dds");
+#elif defined(OGL)
+		
+		for (int i = 1; i < 6; i++)
+		{
+			completePathDiffuse.push_back(completePathDiffuse[0]);
+			completePathDiffuse[i].append(to_string(i));
+			completePathDiffuse[i].append(".jpg");
+		}
+		completePathDiffuse[0].append("0.jpg");
+#endif
+	}
+	eSTATUS stat = TextureManager::CreateTextureFromFile({completePathDiffuse}, m_name + "_Albedo", Flags, dim);
 	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
 	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
 	{
@@ -79,12 +92,12 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
 
-	aiString completePathNormal;
-	completePathNormal.Append(fileName.c_str());
-	completePathNormal.Append("/../../Textures/M_");
-	completePathNormal.Append(m_name.c_str());
-	completePathNormal.Append("_Normal.jpg");
-	stat = TextureManager::CreateTextureFromFile(completePathNormal.C_Str(), m_name + "_Normal", Flags, dim);
+	string completePathNormal;
+	completePathNormal.append(fileName.c_str());
+	completePathNormal.append("/../../Textures/M_");
+	completePathNormal.append(m_name.c_str());
+	completePathNormal.append("_Normal.jpg");
+	stat = TextureManager::CreateTextureFromFile({completePathNormal}, m_name + "_Normal", Flags, dim);
 	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
 	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
 	{
@@ -95,12 +108,12 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
 
-	aiString completePathSpecular;
-	completePathSpecular.Append(fileName.c_str());
-	completePathSpecular.Append("/../../Textures/M_");
-	completePathSpecular.Append(m_name.c_str());
-	completePathSpecular.Append("_Metallic.jpg");
-	stat = TextureManager::CreateTextureFromFile(completePathSpecular.C_Str(), m_name + "_Specular", Flags, dim);
+	string completePathSpecular;
+	completePathSpecular.append(fileName.c_str());
+	completePathSpecular.append("/../../Textures/M_");
+	completePathSpecular.append(m_name.c_str());
+	completePathSpecular.append("_Metallic.jpg");
+	stat = TextureManager::CreateTextureFromFile({completePathSpecular}, m_name + "_Specular", Flags, dim);
 	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
 	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
 	{
@@ -111,12 +124,12 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 		setTexture(TextureManager::GetTexture("Base Texture"));
 	}
 
-	aiString completePathAO;
-	completePathAO.Append(fileName.c_str());
-	completePathAO.Append("/../../Textures/M_");
-	completePathAO.Append(m_name.c_str());
-	completePathAO.Append("_AO.jpg");
-	stat = TextureManager::CreateTextureFromFile(completePathAO.C_Str(), m_name + "_AO", Flags, dim);
+	string completePathAO;
+	completePathAO.append(fileName.c_str());
+	completePathAO.append("/../../Textures/M_");
+	completePathAO.append(m_name.c_str());
+	completePathAO.append("_AO.jpg");
+	stat = TextureManager::CreateTextureFromFile({completePathAO}, m_name + "_AO", Flags, dim);
 	//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
 	if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
 	{
@@ -319,6 +332,16 @@ void Model::SetResources(RenderManager* renderManager, bool useTextures)
 		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "diffuse", m_textures[0]);
 		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "normal", m_textures[1]);
 		renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "specular", m_textures[2]);
+
+		renderManager->getShader("Deferred").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);/**/
+
+
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "diffuse", m_textures[0]);
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "normal", m_textures[1]);
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "specular", m_textures[2]);
+		renderManager->getShader("Forward").SetPassInputTexture("Lights", "AO", m_textures[3]);
+
+		renderManager->getShader("Forward").SetPassInputTexture("SkyBox", "diffuse", m_textures[0]);/**/
 #endif
 	}
 
