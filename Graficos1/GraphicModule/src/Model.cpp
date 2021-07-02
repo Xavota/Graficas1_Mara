@@ -8,8 +8,9 @@ void Model::AddMeshes(vector<Mesh> meshes)
 	m_modelMeshes = meshes;
 }
 
-bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
+bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim, std::vector<std::vector<Bone>> bones)
 {
+	/*  GET NAME  */
 	m_filePath = fileName;
 	bool point = false;
 	for (int i = fileName.size() - 1; i >= 0; --i)
@@ -30,9 +31,12 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 		}
 	}
 
-	aiString path;
 
-	/*for (int i = 0; i < scene->mNumMaterials; i++)
+	/*  GET TEXTURES  */
+
+	/*aiString path;
+
+	for (int i = 0; i < scene->mNumMaterials; i++)
 	{
 		if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0)
 		{
@@ -145,18 +149,25 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	//TextureManager::CreateTextureFromFile("C:/Users/marad/OneDrive/Documents/GitHub/Graficas1_Mara/Graficos1/bin/Models/Textures/M_Pistola_Metallic.jpg", "spec", MODEL_LOAD_FORMAT_BGRA);
 	//setTexture(TextureManager::GetTexture("spec"));
 	//GetManager()->getShader().AddPassInputTexture("Lights", "specular");
+	
 
+
+
+	/*  LOAD MESH  */
+	
 	HRESULT hr;
 	
+	//----Vertices----
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
 		vector<Vertex> vertices;
 
 		m_modelMeshes.push_back(Mesh());
-
+		
 		for (int j = 0; j < scene->mMeshes[i]->mNumVertices; ++j)
 		{
 			Vertex v;
+			//---Pos
 			if (scene->mMeshes[i]->HasPositions())
 			{
 				v.Pos.x = scene->mMeshes[i]->mVertices[j].x;
@@ -169,6 +180,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 				v.Pos = Vector3{};
 			}
 
+			//---UVs
 			for (int k = 0; k < scene->mMeshes[i]->mMaterialIndex; ++k)
 			{
 				if (scene->mMeshes[i]->HasTextureCoords(k))
@@ -179,6 +191,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 				}
 			}
 
+			//---Norms
 			if (scene->mMeshes[i]->HasNormals())
 			{
 				v.Normales.x = scene->mMeshes[i]->mNormals[j].x;
@@ -194,6 +207,34 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 			vertices.push_back(v);
 		}
 
+		//---Bones
+		if (bones.size() > i)
+		{
+			for (int j = 0; j < bones[i].size(); j++)
+			{
+				for (int k = 0; k < bones[i][j].m_vertexWeights.size(); k++)
+				{
+					bool yes = false;
+					for (int l = 0; l < 4; l++)
+					{
+						if (vertices[bones[i][j].m_vertexWeights[k].m_vertexID].weights.v[l] == 0.0f)
+						{
+							vertices[bones[i][j].m_vertexWeights[k].m_vertexID].IDs.v[l] = j;
+							vertices[bones[i][j].m_vertexWeights[k].m_vertexID].weights.v[l] = bones[i][j].m_vertexWeights[k].m_weight;
+							yes = true;
+							break;
+						}
+					}
+
+					if (!yes)
+					{
+						cout << "Matriz llena" << endl;
+					}
+				}
+			}
+		}
+
+		//---Tan/Bin
 		for (int j = 0; j * 3 + 2 < scene->mMeshes[i]->mNumVertices; ++j)
 		{
 			aiVector3D deltaPos1 = scene->mMeshes[i]->mVertices[j * 3 + 1] - scene->mMeshes[i]->mVertices[j * 3];
@@ -229,6 +270,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 			vertices[j * 3 + 2].Tangente.y = tangent.y;
 			vertices[j * 3 + 2].Tangente.z = tangent.z;
 		}
+
 
 		hr = m_modelMeshes[m_modelMeshes.size() - 1].setVertex(vertices);
 
@@ -269,7 +311,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	return true;
 }
 
-void Model::Draw(RenderManager* renderManager, bool useTextures)
+void Model::Draw(RenderManager* renderManager, bool useTextures, SkeletalMesh* sk)
 {
 	for (int i = 0; i < m_modelMeshes.size(); ++i)
 	{
@@ -300,6 +342,22 @@ void Model::Draw(RenderManager* renderManager, bool useTextures)
 		glActiveTexture(GL_TEXTURE0 + 2);
 		glBindTexture(GL_TEXTURE_2D, m_textures[2].getID());*/
 #endif
+
+		//renderManager->getShader("Deferred").SetPassValue("GBuffer", "Bones", sk->GetBonesMatrices(i).data());
+
+		std::vector<MATRIX> mats = sk->GetBonesMatrices(i);
+		std::vector<glm::mat4> matsr;
+		for (int i = 0; i < mats.size(); i++)
+		{
+			matsr.push_back(glm::mat4(mats[i]._11, mats[i]._12, mats[i]._13, mats[i]._14,
+									  mats[i]._21, mats[i]._22, mats[i]._23, mats[i]._24, 
+									  mats[i]._31, mats[i]._32, mats[i]._33, mats[i]._34, 
+									  mats[i]._41, mats[i]._42, mats[i]._43, mats[i]._44 ));
+		}
+		if (matsr.size() > 0)
+			renderManager->getShader("Deferred").SetMat4("bones", matsr);
+
+		yaBones = true;
 
 		m_modelMeshes[i].Draw(renderManager);
 	}

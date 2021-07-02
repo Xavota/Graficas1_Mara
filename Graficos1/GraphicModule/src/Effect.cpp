@@ -246,7 +246,7 @@ namespace GraphicsModule
 			ps.tech.SetUint4(name, value1, value2, value3, value4);
 		}
 	}
-	void Effect::SetMat4(const string name, glm::mat4 value)
+	void Effect::SetMat4(const string name, std::vector<glm::mat4> value)
 	{
 		for (Techs& ps : m_techniques)
 		{
@@ -285,18 +285,18 @@ namespace GraphicsModule
 		}
 	}
 #elif defined(OGL)
-	void Effect::AddEffectTrackValue(string name, string uniform, eDataType type)
+	void Effect::AddEffectTrackValue(string name, string uniform, eDataType type, int count)
 	{
 		for (Techs& ps : m_techniques)
 		{
-			ps.tech.AddTrackValue(name, uniform, type);
+			ps.tech.AddTrackValue(name, uniform, type, count);
 		}
 	}
-	void Effect::AddPassTrackValue(string passName, string name, string uniform, eDataType type)
+	void Effect::AddPassTrackValue(string passName, string name, string uniform, eDataType type, int count)
 	{
 		for (Techs& ps : m_techniques)
 		{
-			ps.tech.AddPassTrackValue(passName, name, uniform, type);
+			ps.tech.AddPassTrackValue(passName, name, uniform, type, count);
 		}
 	}
 	void Effect::AddPassInputTexture(string passName, string textureName, string uniform)

@@ -64,9 +64,25 @@ namespace GraphicsModule
 		return MATRIX();
 	}
 	
-	bool OBJInstance::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
+	/*bool OBJInstance::LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
 	{
 		return m_OBJModel.LoadModel(scene, fileName, Flags, mat, dim);
+	}*/
+
+	bool OBJInstance::LoadModel(string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
+	{
+		Assimp::Importer importer;
+		m_scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+		if (!m_scene)
+		{
+			cout << importer.GetErrorString() << endl;
+			return false;
+		}
+
+		std::vector<std::vector<Bone>> bones;
+
+		bones = m_skMesh.LoadSkeletalMesh(m_scene);
+		return m_OBJModel.LoadModel(m_scene, fileName, Flags, mat, dim, bones);
 	}
 	
 	void OBJInstance::setSize(Vector size)
@@ -103,7 +119,7 @@ namespace GraphicsModule
 	{
 		//renderManager->UpdateModelMatrix(getModelMatrix());
 	
-		m_OBJModel.Draw(renderManager, useTextures);
+		m_OBJModel.Draw(renderManager, useTextures, &m_skMesh);
 	}
 	void OBJInstance::SetResources(RenderManager* renderManager, bool useTextures)
 	{

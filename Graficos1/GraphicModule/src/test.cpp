@@ -309,6 +309,8 @@ namespace GraphicsModule
 	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_inner", "spotL.cutOff", eDataType::FLOAT);
 	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_outer", "spotL.outerCutOff", eDataType::FLOAT);
 
+	g_RenderManager->getShader("Deferred").AddPassTrackValue("GBuffer", "Bones", "bones", eDataType::MAT, 100);
+
 	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_rad", "_ssao.sampleRadius", eDataType::FLOAT);
 	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_scale", "_ssao.scale", eDataType::FLOAT);
 	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_bias", "_ssao.bias", eDataType::FLOAT);

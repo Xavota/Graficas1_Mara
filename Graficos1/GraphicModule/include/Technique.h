@@ -47,7 +47,7 @@ public:
 	void SetFloat4(const string name, float value1, float value2, float value3, float value4);
 	void SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4);
 
-	void SetMat4(const string name, glm::mat4 value);
+	void SetMat4(const string name, std::vector<glm::mat4> value);
 
 	void SetInputLayout(unsigned int VAO);
 #endif
@@ -57,8 +57,8 @@ public:
 	void AddPassTrackValue(string passName, string name, unsigned int id, unsigned int size);
 	void AddPassInputTexture(string passName, string textureName);
 #elif defined(OGL)
-	void AddTrackValue(string name, string uniform, eDataType type);
-	void AddPassTrackValue(string passName, string name, string uniform, eDataType type);
+	void AddTrackValue(string name, string uniform, eDataType type, int count = 1);
+	void AddPassTrackValue(string passName, string name, string uniform, eDataType type, int count = 1);
 	void AddPassInputTexture(string passName, string textureName, string uniform);
 #endif
 

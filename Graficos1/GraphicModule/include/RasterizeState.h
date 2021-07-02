@@ -16,7 +16,7 @@ public:
 
 #if defined(DX11)
 	inline ID3D11RasterizerState*& getRasterizerState() { return m_rasterizeState; }
-#elif defined(OGL)	
+#elif defined(OGL)
 	void setCullingMode(unsigned int cull);
 	unsigned int getCullingMode();
 #endif

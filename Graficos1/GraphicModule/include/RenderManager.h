@@ -149,7 +149,7 @@ public:
 	void ShaderSetFloat4(const string name, float value1, float value2, float value3, float value4);
 	void ShaderSetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4);/**/
 
-	void ShaderSetMat4(const string name, glm::mat4 value);
+	void ShaderSetMat4(const string name, std::vector<glm::mat4> value);
 
 #endif
 	//Shader& getShader() { return m_shader; }

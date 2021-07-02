@@ -2,9 +2,12 @@
 #include "Vector.h"
 #include "Model.h"
 #include "Descriptors.h"
+#include "SkeletalMesh.h"
 #include <vector>
 
+#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 using std::vector;
 
@@ -41,7 +44,8 @@ public:
 
 	static MATRIX getModelMatrix(Vector size, Vector pos, Vector rot);
 
-	bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
+	//bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
+	bool LoadModel(string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
 
 	void setSize(Vector size);
 	Vector getSize();
@@ -70,8 +74,11 @@ public:
 	Vector m_pos{0,0,0};
 	Vector m_rot{0,0,0};
 
+	SkeletalMesh m_skMesh;
 	Model m_OBJModel;
 
 	Color m_color;
+
+	const aiScene* m_scene;
 };
 }

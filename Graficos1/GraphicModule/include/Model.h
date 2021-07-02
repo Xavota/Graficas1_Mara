@@ -2,6 +2,8 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "TextureManager.h"
+#include "Bone.h"
+#include "SkeletalMesh.h"
 #include <vector>
 
 #include <iostream>
@@ -22,8 +24,8 @@ public:
 	~Model() = default;
 
 	void AddMeshes(vector<Mesh> meshes);
-	bool LoadModel(const class aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
-	void Draw(class RenderManager* renderManager, bool useTextures);
+	bool LoadModel(const class aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim, std::vector<std::vector<Bone>> bones);
+	void Draw(class RenderManager* renderManager, bool useTextures, SkeletalMesh* sk);
 	void SetResources(RenderManager* renderManager, bool useTextures);
 
 	Texture& getTexture(unsigned int index) { return m_textures[index]; }
@@ -46,5 +48,7 @@ public:
 #else
 	unsigned int m_topology;
 #endif
+
+	bool yaBones = false;
 };
 }

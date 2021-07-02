@@ -558,7 +558,7 @@ void RenderManager::ShaderSetUint4(const string name, unsigned int value1, unsig
 	}
 }
 
-void RenderManager::ShaderSetMat4(const string name, glm::mat4 value)
+void RenderManager::ShaderSetMat4(const string name, std::vector<glm::mat4> value)
 {
 
 	for (EffectStruct& e : m_effects)

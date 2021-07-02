@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_DirectX|Win32">
@@ -533,6 +533,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Animation.h" />
+    <ClInclude Include="include\Bone.h" />
     <ClInclude Include="include\Buffer.h" />
     <ClInclude Include="include\Camara.h" />
     <ClInclude Include="include\DepthStencilView.h" />
@@ -555,6 +557,7 @@
     <ClInclude Include="include\SamplerState.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\ShaderResourceView.h" />
+    <ClInclude Include="include\SkeletalMesh.h" />
     <ClInclude Include="include\SwapChain.h" />
     <ClInclude Include="include\Technique.h" />
     <ClInclude Include="include\test.h" />
@@ -565,6 +568,8 @@
     <ClInclude Include="include\VertexShader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Animation.cpp" />
+    <ClCompile Include="src\Bone.cpp" />
     <ClCompile Include="src\Buffer.cpp" />
     <ClCompile Include="src\Camara.cpp" />
     <ClCompile Include="src\DepthStencilView.cpp" />
@@ -585,6 +590,7 @@
     <ClCompile Include="src\SamplerState.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\ShaderResourceView.cpp" />
+    <ClCompile Include="src\SkeletalMesh.cpp" />
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\Technique.cpp" />
     <ClCompile Include="src\test.cpp" />

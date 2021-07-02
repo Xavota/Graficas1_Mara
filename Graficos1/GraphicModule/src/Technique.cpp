@@ -356,7 +356,7 @@ namespace GraphicsModule
 			p.m_pass.SetUint4(name, value1, value2, value3, value4);
 		}
 	}
-	void Technique::SetMat4(const string name, glm::mat4 value)
+	void Technique::SetMat4(const string name, std::vector<glm::mat4> value)
 	{
 		for (PassStruct& p : m_passes)
 		{
@@ -401,20 +401,20 @@ namespace GraphicsModule
 	}
 
 #elif defined(OGL)
-	void Technique::AddTrackValue(string name, string uniform, eDataType type)
+	void Technique::AddTrackValue(string name, string uniform, eDataType type, int count)
 	{
 		for (PassStruct& p : m_passes)
 		{
-			p.m_pass.AddTrackValue(name, uniform, type);
+			p.m_pass.AddTrackValue(name, uniform, type, count);
 		}
 	}
 
-	void Technique::AddPassTrackValue(string passName, string name, string uniform, eDataType type)
+	void Technique::AddPassTrackValue(string passName, string name, string uniform, eDataType type, int count)
 	{
 		for (PassStruct& p : m_passes)
 		{
 			if (p.m_name == passName)
-				p.m_pass.AddTrackValue(name, uniform, type);
+				p.m_pass.AddTrackValue(name, uniform, type, count);
 		}
 	}
 

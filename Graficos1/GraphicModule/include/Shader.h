@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 #if defined(DX11)
 #include "Buffer.h"
@@ -56,6 +57,7 @@ public:
 	void SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4);
 
 	void SetMat4(const string name, glm::mat4 value);
+	void SetMat4(const string name, std::vector<glm::mat4> value);
 
 	void SetInputLayout(unsigned int VAO);
 #endif

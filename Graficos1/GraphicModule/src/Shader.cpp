@@ -477,15 +477,15 @@ void Shader::SetUint4(const string name, unsigned int value1, unsigned int value
 	//Unuse();
 }
 
-void Shader::SetMat4(const string name, glm::mat4 value)
+void Shader::SetMat4(const string name, std::vector<glm::mat4> value)
 {
 	//Use();
 	int i = glGetUniformLocation(m_ID, name.c_str());
 	if (i == -1)
 	{
-		cout << "Uniform " << name << " no encontrado." << endl;
+		//cout << "Uniform " << name << " no encontrado." << endl;
 	}
-	glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+	glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), value.size(), GL_FALSE, glm::value_ptr(value[0]));
 	//Unuse();
 }
 void Shader::SetInputLayout(unsigned int VAO)

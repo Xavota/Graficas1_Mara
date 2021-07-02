@@ -307,8 +307,16 @@ namespace GraphicsModule
 				}
 				case eDataType::MAT:
 				{
-					glm::mat4* data = (glm::mat4*)v.m_data;
-					m_shaders.SetMat4(v.m_uniform, *data);
+					MATRIX* data = (MATRIX*)v.m_data;
+					std::vector<glm::mat4> r; 
+					for (int i = 0; i < v.m_count; i++)
+					{
+						r.push_back(glm::mat4(data[i]._11, data[i]._12, data[i]._13, data[i]._14,
+											  data[i]._21, data[i]._22, data[i]._23, data[i]._24,
+											  data[i]._31, data[i]._32, data[i]._33, data[i]._34,
+											  data[i]._41, data[i]._42, data[i]._43, data[i]._44));
+					}
+					m_shaders.SetMat4(v.m_uniform, r);
 				}
 				}
 #endif
@@ -408,7 +416,7 @@ namespace GraphicsModule
 	{
 		m_shaders.SetUint4(name, value1, value2, value3, value4);
 	}
-	void Pass::SetMat4(const string name, glm::mat4 value)
+	void Pass::SetMat4(const string name, std::vector<glm::mat4> value)
 	{
 		m_shaders.SetMat4(name, value);
 	}
@@ -429,9 +437,9 @@ namespace GraphicsModule
 		m_inputTextures.push_back({ name, Texture() });
 	}
 #elif defined(OGL)
-	void Pass::AddTrackValue(string name, string uniform, eDataType type)
+	void Pass::AddTrackValue(string name, string uniform, eDataType type, int count)
 	{
-		m_values.push_back(Values(name, uniform, type));
+		m_values.push_back(Values(name, uniform, type, count));
 	}
 
 	void Pass::AddInputTexture(string name, string uniform)
@@ -477,7 +485,7 @@ namespace GraphicsModule
 #if defined(DX11)
 				memcpy(v.m_data, data, v.m_size);
 #elif defined(OGL)
-				size_t size;
+				size_t size = 0u;
 				switch (v.m_type)
 				{
 				case eDataType::BOOL:
@@ -529,7 +537,7 @@ namespace GraphicsModule
 					size = sizeof(unsigned int) * 4;
 					break;
 				case eDataType::MAT:
-					size = sizeof(float) * 4 * 4;
+					size = sizeof(float) * 4 * 4 * v.m_count;
 					break;
 				}
 				memcpy(v.m_data, data, size);
@@ -565,12 +573,14 @@ namespace GraphicsModule
 		m_size = size;
 	}
 #elif defined(OGL)
-	Values::Values(string name, string uniform, eDataType type)
+	Values::Values(string name, string uniform, eDataType type, int count)
 	{
 		m_name = name;
 	
 		m_uniform = uniform;
 		m_type = type;
+
+		m_count = count;
 	}
 #endif
 
@@ -603,6 +613,7 @@ namespace GraphicsModule
 		bd.CPUAccessFlags = 0;
 		GetManager()->CreateBuffer(&bd, NULL, m_buff);
 #elif defined(OGL)
+		this->m_count = other.m_count;
 		size_t size = 0u;
 		switch (other.m_type)
 		{

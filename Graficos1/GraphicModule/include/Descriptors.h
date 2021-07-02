@@ -404,32 +404,111 @@ enum RESOURCE_MISC_FLAG
 	RESOURCE_MISC_GDI_COMPATIBLE = 0x200L
 };
 
+struct Vectori4
+{
+	Vectori4()
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+		w = 0;
+	}
+	Vectori4(int _x, int _y, int _z, int _w)
+	{
+		x = _x;
+		y = _y;
+		z = _z;
+		w = _w;
+	}
+	union
+	{
+		struct
+		{
+			int x;
+			int y;
+			int z;
+			int w;
+		};
+		int v[4];
+	};
+};
+
 struct Vector4
 {
-	float x;
-	float y;
-	float z;
-	float w;
+	Vector4()
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+		w = 0;
+	}
+	Vector4(float _x, float _y, float _z, float _w)
+	{
+		x = _x;
+		y = _y;
+		z = _z;
+		w = _w;
+	}
+	union
+	{
+		struct
+		{
+			float x;
+			float y;
+			float z;
+			float w;
+		};
+		float v[4];
+	};
 };
 
-struct Vector3 {
-	float x;
-	float y;
-	float z;
-};
-
-struct Vector2 {
-	float x;
-	float y;
-};
-
-struct Vertex
+struct Vector3 
 {
-	Vector3 Pos;
-	Vector2 Tex;
-	Vector3 Normales;
-	Vector3 Binormal;
-	Vector3 Tangente;
+	Vector3()
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+	}
+	Vector3(float _x, float _y, float _z)
+	{
+		x = _x;
+		y = _y;
+		z = _z;
+	}
+	union
+	{
+		struct
+		{
+			float x;
+			float y;
+			float z;
+		};
+		float v[3];
+	};
+};
+
+struct Vector2 
+{
+	Vector2()
+	{
+		x = 0;
+		y = 0;
+	}
+	Vector2(float _x, float _y)
+	{
+		x = _x;
+		y = _y;
+	}
+	union
+	{
+		struct
+		{
+			float x;
+			float y;
+		};
+		float v[2];
+	};
 };
 
 struct MATRIX
@@ -449,10 +528,10 @@ struct MATRIX
 
 	MATRIX()
 	{
-		_11 = 1; _12 = 0; _13 = 0; _14 = 0;
-		_21 = 0; _22 = 1; _23 = 0; _24 = 0;
-		_31 = 0; _32 = 0; _33 = 1; _34 = 0;
-		_41 = 0; _42 = 0; _43 = 0; _44 = 1;
+		_11 = 1.0f; _12 = 0.0f; _13 = 0.0f; _14 = 0.0f;
+		_21 = 0.0f; _22 = 1.0f; _23 = 0.0f; _24 = 0.0f;
+		_31 = 0.0f; _32 = 0.0f; _33 = 1.0f; _34 = 0.0f;
+		_41 = 0.0f; _42 = 0.0f; _43 = 0.0f; _44 = 1.0f;
 	};
 	MATRIX(Vector4 R0, Vector4 R1, Vector4 R2, Vector4 R3) {
 		r[0] = R0; r[1] = R1; r[2] = R2; r[3] = R3;
@@ -471,6 +550,14 @@ struct MATRIX
 	{
 		memset(m, 0, 4 * 4 * sizeof(float));
 		memcpy(m, pArray, 4 * 4 * sizeof(float));
+	}
+
+	static MATRIX ZeroMatrix()
+	{
+		return MATRIX(0.0f ,0.0f, 0.0f, 0.0f,
+					  0.0f, 0.0f, 0.0f, 0.0f, 
+					  0.0f, 0.0f, 0.0f, 0.0f, 
+					  0.0f, 0.0f, 0.0f, 0.0f );
 	}
 
 	float  operator() (UINT Row, UINT Column) const { return m[Row][Column]; }
@@ -503,6 +590,18 @@ struct Color
 	float g;
 	float b;
 	float a;
+};
+
+struct Vertex
+{
+	Vector3 Pos;
+	Vector2 Tex;
+	Vector3 Normales;
+	Vector3 Binormal;
+	Vector3 Tangente;
+
+	Vectori4 IDs;
+	Vector4 weights;
 };
 
 struct SSAO

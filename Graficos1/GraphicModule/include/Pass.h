@@ -37,7 +37,7 @@ namespace GraphicsModule
 #if defined(DX11)
 		Values(string name, unsigned int id, unsigned int size);
 #elif defined(OGL)
-		Values(string name, string uniform, eDataType type);
+		Values(string name, string uniform, eDataType type, int count);
 #endif
 		Values(const Values& other);
 		~Values();
@@ -49,6 +49,7 @@ namespace GraphicsModule
 #elif defined(OGL)
 		string m_uniform;
 		eDataType m_type;
+		int m_count;
 #endif
 		void* m_data = nullptr;
 	};
@@ -90,7 +91,7 @@ public:
 	void SetFloat4(const string name, float value1, float value2, float value3, float value4);
 	void SetUint4(const string name, unsigned int value1, unsigned int value2, unsigned int value3, unsigned int value4);
 
-	void SetMat4(const string name, glm::mat4 value);
+	void SetMat4(const string name, std::vector<glm::mat4> value);
 
 	void SetInputLayout(unsigned int VAO);
 #endif
@@ -101,7 +102,7 @@ public:
 	void AddTrackValue(string name, unsigned int id, unsigned int size);
 	void AddInputTexture(string name);
 #elif defined(OGL)
-	void AddTrackValue(string name, string uniform, eDataType type);
+	void AddTrackValue(string name, string uniform, eDataType type, int count = 1);
 	void AddInputTexture(string name, string uniform);
 #endif
 

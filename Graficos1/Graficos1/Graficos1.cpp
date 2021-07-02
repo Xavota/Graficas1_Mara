@@ -319,7 +319,8 @@ string OpenFileGetName(HWND owner = NULL)
     return "";
 }
 
-void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim);
+//void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim);
+void LoadMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim);
 
 //GraphicsModule::OBJInstance SAQ;
 
@@ -332,14 +333,15 @@ HRESULT Init(unsigned int width, unsigned int height)
 
 	GraphicsModule::TextureManager::CreateTextureFromFile({"Models/Textures/M_BaseTexture_Albedo.jpg"}, "Base Texture", MODEL_LOAD_FORMAT_RGBA, GraphicsModule::eDIMENSION::TEXTURE2D);
     //"Models/Models/CuboPuzzle.obj"
-    OpenMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 75,75,75 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
-    OpenMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+    //LoadMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 75,75,75 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+    LoadMesh("Models/Models/boblampclean.md5mesh", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0 * (3.1415 / 180),0 * (3.1415 / 180),0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+	//LoadMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 
-	OpenMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 },{ 0,0,0 },{ 0,0,0 }) /*MATRIX(10,0,0,0, 0,10,0,0, 0,0,10,0, 0,0,0,1)*/, GraphicsModule::eDIMENSION::TEX_CUBE);
+	LoadMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 },{ 0,0,0 },{ 0,0,0 }) /*MATRIX(10,0,0,0, 0,10,0,0, 0,0,10,0, 0,0,0,1)*/, GraphicsModule::eDIMENSION::TEX_CUBE);
 #if defined(DX11)
-	OpenMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+	LoadMesh("Models/Models/SAQ.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 #elif defined(OGL)
-	OpenMesh("Models/Models/SAQ_OGL.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+	LoadMesh("Models/Models/SAQ_OGL.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 #endif
 
 
@@ -377,12 +379,14 @@ HRESULT Init(unsigned int width, unsigned int height)
 	return S_OK;
 }
 
-void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
+//void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
+void LoadMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
 {    
     g_ObjInstances.push_back(GraphicsModule::OBJInstance());
     size_t lastOBJ = g_ObjInstances.size() - 1;
 
-	g_ObjInstances[lastOBJ].LoadModel(scene, fileName, Flags, mat, dim);
+	//g_ObjInstances[lastOBJ].LoadModel(scene, fileName, Flags, mat, dim);
+	g_ObjInstances[lastOBJ].LoadModel(fileName, Flags, mat, dim);
 	for (int i = 0; i < lastOBJ; i++)
 	{
 		if (g_ObjInstances[i].m_OBJModel.m_name == g_ObjInstances[lastOBJ].m_OBJModel.m_name)
@@ -398,7 +402,7 @@ void LoadMesh(const aiScene* scene, string fileName, unsigned int Flags, MATRIX 
 	g_ObjInstances[lastOBJ].setSize({ 1,1,1 });
 }
 
-void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
+/*void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
 {
     //string fileName = OpenFileGetName();
 
@@ -411,7 +415,7 @@ void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::e
     }
 
 	LoadMesh(scene, fileName, Flags, mat, dim);
-}
+}*/
 
 bool TryLoadMesh(string fileName)
 {
@@ -920,7 +924,8 @@ void UIRender()
 				float piOver180 = 3.1415 / 180;
 
 				auto mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
-				OpenMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
+				//OpenMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
+				LoadMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
 
 				std::vector<GraphicsModule::OBJInstance*> models;
 				for (int i = 0; i < g_ObjInstances.size() - 2; i++)
