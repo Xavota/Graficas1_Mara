@@ -52,7 +52,8 @@ public:
 	void Draw();
 
 #if defined(DX11)
-	//void SetBuffer(int slot, Buffer buff, void* data);
+	void SetBuffer(int slot, Buffer buff, void* data);
+	void SetBuffer(int slot, string buffName, void* data);
 
 
 #elif defined(OGL)

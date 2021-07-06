@@ -216,7 +216,7 @@ namespace GraphicsModule
 			for (Values& v : m_values)
 			{
 #if defined(DX11)
-				MATRIX* A = (MATRIX*)v.m_data;
+				//MATRIX* A = (MATRIX*)v.m_data;
 				m_shaders.SetBuffer(v.m_id, v.m_buff, v.m_data);
 #elif defined(OGL)
 				switch (v.m_type)
@@ -346,6 +346,15 @@ namespace GraphicsModule
 	void Pass::SetBuffer(int slot, Buffer buff, void* data)
 	{
 		m_shaders.SetBuffer(slot, buff, data);
+	}
+	void GraphicsModule::Pass::SetBuffer(int slot, string buffName, void* data)
+	{
+		MATRIX* mat = (MATRIX*)data;
+		for (Values& v : m_values)
+		{
+			if (v.m_name == buffName)
+				m_shaders.SetBuffer(slot, v.m_buff, data);
+		}
 	}
 #elif defined(OGL)
 	void Pass::Unuse()
@@ -483,6 +492,7 @@ namespace GraphicsModule
 			if (v.m_name == name)
 			{
 #if defined(DX11)
+				MATRIX* mat = (MATRIX*)data;
 				memcpy(v.m_data, data, v.m_size);
 #elif defined(OGL)
 				size_t size = 0u;

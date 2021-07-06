@@ -55,8 +55,7 @@ namespace GraphicsModule
 
 				m_bonesPerMesh.push_back(std::vector<Bone>(100));
 				m_boneMappings.push_back(std::map<std::string, int>());
-				//m_estructurasConSoloMatricesQueSonBásicamenteSoloMatrices.push_back(std::vector<UnaEstructuraQueSoloTraeLaMatrizParaQueElRivazSeCalleYMeAyude>());
-
+				
 				for (int j = 0; j < scene->mMeshes[i]->mNumBones; j++)
 				{
 					unsigned int boneIndex = 0;
@@ -73,9 +72,12 @@ namespace GraphicsModule
 					}
 
 					m_boneMappings[i][name] = boneIndex;
-
+#if defined(DX11)
 					m_bonesPerMesh[i][boneIndex].m_offsetMatrix = MATRIX(&scene->mMeshes[i]->mBones[boneIndex]->mOffsetMatrix.a1);
-
+#elif defined(OGL)
+					m_bonesPerMesh[i][boneIndex].m_offsetMatrix = MATRIX(&scene->mMeshes[i]->mBones[boneIndex]->mOffsetMatrix.a1).TransposeMatrix();
+#endif
+					m_bonesPerMesh[i][boneIndex].m_finalTransformation = m_bonesPerMesh[i][boneIndex].m_offsetMatrix;
 					for (int k = 0; k < scene->mMeshes[i]->mBones[j]->mNumWeights; k++)
 					{
 						unsigned int vertexID = scene->mMeshes[i]->mBones[j]->mWeights[k].mVertexId;
@@ -89,8 +91,6 @@ namespace GraphicsModule
 
 					//std::vector<VertexWeight> vertexWeights;
 					//m_bonesPerMesh[i].push_back(Bone(name, vertexWeights, offsetMatrix));
-
-					//m_estructurasConSoloMatricesQueSonBásicamenteSoloMatrices[i].push_back({offsetMatrix});
 				}
 			}
 
@@ -142,12 +142,13 @@ namespace GraphicsModule
 
 	std::vector<MATRIX> SkeletalMesh::GetBonesMatrices(int meshNum)
 	{
-		std::vector<MATRIX> bonesMatrices;
+		std::vector<MATRIX> bonesMatrices(100);
 		if (m_bonesPerMesh.size() > meshNum)
 		{
 			for (int i = 0; i < m_bonesPerMesh[meshNum].size(); i++)
 			{
-				bonesMatrices.push_back(m_bonesPerMesh[meshNum][i].m_offsetMatrix);
+				//bonesMatrices[i] = m_bonesPerMesh[meshNum][i].m_offsetMatrix;
+				bonesMatrices[i] = m_bonesPerMesh[meshNum][i].m_finalTransformation;
 			}
 		}
 

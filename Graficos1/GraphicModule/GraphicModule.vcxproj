@@ -534,6 +534,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\Animation.h" />
+    <ClInclude Include="include\AnimNode.h" />
     <ClInclude Include="include\Bone.h" />
     <ClInclude Include="include\Buffer.h" />
     <ClInclude Include="include\Camara.h" />
@@ -569,6 +570,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Animation.cpp" />
+    <ClCompile Include="src\AnimNode.cpp" />
     <ClCompile Include="src\Bone.cpp" />
     <ClCompile Include="src\Buffer.cpp" />
     <ClCompile Include="src\Camara.cpp" />

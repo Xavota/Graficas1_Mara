@@ -118,13 +118,21 @@ namespace GraphicsModule
 		m_currentTechnique->Use();
 	}
 #if defined(DX11)
-	/*void Effect::SetBuffer(int slot, Buffer buff, void* data)
+	void Effect::SetBuffer(int slot, Buffer buff, void* data)
 	{
 		for (Techs& t : m_techniques)
 		{
 			t.tech.SetBuffer(slot, buff, data);
 		}
-	}*/
+	}
+
+	void Effect::SetBuffer(int slot, string buffName, void* data)
+	{
+		for (Techs& t : m_techniques)
+		{
+			t.tech.SetBuffer(slot, buffName, data);
+		}
+	}
 
 #elif defined(OGL)
 	void Effect::Unuse()

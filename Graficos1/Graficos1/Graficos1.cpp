@@ -974,6 +974,11 @@ void Update(float dt)
 
 	//g_Test.GetRenderManager()->ShaderSetFloat("mat1.specular", 1);
 
+
+	for (int i = 0; i < g_ObjInstances.size(); i++)
+	{
+		g_ObjInstances[i].Update(dt);
+	}
 }
 
 void Render()

@@ -21,9 +21,9 @@ namespace GraphicsModule
 		std::vector<MATRIX> GetBonesMatrices(int meshNum);
 	
 	private:
+		friend class Animation;
+
 		std::vector<std::vector<Bone>> m_bonesPerMesh;
-		//std::vector<Bone> m_bones;
-		std::vector<std::vector< UnaEstructuraQueSoloTraeLaMatrizParaQueElRivazSeCalleYMeAyude>> m_estructurasConSoloMatricesQueSonBásicamenteSoloMatrices;
 	
 		vector<Bone*> m_bones;
 		vector<MATRIX> m_globalInverseTransforms;

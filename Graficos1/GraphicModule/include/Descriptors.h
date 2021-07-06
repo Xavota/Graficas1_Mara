@@ -563,7 +563,7 @@ struct MATRIX
 	float  operator() (UINT Row, UINT Column) const { return m[Row][Column]; }
 	float& operator() (UINT Row, UINT Column) { return m[Row][Column]; }
 
-	Vector3 operator* (Vector4 vec)
+	Vector3 operator* (Vector4 vec) const
 	{
 		Vector3 vecR;
 		vecR.x = _11 * vec.x + _12 * vec.y + _13 * vec.z + _14 * vec.w;
@@ -571,6 +571,23 @@ struct MATRIX
 		vecR.z = _31 * vec.x + _32 * vec.y + _33 * vec.z + _34 * vec.w;
 		return vecR;
 	}
+
+	MATRIX operator* (const MATRIX& other) const
+	{
+		MATRIX r;
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				for (int k = 0; k < 4; k++)
+				{
+					r.m[i][j] = m[i][k] * other.m[k][j];
+				}
+			}
+		}
+		return r;
+	}
+
 
 	MATRIX TransposeMatrix()
 	{
@@ -582,6 +599,47 @@ struct MATRIX
 		return r;
 	}
 
+
+	static MATRIX Scale(Vector3 vec)
+	{
+		MATRIX r;
+		r._11 = vec.x; r._21 = 0;     r._31 = 0;     r._41 = 0;
+		r._12 = 0;     r._22 = vec.y; r._32 = 0;     r._42 = 0;
+		r._13 = 0;     r._23 = 0;     r._33 = vec.z; r._43 = 0;
+		r._14 = 0;     r._24 = 0;     r._34 = 0;     r._44 = 1;
+		return r;
+	}
+
+	static MATRIX Scale(float x, float y, float z)
+	{
+		MATRIX r;
+		r._11 = x;     r._21 = 0;     r._31 = 0;     r._41 = 0;
+		r._12 = 0;     r._22 = y;     r._32 = 0;     r._42 = 0;
+		r._13 = 0;     r._23 = 0;     r._33 = z;     r._43 = 0;
+		r._14 = 0;     r._24 = 0;     r._34 = 0;     r._44 = 1;
+		return r;
+	}
+
+
+	static MATRIX Translate(Vector3 vec)
+	{
+		MATRIX r;
+		r._11 = 1;     r._21 = 0;     r._31 = 0;     r._41 = vec.x;
+		r._12 = 0;     r._22 = 1;     r._32 = 0;     r._42 = vec.y;
+		r._13 = 0;     r._23 = 0;     r._33 = 1;     r._43 = vec.z;
+		r._14 = 0;     r._24 = 0;     r._34 = 0;     r._44 = 1;
+		return r;
+	}
+
+	static MATRIX Translate(float x, float y, float z)
+	{
+		MATRIX r;
+		r._11 = 1;     r._21 = 0;     r._31 = 0;     r._41 = x;
+		r._12 = 0;     r._22 = 1;     r._32 = 0;     r._42 = y;
+		r._13 = 0;     r._23 = 0;     r._33 = 1;     r._43 = z;
+		r._14 = 0;     r._24 = 0;     r._34 = 0;     r._44 = 1;
+		return r;
+	}
 };
 
 struct Color

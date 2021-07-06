@@ -24,10 +24,7 @@ namespace GraphicsModule
 		string m_name;
 		vector<VertexWeight> m_vertexWeights;
 		MATRIX m_offsetMatrix;
-	};
 
-	struct UnaEstructuraQueSoloTraeLaMatrizParaQueElRivazSeCalleYMeAyude
-	{
-		MATRIX m_laMatriz;
+		MATRIX m_finalTransformation;
 	};
 }

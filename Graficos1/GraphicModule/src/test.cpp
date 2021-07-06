@@ -231,6 +231,8 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight", 6, sizeof(PointLight));
 		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));
 
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("GBuffer", "Bones", 8, sizeof(MATRIX) * 100);
+
 		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO", 0, sizeof(SSAO));
 
 		g_RenderManager->getShader("Deferred").AddPassTrackValue("ToneMap", "Exposure", 0, sizeof(Vector4));/**/

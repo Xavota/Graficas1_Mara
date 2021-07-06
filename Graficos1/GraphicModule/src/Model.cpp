@@ -346,6 +346,9 @@ void Model::Draw(RenderManager* renderManager, bool useTextures, SkeletalMesh* s
 		//renderManager->getShader("Deferred").SetPassValue("GBuffer", "Bones", sk->GetBonesMatrices(i).data());
 
 		std::vector<MATRIX> mats = sk->GetBonesMatrices(i);
+#if defined(DX11)
+		renderManager->getShader("Deferred").SetBuffer(3, "Bones", mats.data());
+#elif defined(OGL)
 		std::vector<glm::mat4> matsr;
 		for (int i = 0; i < mats.size(); i++)
 		{
@@ -356,6 +359,7 @@ void Model::Draw(RenderManager* renderManager, bool useTextures, SkeletalMesh* s
 		}
 		if (matsr.size() > 0)
 			renderManager->getShader("Deferred").SetMat4("bones", matsr);
+#endif
 
 		yaBones = true;
 

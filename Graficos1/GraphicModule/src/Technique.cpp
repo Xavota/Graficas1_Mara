@@ -236,6 +236,13 @@ namespace GraphicsModule
 			p.m_pass.SetBuffer(slot, buff, data);
 		}
 	}
+	void Technique::SetBuffer(int slot, string buffName, void* data)
+	{
+		for (PassStruct& p : m_passes)
+		{
+			p.m_pass.SetBuffer(slot, buffName, data);
+		}
+	}
 #elif defined(OGL)
 	void Technique::Unuse()
 	{

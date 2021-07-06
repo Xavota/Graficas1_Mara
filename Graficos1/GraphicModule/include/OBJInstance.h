@@ -3,6 +3,7 @@
 #include "Model.h"
 #include "Descriptors.h"
 #include "SkeletalMesh.h"
+#include "Animation.h"
 #include <vector>
 
 #include <assimp/Importer.hpp>
@@ -66,6 +67,7 @@ public:
 
 	void setColor(Color col) { m_color = col; }
 
+	void Update(float deltaTime);
 	void Draw(class RenderManager* renderManager, bool useTextures);
 	void SetResources(RenderManager* renderManager, bool useTextures);
 
@@ -76,9 +78,11 @@ public:
 
 	SkeletalMesh m_skMesh;
 	Model m_OBJModel;
+	std::vector<Animation> m_anims;
 
 	Color m_color;
 
+	//static Assimp::Importer m_importer;
 	const aiScene* m_scene;
 };
 }

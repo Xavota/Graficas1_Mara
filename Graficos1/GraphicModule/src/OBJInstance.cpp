@@ -82,6 +82,16 @@ namespace GraphicsModule
 		std::vector<std::vector<Bone>> bones;
 
 		bones = m_skMesh.LoadSkeletalMesh(m_scene);
+
+		if (m_scene->HasAnimations())
+		{
+			for (int i = 0; i < m_scene->mNumAnimations; i++)
+			{
+				m_anims.push_back(Animation());
+				m_anims[i].LoadAnimation(m_scene->mAnimations[i], m_scene->mRootNode, &m_skMesh);
+			}
+		}
+
 		return m_OBJModel.LoadModel(m_scene, fileName, Flags, mat, dim, bones);
 	}
 	
@@ -115,6 +125,17 @@ namespace GraphicsModule
 		return m_rot;
 	}
 	
+	void OBJInstance::Update(float deltaTime)
+	{
+		if (m_anims.size() > 0)
+		{
+			for (int i = 0; i < m_OBJModel.m_modelMeshes.size(); i++)
+			{
+				m_anims[0].BoneTransform(deltaTime, i);
+			}
+		}
+	}
+
 	void OBJInstance::Draw(RenderManager* renderManager, bool useTextures)
 	{
 		//renderManager->UpdateModelMatrix(getModelMatrix());
