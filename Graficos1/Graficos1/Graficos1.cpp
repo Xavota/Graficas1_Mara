@@ -842,22 +842,25 @@ void UIRender()
 							if (ImGui::CollapsingHeader("Textures"))
 							{
 								ImGui::Text("               "); ImGui::SameLine();
-		                        for (int j = 0; j < g_ObjInstances[i].getTextureCount(); ++j)
-		                        {
-									float my_tex_w = 256;
-									float my_tex_h = 256;
-		                            ImTextureID my_tex_id = ImTextureID();
+		                        for (int j = 0; j < g_ObjInstances[i].getMeshCount(); ++j)
+		                        {	
+									for (int k = 0; k < g_ObjInstances[i].getTextureCount(j); ++k)
+									{
+										float my_tex_w = 256;
+										float my_tex_h = 256;
+										ImTextureID my_tex_id = ImTextureID();
 #if defined(DX11)
-		                            my_tex_id = g_ObjInstances[i].getTexture(j).getBuffer().getPtr();
+										my_tex_id = g_ObjInstances[i].getTexture(j, k).getBuffer().getPtr();
 #elif defined(OGL)
-									my_tex_id = (void*)g_ObjInstances[i].getTexture(j).getID();
+										my_tex_id = (void*)g_ObjInstances[i].getTexture(j, k).getID();
 #endif           
-									ImVec2 pos = ImGui::GetCursorScreenPos();
-									ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-									ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-									ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-									ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-									ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+										ImVec2 pos = ImGui::GetCursorScreenPos();
+										ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+										ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+										ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+										ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+										ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+									}
 		                        }
 		                    }
 				    	}
@@ -1064,7 +1067,7 @@ int main()
 		{
 			//auto end = high_resolution_clock::now();
 			//g_Test.Update(duration<double>(end - start).count());
-			Update(.003f);
+			Update(.000833f);
 			//start = high_resolution_clock::now();
             Render();
         }

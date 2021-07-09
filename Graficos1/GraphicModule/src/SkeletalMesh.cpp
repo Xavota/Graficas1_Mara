@@ -72,6 +72,8 @@ namespace GraphicsModule
 					}
 
 					m_boneMappings[i][name] = boneIndex;
+
+					m_bonesPerMesh[i][boneIndex].m_name = name;
 #if defined(DX11)
 					m_bonesPerMesh[i][boneIndex].m_offsetMatrix = MATRIX(&scene->mMeshes[i]->mBones[boneIndex]->mOffsetMatrix.a1);
 #elif defined(OGL)

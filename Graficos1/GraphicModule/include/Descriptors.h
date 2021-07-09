@@ -486,6 +486,33 @@ struct Vector3
 		};
 		float v[3];
 	};
+
+	Vector3 operator*(const float& other) const
+	{
+		Vector3 r;
+		r.x = x * other;
+		r.y = y * other;
+		r.z = z * other;
+		return r;
+	}
+
+	Vector3 operator-(const Vector3& other) const
+	{
+		Vector3 r;
+		r.x = x - other.x;
+		r.y = y - other.y;
+		r.z = z - other.z;
+		return r;
+	}
+
+	Vector3 operator+(const Vector3& other) const
+	{
+		Vector3 r;
+		r.x = x + other.x;
+		r.y = y + other.y;
+		r.z = z + other.z;
+		return r;
+	}
 };
 
 struct Vector2 
@@ -574,14 +601,15 @@ struct MATRIX
 
 	MATRIX operator* (const MATRIX& other) const
 	{
-		MATRIX r;
+		MATRIX r = ZeroMatrix();
 		for (int i = 0; i < 4; i++)
 		{
 			for (int j = 0; j < 4; j++)
 			{
 				for (int k = 0; k < 4; k++)
 				{
-					r.m[i][j] = m[i][k] * other.m[k][j];
+					float rr = m[i][k] * other.m[k][j];
+					r.m[i][j] += m[i][k] * other.m[k][j];
 				}
 			}
 		}

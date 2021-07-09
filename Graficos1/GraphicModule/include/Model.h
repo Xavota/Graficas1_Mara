@@ -28,17 +28,24 @@ public:
 	void Draw(class RenderManager* renderManager, bool useTextures, SkeletalMesh* sk);
 	void SetResources(RenderManager* renderManager, bool useTextures);
 
-	Texture& getTexture(unsigned int index) { return m_textures[index]; }
-	void setTexture(Texture tex) { m_textures.push_back(tex); }
+	Texture& getTexture(unsigned int meshIndex, unsigned int textureIndex) { return m_textures[meshIndex][textureIndex]; }
+	void setTexture(unsigned int meshIndex, Texture tex) { m_textures[meshIndex].push_back(tex); }
 
-	size_t getTextureCount() { return m_textures.size(); }
+	size_t getTextureCount(unsigned int meshIndex) 
+	{
+		return m_textures[meshIndex].size();
+	}
+	size_t getMeshCount()
+	{
+		return m_modelMeshes.size();
+	}
 
 	string getFilePath() { return m_filePath; }
 	string getName() { return m_name; }
 
 public:
 	//ShaderResourceView m_texture;
-	vector<Texture> m_textures;
+	vector<vector<Texture>> m_textures;
 	vector<Mesh> m_modelMeshes;
 
 	string m_filePath;

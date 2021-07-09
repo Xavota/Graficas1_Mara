@@ -12,6 +12,39 @@ namespace GraphicsModule
 	{
 		m_pos = { 0,0,0 };
 	}
+
+	OBJInstance::OBJInstance(const OBJInstance& other)
+	{
+		m_size = other.m_size;
+		m_pos = other.m_pos;
+		m_rot = other.m_rot;
+
+		m_skMesh = other.m_skMesh;
+		m_OBJModel = other.m_OBJModel;
+		m_anims = other.m_anims;
+
+		m_color = other.m_color;
+
+		m_importer = other.m_importer;
+		m_scene = other.m_scene;
+	}
+
+	OBJInstance OBJInstance::operator=(const OBJInstance& other)
+	{
+		m_size = other.m_size;
+		m_pos = other.m_pos;
+		m_rot = other.m_rot;
+
+		m_skMesh = other.m_skMesh;
+		m_OBJModel = other.m_OBJModel;
+		m_anims = other.m_anims;
+
+		m_color = other.m_color;
+
+		//m_importer = other.m_importer;
+		m_scene = other.m_scene;
+		return *this;
+	}
 	
 	OBJInstance::~OBJInstance()
 	{
@@ -71,11 +104,11 @@ namespace GraphicsModule
 
 	bool OBJInstance::LoadModel(string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
 	{
-		Assimp::Importer importer;
-		m_scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+		m_importer = new Assimp::Importer();
+		m_scene = m_importer->ReadFile(fileName, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
 		if (!m_scene)
 		{
-			cout << importer.GetErrorString() << endl;
+			cout << m_importer->GetErrorString() << endl;
 			return false;
 		}
 
@@ -131,7 +164,7 @@ namespace GraphicsModule
 		{
 			for (int i = 0; i < m_OBJModel.m_modelMeshes.size(); i++)
 			{
-				m_anims[0].BoneTransform(deltaTime, i);
+				m_anims[0].BoneTransform(deltaTime, i, &m_skMesh);
 			}
 		}
 	}

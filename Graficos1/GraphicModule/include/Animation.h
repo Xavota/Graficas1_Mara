@@ -35,7 +35,7 @@ namespace GraphicsModule
 		void LoadAnimation(aiAnimation* anim, aiNode* root, SkeletalMesh* skMesh);
 		void StoreNodes(aiNode* current, Node* storage);
 
-		void BoneTransform(float TimeInSeconds, int meshIndex);
+		void BoneTransform(float TimeInSeconds, int meshIndex, SkeletalMesh* skMesh);
 		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const MATRIX& ParentTransform, int meshIndex);
 
 		aiNodeAnim* FindNodeAnim(aiAnimation* anim, std::string name);
@@ -46,11 +46,25 @@ namespace GraphicsModule
 
 		unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
 		unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);/**/
+
+
+		/*void ReadNodeHeirarchy(float AnimationTime, const Node* pNode, const MATRIX& ParentTransform, int meshIndex);
+
+		AnimNode* FindNodeAnim(std::string name);
+
+		void CalcInterpolatedScaling(Vector3& Out, float AnimationTime, const AnimNode* pNodeAnim);
+		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const AnimNode* pNodeAnim);
+		void CalcInterpolatedPosition(Vector3& Out, float AnimationTime, const AnimNode* pNodeAnim);
+
+		unsigned int FindScaling(float AnimationTime, const AnimNode* pNodeAnim);
+		unsigned int FindRotation(float AnimationTime, const AnimNode* pNodeAnim);
+		unsigned int FindPosition(float AnimationTime, const AnimNode* pNodeAnim);/**/
 
 	private:
 		SkeletalMesh* m_skMesh = nullptr;
 
+		float m_totalTime = 0.0f;
 		float m_ticksPerSecond = 0.0f;
 		float m_duration = 0.0f;
 		std::string m_name;

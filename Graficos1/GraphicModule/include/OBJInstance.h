@@ -27,6 +27,11 @@ class OBJInstance
 public:
 	OBJInstance(Vector pos);
 	OBJInstance();
+
+	OBJInstance(const OBJInstance& other);
+
+	OBJInstance operator=(const OBJInstance& other);
+
 	~OBJInstance();
 
 /*#if defined(DX11)
@@ -57,10 +62,14 @@ public:
 	void setRotation(Vector rot);
 	Vector getRotation();
 
-	Texture& getTexture(unsigned int index) { return m_OBJModel.getTexture(index); }
-	void setTexture(Texture tex) { m_OBJModel.setTexture(tex); }
+	Texture& getTexture(unsigned int meshIndex, unsigned int index) { return m_OBJModel.getTexture(meshIndex, index); }
+	void setTexture(unsigned int meshIndex, Texture tex) { m_OBJModel.setTexture(meshIndex, tex); }
 
-	size_t getTextureCount() { return m_OBJModel.getTextureCount(); }
+	size_t getTextureCount(unsigned int meshIndex) { return m_OBJModel.getTextureCount(meshIndex); }
+	size_t getMeshCount()
+	{
+		return m_OBJModel.getMeshCount();
+	}
 
 	string getFilePath() { return m_OBJModel.getFilePath();	}
 	string getName() { return m_OBJModel.getName(); }
@@ -80,9 +89,9 @@ public:
 	Model m_OBJModel;
 	std::vector<Animation> m_anims;
 
-	Color m_color;
+	Color m_color = Color{0,0,0,0};
 
-	//static Assimp::Importer m_importer;
-	const aiScene* m_scene;
+	Assimp::Importer* m_importer;
+	const aiScene* m_scene = nullptr;
 };
 }
