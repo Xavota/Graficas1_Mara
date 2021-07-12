@@ -617,7 +617,7 @@ struct MATRIX
 	}
 
 
-	MATRIX TransposeMatrix()
+	MATRIX TransposeMatrix() const
 	{
 		MATRIX r;
 		r._11 = _11; r._21 = _12; r._31 = _13; r._41 = _14;

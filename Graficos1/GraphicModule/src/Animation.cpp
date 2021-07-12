@@ -1,5 +1,7 @@
 #include "Animation.h"
+#include "OBJInstance.h"
 
+#include <iostream>
 
 namespace GraphicsModule
 {
@@ -76,6 +78,8 @@ namespace GraphicsModule
 
 		float TimeInTicks = m_totalTime * m_ticksPerSecond;
 		float AnimationTime = fmod(TimeInTicks, m_duration);
+
+		//std::cout << AnimationTime << std::endl;
 
 		ReadNodeHeirarchy(AnimationTime, m_root, Identity, meshIndex);/*
 		ReadNodeHeirarchy(AnimationTime, m_rootNode, Identity, meshIndex);/**/
@@ -241,10 +245,11 @@ namespace GraphicsModule
 	}/**/
 	void Animation::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const MATRIX& ParentTransform, int meshIndex)
 	{
+
 		std::string NodeName(pNode->mName.data);
 
 		//trans
-		MATRIX NodeTransformation = MATRIX(&pNode->mTransformation.a1);//.TransposeMatrix();
+		MATRIX NodeTransformation = MATRIX(&pNode->mTransformation.a1);
 
 		const aiNodeAnim* pNodeAnim = FindNodeAnim(m_anim, NodeName);
 
@@ -252,11 +257,7 @@ namespace GraphicsModule
 			// Interpolate scaling and generate scaling transformation matrix
 			aiVector3D Scaling;
 			CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-#if defined(DX11)
 			MATRIX ScalingM = MATRIX::Scale(Scaling.x, Scaling.y, Scaling.z).TransposeMatrix();
-#elif defined(OGL)
-			MATRIX ScalingM = MATRIX::Scale(Scaling.x, Scaling.y, Scaling.z);
-#endif
 
 			// Interpolate rotation and generate rotation transformation matrix
 			aiQuaternion RotationQ;
@@ -270,11 +271,7 @@ namespace GraphicsModule
 			// Interpolate translation and generate translation transformation matrix
 			aiVector3D Translation;
 			CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-#if defined(DX11)
 			MATRIX TranslationM = MATRIX::Translate(Translation.x, Translation.y, Translation.z).TransposeMatrix();
-#elif defined(OGL)
-			MATRIX TranslationM = MATRIX::Translate(Translation.x, Translation.y, Translation.z);
-#endif
 
 			// Combine the above transformations
 			NodeTransformation = TranslationM * RotationM * ScalingM;
@@ -282,10 +279,22 @@ namespace GraphicsModule
 
 		MATRIX GlobalTransformation = ParentTransform * NodeTransformation;
 
-		if (m_skMesh->m_boneMappings[meshIndex].find(NodeName) != m_skMesh->m_boneMappings[meshIndex].end()) {
+		if (m_skMesh->m_boneMappings[meshIndex].find(NodeName) != m_skMesh->m_boneMappings[meshIndex].end()) 
+		{
 			unsigned int BoneIndex = m_skMesh->m_boneMappings[meshIndex][NodeName];
-			m_skMesh->m_bonesPerMesh[meshIndex][BoneIndex].m_finalTransformation = m_skMesh->m_globalInverseTransforms[meshIndex] * GlobalTransformation 
-																				 * m_skMesh->m_bonesPerMesh[meshIndex][BoneIndex].m_offsetMatrix;
+			m_skMesh->m_bonesPerMesh[meshIndex][BoneIndex].m_finalTransformation =
+				m_skMesh->m_globalInverseTransforms[meshIndex] * GlobalTransformation * m_skMesh->m_bonesPerMesh[meshIndex][BoneIndex].m_offsetMatrix;
+#if defined(OGL)
+			m_skMesh->m_bonesPerMesh[meshIndex][BoneIndex].m_finalTransformation = m_skMesh->m_bonesPerMesh[meshIndex][BoneIndex].m_finalTransformation.TransposeMatrix();
+#endif
+
+			unsigned int skBoneIndex = m_skMesh->m_skeleton->getSkeletalMesh()->m_boneMappings[0][NodeName];
+			m_skMesh->m_skeleton->getSkeletalMesh()->m_bonesPerMesh[0][skBoneIndex].m_finalTransformation =
+				m_skMesh->m_globalInverseTransforms[meshIndex] * GlobalTransformation;
+#if defined(OGL)
+			m_skMesh->m_skeleton->getSkeletalMesh()->m_bonesPerMesh[0][skBoneIndex].m_finalTransformation =
+				m_skMesh->m_skeleton->getSkeletalMesh()->m_bonesPerMesh[0][skBoneIndex].m_finalTransformation.TransposeMatrix();
+#endif
 		}
 
 		for (int i = 0; i < pNode->mNumChildren; i++) {
@@ -398,5 +407,10 @@ namespace GraphicsModule
 
 		//assert(0);
 		return 0;
-	}/**/
+	}
+	const char* Animation::getName()
+	{
+		return m_name.c_str();
+	}
+	/**/
 }

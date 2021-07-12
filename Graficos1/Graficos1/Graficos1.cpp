@@ -36,7 +36,7 @@
 
 #include <chrono>
 using namespace std;
-//using namespace chrono;
+using namespace chrono;
 
 // -----------------Global var-----------------------------------------------------------------
 GraphicsModule::test				g_Test;
@@ -45,7 +45,7 @@ vector<GraphicsModule::Camara>		g_Cameras;
 char                                g_activeCamera = 0;
 
 vector<GraphicsModule::Mesh>		g_Mesh;
-vector<GraphicsModule::OBJInstance> g_ObjInstances;
+list<GraphicsModule::OBJInstance>   g_ObjInstances;
 
 bool								g_SelectingLoadMode = false;
 
@@ -324,6 +324,24 @@ void LoadMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::e
 
 //GraphicsModule::OBJInstance SAQ;
 
+GraphicsModule::OBJInstance* getIndexOfList(list<GraphicsModule::OBJInstance> l, unsigned int index)
+{
+	unsigned int i = 0;
+	/*for (list<GraphicsModule::OBJInstance>::iterator it = l.begin(); it != l.end(); it++)
+	{
+		if (i == index)
+			return &*it;
+		i++;
+	}*/
+
+	for (GraphicsModule::OBJInstance& o : g_ObjInstances)
+	{
+		if (i == index)
+			return &o;
+		i++;
+	}
+}
+
 HRESULT Init(unsigned int width, unsigned int height)
 {
 	g_Cameras.push_back(GraphicsModule::Camara({ 0.0f, 3.0f, -6.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
@@ -332,9 +350,11 @@ HRESULT Init(unsigned int width, unsigned int height)
 		width, height, 0.01f, 100.0f, false, PIDIV4));
 
 	GraphicsModule::TextureManager::CreateTextureFromFile({"Models/Textures/M_BaseTexture_Albedo.jpg"}, "Base Texture", MODEL_LOAD_FORMAT_RGBA, GraphicsModule::eDIMENSION::TEXTURE2D);
+	GraphicsModule::TextureManager::CreateTextureFromFile({"Models/Textures/M_BaseTexture_Normal.jpg"}, "Base Normal", MODEL_LOAD_FORMAT_BGRA, GraphicsModule::eDIMENSION::TEXTURE2D);
     //"Models/Models/CuboPuzzle.obj"
-    //LoadMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 75,75,75 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
-    LoadMesh("Models/Models/boblampclean.md5mesh", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0 * (3.1415 / 180),0 * (3.1415 / 180),0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+    //LoadMesh("Models/Models/boblampclean.md5mesh", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 1,1,1 }, { 0,0,0 }, { 0 * (3.1415 / 180),0 * (3.1415 / 180),0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+    LoadMesh("Models/Models/Pistola.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 75,75,75 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
+    //LoadMesh("Models/Models/Hip Hop Dancing.fbx", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ .75f,.75f,.75f }, { 0,0,0 }, { 0 * (3.1415 / 180),0 * (3.1415 / 180),0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 	//LoadMesh("Models/Models/CuboPuzzle.obj", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 }, { 0,0,0 }, { 0,0,0 }), GraphicsModule::eDIMENSION::TEXTURE2D);
 
 	LoadMesh("Models/Models/SkySphere.3ds", MODEL_LOAD_FORMAT_TRIANGLES | MODEL_LOAD_FORMAT_BGRA, GraphicsModule::OBJInstance::getModelMatrix({ 10,10,10 },{ 0,0,0 },{ 0,0,0 }) /*MATRIX(10,0,0,0, 0,10,0,0, 0,0,10,0, 0,0,0,1)*/, GraphicsModule::eDIMENSION::TEX_CUBE);
@@ -346,33 +366,34 @@ HRESULT Init(unsigned int width, unsigned int height)
 
 
 #if defined(DX11)
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[1], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", getIndexOfList(g_ObjInstances, 0), true);
+	
+	//g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", getIndexOfList(g_ObjInstances, 1), true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 2), true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
 
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[0], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[1], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, 0), true);
+	//g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, 1), true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 2), true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);/**/
 #elif defined(OGL)
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[0], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", &g_ObjInstances[1], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", getIndexOfList(g_ObjInstances, 0), true);
+	//g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", getIndexOfList(g_ObjInstances, 1), true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SkyBox", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 2), true);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("SSAO", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("ToneMap", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("Copy", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);/**/
 
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[0], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", &g_ObjInstances[1], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", &g_ObjInstances[g_ObjInstances.size() - 2], true);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", &g_ObjInstances[g_ObjInstances.size() - 1], false);
-	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", &g_ObjInstances[g_ObjInstances.size() - 1], false);/**/
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, 0), true);
+	//g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, 1), true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("SkyBox", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 2), true);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("ToneMap", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);
+	g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Copy", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), false);/**/
 #endif
 
 
@@ -384,22 +405,26 @@ void LoadMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::e
 {    
     g_ObjInstances.push_back(GraphicsModule::OBJInstance());
     size_t lastOBJ = g_ObjInstances.size() - 1;
+	int i = 0;
 
 	//g_ObjInstances[lastOBJ].LoadModel(scene, fileName, Flags, mat, dim);
-	g_ObjInstances[lastOBJ].LoadModel(fileName, Flags, mat, dim);
-	for (int i = 0; i < lastOBJ; i++)
+	getIndexOfList(g_ObjInstances, lastOBJ)->LoadModel(fileName, Flags, mat, dim);
+	for (GraphicsModule::OBJInstance& o : g_ObjInstances)
 	{
-		if (g_ObjInstances[i].m_OBJModel.m_name == g_ObjInstances[lastOBJ].m_OBJModel.m_name)
+		if (o.m_OBJModel.m_name == getIndexOfList(g_ObjInstances, lastOBJ)->m_OBJModel.m_name && lastOBJ != i)
 		{
-			g_ObjInstances.erase(g_ObjInstances.end() - 1);
+			list<GraphicsModule::OBJInstance>::iterator it = g_ObjInstances.begin();
+			advance(it, lastOBJ);
+			g_ObjInstances.erase(it);
 			cout << "Model ya cargado" << endl;
 			return;
 		}
+		i++;
 	}
 
-	g_ObjInstances[lastOBJ].setPosition({ 0,0,0 });
-	g_ObjInstances[lastOBJ].setRotation({ 0,0,0 });
-	g_ObjInstances[lastOBJ].setSize({ 1,1,1 });
+	getIndexOfList(g_ObjInstances, lastOBJ)->setPosition({ 0,0,0 });
+	getIndexOfList(g_ObjInstances, lastOBJ)->setRotation({ 0,0,0 });
+	getIndexOfList(g_ObjInstances, lastOBJ)->setSize({ 1,1,1 });
 }
 
 /*void OpenMesh(string fileName, unsigned int Flags, MATRIX mat, GraphicsModule::eDIMENSION dim)
@@ -704,62 +729,86 @@ void UIRender()
 		}
 		ImGui::End();
 		if (ImGui::Begin("Defines"))
-		{		
-/*			static int lightTypeIndex = 0;
-			const char* lightTypes[] = { "None", "Vertex light", "Pixel light" };
-			ImGui::Combo("Light Type", &lightTypeIndex, lightTypes, IM_ARRAYSIZE(lightTypes));
+		{
+			static int techniqueIndex = 0;
+			const char* techniques[] = { "Deferred", "Forward" };
 
-			static int specularTypeIndex = 0;
-			const char* specularTypes[] = { "None", "PHONG", "BLINN PHONG" };
-			ImGui::Combo("Specular Type", &specularTypeIndex, specularTypes, IM_ARRAYSIZE(specularTypes));
+			ImGui::Combo("Technique", &techniqueIndex, techniques, IM_ARRAYSIZE(techniques));
 
-			static bool diffuseMap = false;
-			static bool normalMap = false;
-			static bool specularMap = false;
-			
-			ImGui::Checkbox("Diffuse map", &diffuseMap);
-			ImGui::Checkbox("Normal map", &normalMap);
-			ImGui::Checkbox("Specular map", &specularMap);
+			if (techniqueIndex == 0)
+			{
+				g_Test.SetTechnique("Deferred");
+			}
+			else if (techniqueIndex == 1)
+			{
+				g_Test.SetTechnique("Forward");
+			}
 
-			static int toneMapTypeIndex = 0;
-			const char* toneMapType[] = { "None", "BASIC", "REINHARD", "BURGESS DAWSON", "UNCHARTED2" };
-			ImGui::Combo("Tone Correction Type", &toneMapTypeIndex, toneMapType, IM_ARRAYSIZE(toneMapType));
 
 			eNORMAL_TECHNIQUES normalTech = eNORMAL_TECHNIQUES::NONE;
+
+			if (techniqueIndex == 1)
+			{
+				static int lightTypeIndex = 0;
+				const char* lightTypes[] = { "Vertex light", "Pixel light" };
+				ImGui::Combo("Light Type", &lightTypeIndex, lightTypes, IM_ARRAYSIZE(lightTypes));
+
+				if (lightTypeIndex == 0)
+				{
+					normalTech = eNORMAL_TECHNIQUES::VERTEX_SHADER;
+				}
+				else if (lightTypeIndex == 1)
+				{
+					normalTech = eNORMAL_TECHNIQUES::PIXEL_SHADER;
+				}
+			}
+
+
+			static int specularTypeIndex = 0;
+			const char* specularTypes[] = { "PHONG", "BLINN PHONG" };
+
+			ImGui::Combo("Specular Type", &specularTypeIndex, specularTypes, IM_ARRAYSIZE(specularTypes));/**/
+
 			eSPECULAR_TECHNIQUES specularTech = eSPECULAR_TECHNIQUES::NONE;
-			unsigned int mapFlags = 0;
-			eTONE_CORRECTION_TECHNIQUES toneMapTech = eTONE_CORRECTION_TECHNIQUES::NONE;
 
-			if (lightTypeIndex == 1)
-			{
-				normalTech =  eNORMAL_TECHNIQUES::VERTEX_SHADER;
-			}
-			else if (lightTypeIndex == 2)
-			{
-				normalTech = eNORMAL_TECHNIQUES::PIXEL_SHADER;
-			}
-
-			if (specularTypeIndex == 1)
+			if (specularTypeIndex == 0)
 			{
 				specularTech = eSPECULAR_TECHNIQUES::PHONG;
 			}
-			else if (specularTypeIndex == 2)
+			else if (specularTypeIndex == 1)
 			{
 				specularTech = eSPECULAR_TECHNIQUES::BLINN_PHONG;
 			}
 
-			if (diffuseMap)
+
+			unsigned int mapFlags = 0;
+			
+			if (normalTech == eNORMAL_TECHNIQUES::PIXEL_SHADER || techniqueIndex == 0)
 			{
-				mapFlags |= TEXTURE_MAP_DIFFUSE;
+				static bool normalMap = false;
+				static bool specularMap = false;
+
+				ImGui::Checkbox("Normal map", &normalMap);
+				ImGui::Checkbox("Specular map", &specularMap);
+
+
+				if (normalMap)
+				{
+					mapFlags |= TEXTURE_MAP_NORMAL;
+				}
+				if (specularMap)
+				{
+					mapFlags |= TEXTURE_MAP_SPECULAR;
+				}
 			}
-			if (normalMap)
-			{
-				mapFlags |= TEXTURE_MAP_NORMAL;				
-			}
-			if (specularMap)
-			{
-				mapFlags |= TEXTURE_MAP_SPECULAR;				
-			}
+
+
+			eTONE_CORRECTION_TECHNIQUES toneMapTech = eTONE_CORRECTION_TECHNIQUES::NONE;
+
+			static int toneMapTypeIndex = 0;
+			const char* toneMapType[] = { "None", "BASIC", "REINHARD", "BURGESS DAWSON", "UNCHARTED2", "ALL" };
+
+			ImGui::Combo("Tone Correction Type", &toneMapTypeIndex, toneMapType, IM_ARRAYSIZE(toneMapType));/**/
 
 			if (toneMapTypeIndex == 1)
 			{
@@ -777,22 +826,13 @@ void UIRender()
 			{
 				toneMapTech = eTONE_CORRECTION_TECHNIQUES::UNCHARTED2;
 			}
-
-			g_Test.GetRenderManager()->SetShaderFlags(normalTech, specularTech, mapFlags, toneMapTech);*/
-
-
-			static int techniqueIndex = 0;
-			const char* techniques[] = { "Deferred", "Forward" };
-			ImGui::Combo("Technique", &techniqueIndex, techniques, IM_ARRAYSIZE(techniques));
-
-			if (techniqueIndex == 0)
+			else if (toneMapTypeIndex == 5)
 			{
-				g_Test.SetTechnique("Deferred");
+				toneMapTech = eTONE_CORRECTION_TECHNIQUES::ALL;
 			}
-			else if (techniqueIndex == 1)
-			{
-				g_Test.SetTechnique("Forward");
-			}
+
+
+			g_Test.GetRenderManager()->SetShaderFlags(g_Test.GetTechnique(), normalTech, specularTech, mapFlags, toneMapTech);
 		}
 		ImGui::End();
 		if (ImGui::Begin("Models"))
@@ -804,55 +844,56 @@ void UIRender()
 		    }
 		    if (ImGui::CollapsingHeader("Meshes"))
 			{
+				int i = 0;
 				size_t countOBJs = g_ObjInstances.size();
-				for (int i = 0; i < countOBJs; i++)
+				for (GraphicsModule::OBJInstance& o : g_ObjInstances)
 				{
 					ImGui::Text("    "); ImGui::SameLine();
-		            ImGui::PushID(i);
-				    if (ImGui::CollapsingHeader(g_ObjInstances[i].getName().c_str()))
+		            ImGui::PushID(i++);
+				    if (ImGui::CollapsingHeader(o.getName().c_str()))
 				    {
 						ImGui::Text("        "); ImGui::SameLine();
 				    	if (ImGui::CollapsingHeader("Transform"))
 						{
 							ImGui::Text("            "); ImGui::SameLine();
-				    		float pos[3]{ g_ObjInstances[i].getPosition().x(), g_ObjInstances[i].getPosition().y(), g_ObjInstances[i].getPosition().z() };
+				    		float pos[3]{ o.getPosition().x(), o.getPosition().y(), o.getPosition().z() };
 				    		if (ImGui::DragFloat3("Position", pos, 0.01f))
 				    		{
-				    			g_ObjInstances[i].setPosition({ pos[0], pos[1], pos[2] });
+				    			o.setPosition({ pos[0], pos[1], pos[2] });
 							}
 							ImGui::Text("            "); ImGui::SameLine();
-							float rot[3]{ g_ObjInstances[i].getRotation().x() * (180 / 3.1415f), g_ObjInstances[i].getRotation().y() * (180 / 3.1415f), g_ObjInstances[i].getRotation().z() * (180 / 3.1415f) };
+							float rot[3]{ o.getRotation().x() * (180 / 3.1415f), o.getRotation().y() * (180 / 3.1415f), o.getRotation().z() * (180 / 3.1415f) };
 				    		if (ImGui::DragFloat3("Rotation", rot, 0.1f, 360, -360))
 				    		{
-				    			g_ObjInstances[i].setRotation({ rot[0] * (3.1415f / 180), rot[1] * (3.1415f / 180), rot[2] * (3.1415f / 180) });
+				    			o.setRotation({ rot[0] * (3.1415f / 180), rot[1] * (3.1415f / 180), rot[2] * (3.1415f / 180) });
 							}
 							ImGui::Text("            "); ImGui::SameLine();
-				    		float scale[3]{ g_ObjInstances[i].getSize().x(), g_ObjInstances[i].getSize().y(), g_ObjInstances[i].getSize().z() };
+				    		float scale[3]{ o.getSize().x(), o.getSize().y(), o.getSize().z() };
 				    		if (ImGui::DragFloat3("Scale", scale, 0.01f))
 				    		{
-				    			g_ObjInstances[i].setSize({ scale[0], scale[1], scale[2] });
+				    			o.setSize({ scale[0], scale[1], scale[2] });
 				    		}
 						}
 						ImGui::Text("        "); ImGui::SameLine();
 				    	if (ImGui::CollapsingHeader("Info"))
 						{
 							ImGui::Text("            "); ImGui::SameLine();
-							ImGui::Text(g_ObjInstances[i].getName().c_str());
+							ImGui::Text(o.getName().c_str());
 							ImGui::Text("            "); ImGui::SameLine();
 							if (ImGui::CollapsingHeader("Textures"))
 							{
 								ImGui::Text("               "); ImGui::SameLine();
-		                        for (int j = 0; j < g_ObjInstances[i].getMeshCount(); ++j)
+		                        for (int j = 0; j < o.getMeshCount(); ++j)
 		                        {	
-									for (int k = 0; k < g_ObjInstances[i].getTextureCount(j); ++k)
+									for (int k = 0; k < o.getTextureCount(j); ++k)
 									{
 										float my_tex_w = 256;
 										float my_tex_h = 256;
 										ImTextureID my_tex_id = ImTextureID();
 #if defined(DX11)
-										my_tex_id = g_ObjInstances[i].getTexture(j, k).getBuffer().getPtr();
+										my_tex_id = o.getTexture(j, k).getBuffer().getPtr();
 #elif defined(OGL)
-										my_tex_id = (void*)g_ObjInstances[i].getTexture(j, k).getID();
+										my_tex_id = (void*)o.getTexture(j, k).getID();
 #endif           
 										ImVec2 pos = ImGui::GetCursorScreenPos();
 										ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
@@ -864,6 +905,25 @@ void UIRender()
 		                        }
 		                    }
 				    	}
+
+						int animCount = o.getAnimationCount() + 1;
+						int currentAnim = o.getCurrentAnimation() + 1;
+						const char** Animations = new const char*[animCount];
+
+						Animations[0] = "None";
+						for (int i = 1; i < animCount; i++)
+						{
+							Animations[i] = o.getAnimationName(i - 1);
+						}
+
+						ImGui::Text("        "); ImGui::SameLine();
+
+						if (ImGui::Combo("Animations", &currentAnim, Animations, animCount))
+						{
+							o.setCurrentAnimation(currentAnim - 1);
+						}
+
+						delete[] Animations;
 		            }
 		            ImGui::PopID();
 		        }
@@ -929,14 +989,8 @@ void UIRender()
 				auto mat = GraphicsModule::OBJInstance::getModelMatrix(GraphicsModule::Vector(scale[0], scale[1], scale[2]), GraphicsModule::Vector(pos[0], pos[1], pos[2]), GraphicsModule::Vector(rot[0] * piOver180, rot[1] * piOver180, rot[2] * piOver180));
 				//OpenMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
 				LoadMesh(fileName, Flags, mat, GraphicsModule::eDIMENSION::TEXTURE2D);
-
-				std::vector<GraphicsModule::OBJInstance*> models;
-				for (int i = 0; i < g_ObjInstances.size() - 2; i++)
-				{
-					models.push_back(&g_ObjInstances[i]);
-				}
-				g_Test.GetRenderManager()->getShader("Deferred").ResetObjectsOfPass("GBuffer", models);
-				g_Test.GetRenderManager()->getShader("Forward").ResetObjectsOfPass("Lights", models);
+				g_Test.GetRenderManager()->getShader("Deferred").AddObjectToPass("GBuffer", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), true);
+				g_Test.GetRenderManager()->getShader("Forward").AddObjectToPass("Lights", getIndexOfList(g_ObjInstances, g_ObjInstances.size() - 1), true);
 
 				g_SelectingLoadMode = false;
 			}
@@ -978,9 +1032,9 @@ void Update(float dt)
 	//g_Test.GetRenderManager()->ShaderSetFloat("mat1.specular", 1);
 
 
-	for (int i = 0; i < g_ObjInstances.size(); i++)
+	for (GraphicsModule::OBJInstance& o : g_ObjInstances)
 	{
-		g_ObjInstances[i].Update(dt);
+		o.Update(dt);
 	}
 }
 
@@ -1054,7 +1108,7 @@ int main()
 
     // main loop
     MSG msg = { 0 };
-    //auto start = chrono::high_resolution_clock::now();
+    auto start = chrono::high_resolution_clock::now();
 #if !defined(OGL)
 	while (WM_QUIT != msg.message)
     {
@@ -1065,21 +1119,26 @@ int main()
         }
         else
 		{
-			//auto end = high_resolution_clock::now();
-			//g_Test.Update(duration<double>(end - start).count());
-			Update(.000833f);
-			//start = high_resolution_clock::now();
+			auto end = high_resolution_clock::now();
+			double dt = duration<double>(end - start).count();
+			start = high_resolution_clock::now();
+
+			Update(dt / 6);
+
             Render();
         }
     }
 #else
 	while (!glfwWindowShouldClose(GraphicsModule::GetManager()->GetWindow()))
 	{
+		auto end = high_resolution_clock::now();
+		double dt = duration<double>(end - start).count();
+		start = high_resolution_clock::now();
+
 		processInputs(GraphicsModule::GetManager()->GetWindow());
-		//auto end = high_resolution_clock::now();
-		//g_Test.Update(duration<double>(end - start).count());
-		Update(.003f);
-		//start = high_resolution_clock::now();
+
+		Update(dt / 6);
+
 		Render();
 		glfwPollEvents();
 	}

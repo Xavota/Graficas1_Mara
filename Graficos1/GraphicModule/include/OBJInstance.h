@@ -53,6 +53,8 @@ public:
 	//bool LoadModel(const aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
 	bool LoadModel(string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim);
 
+	bool LoadSkeletalModel(aiNode* root, std::vector<std::vector<Bone>> bones);
+
 	void setSize(Vector size);
 	Vector getSize();
 
@@ -76,9 +78,17 @@ public:
 
 	void setColor(Color col) { m_color = col; }
 
+	SkeletalMesh* getSkeletalMesh() { return &m_skMesh; }
+
 	void Update(float deltaTime);
 	void Draw(class RenderManager* renderManager, bool useTextures);
 	void SetResources(RenderManager* renderManager, bool useTextures);
+
+	int getAnimationCount();
+	int getCurrentAnimation();
+	void setCurrentAnimation(int i);
+
+	const char* getAnimationName(int animIndex);
 
 public:
 	Vector m_size{1,1,1};
@@ -93,5 +103,7 @@ public:
 
 	Assimp::Importer* m_importer;
 	const aiScene* m_scene = nullptr;
+
+	int m_currentAnimation = 0;
 };
 }

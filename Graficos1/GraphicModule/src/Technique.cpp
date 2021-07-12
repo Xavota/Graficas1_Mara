@@ -24,7 +24,7 @@ namespace GraphicsModule
 
 		for (string& s : m_defines)
 		{
-			//vsString << "#define " << s << '\n';
+			vsString << "#define " << s << '\n';
 		}
 
 		while (!vsFile.eof())
@@ -48,7 +48,7 @@ namespace GraphicsModule
 
 		for (string& s : m_defines)
 		{
-			//psString << "#define " << s << '\n';
+			psString << "#define " << s << '\n';
 		}
 
 		while (!psFile.eof())

@@ -42,7 +42,7 @@ public:
 	void setMaterialID(unsigned int materialID) { m_materialID = materialID; }
 	unsigned int getMaterialID() { return m_materialID; }
 
-	void Draw(class RenderManager* renderManager);
+	void Draw(class RenderManager* renderManager, unsigned int topologyOGL);
 	void SetResources(RenderManager* renderManager);
 
 public:

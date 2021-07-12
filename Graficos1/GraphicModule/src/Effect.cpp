@@ -7,87 +7,100 @@ namespace GraphicsModule
 		
 	}*/
 
-	void Effect::GenerateEffects()
+	void Effect::GenerateEffects(std::string effect)
 	{
-		/*for (int i = -1; i < (int)eNORMAL_TECHNIQUES::COUNT; i++)
+		for (int i = -1; i < (int)eTONE_CORRECTION_TECHNIQUES::COUNT; i++)
 		{
-			if (eNORMAL_TECHNIQUES(i) == eNORMAL_TECHNIQUES::PIXEL_SHADER)
+			for (int j = 0; j < (int)eSPECULAR_TECHNIQUES::COUNT; j++)
 			{
-				for (int j = -1; j < (int)eSPECULAR_TECHNIQUES::COUNT; j++)
+				if (effect == "Forward")
 				{
-					for (unsigned int k = 0; k <= TEXTURE_MAP_COUNT; k++)
+					for (int k = 0; k < (int)eNORMAL_TECHNIQUES::COUNT; k++)
 					{
-						for (int l = -1; l < (int)eTONE_CORRECTION_TECHNIQUES::COUNT; l++)
+						if (eNORMAL_TECHNIQUES(k) == eNORMAL_TECHNIQUES::PIXEL_SHADER)
 						{
-							m_techniques.push_back({ eNORMAL_TECHNIQUES(i), eSPECULAR_TECHNIQUES(j), k, eTONE_CORRECTION_TECHNIQUES(l), Technique() });
-
-							switch ((eNORMAL_TECHNIQUES)i)
+							for (int l = 0; l <= TEXTURE_MAP_COUNT; l++)
 							{
-							case eNORMAL_TECHNIQUES::PIXEL_SHADER:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("PIXEL_LIGHT");
-								break;
-							case eNORMAL_TECHNIQUES::VERTEX_SHADER:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("VERTEX_LIGHT");
-								break;
-
+								AddEffect(eNORMAL_TECHNIQUES(k), eSPECULAR_TECHNIQUES(j), l,  eTONE_CORRECTION_TECHNIQUES(i));
 							}
-
-
-							switch ((eSPECULAR_TECHNIQUES)j)
-							{
-							case eSPECULAR_TECHNIQUES::PHONG:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("PHONG");
-								break;
-							case eSPECULAR_TECHNIQUES::BLINN_PHONG:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
-								break;
-							}
-
-							if (k & TEXTURE_MAP_DIFFUSE)
-							{
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("DIFFUSE_MAP");
-							}
-							if (k & TEXTURE_MAP_NORMAL)
-							{
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");
-							}
-							if (k & TEXTURE_MAP_SPECULAR)
-							{
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
-							}
-
-
-							switch ((eTONE_CORRECTION_TECHNIQUES)l)
-							{
-							case eTONE_CORRECTION_TECHNIQUES::BASIC:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("BASIC");
-								break;
-							case eTONE_CORRECTION_TECHNIQUES::REINHARD:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("REINHARD");
-								break;
-							case eTONE_CORRECTION_TECHNIQUES::BURGESS_DAWSON:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("BURGESS_DAWSON");
-								break;
-							case eTONE_CORRECTION_TECHNIQUES::UNCHARTED2:
-								m_techniques[m_techniques.size() - 1].tech.AddDefine("UNCHARTED2");
-								break;
-							}
+						}
+						else
+						{
+							AddEffect(eNORMAL_TECHNIQUES(k), eSPECULAR_TECHNIQUES(j), 0, eTONE_CORRECTION_TECHNIQUES(i));
 						}
 					}
 				}
+				else
+				{
+					for (int l = 0; l <= TEXTURE_MAP_COUNT; l++)
+					{
+						AddEffect(eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES(j), l, eTONE_CORRECTION_TECHNIQUES(i));
+					}
+				}
 			}
-
-		}/**/
-
-		m_techniques.push_back({ eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES::NONE, 0, eTONE_CORRECTION_TECHNIQUES::NONE, Technique() });
+		}
+		//AddEffect(eNORMAL_TECHNIQUES::NONE, eSPECULAR_TECHNIQUES::PHONG, 3, eTONE_CORRECTION_TECHNIQUES::ALL);
 
 		m_currentTechnique = &m_techniques[0].tech;
 	}
 
-	void Effect::CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull)
+	void Effect::AddEffect(eNORMAL_TECHNIQUES normal, eSPECULAR_TECHNIQUES specular, unsigned int maps, eTONE_CORRECTION_TECHNIQUES toneCorrection)
+	{
+		m_techniques.push_back({ normal, specular, maps, toneCorrection, Technique() });
+
+		switch (toneCorrection)
+		{
+		case eTONE_CORRECTION_TECHNIQUES::BASIC:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("BASIC");
+			break;
+		case eTONE_CORRECTION_TECHNIQUES::REINHARD:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("REINHARD");
+			break;
+		case eTONE_CORRECTION_TECHNIQUES::BURGESS_DAWSON:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("BURGESS_DAWSON");
+			break;
+		case eTONE_CORRECTION_TECHNIQUES::UNCHARTED2:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("UNCHARTED2");
+			break;
+		case eTONE_CORRECTION_TECHNIQUES::ALL:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("ALL");
+			break;
+		}
+
+		switch (specular)
+		{
+		case eSPECULAR_TECHNIQUES::PHONG:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("PHONG");
+			break;
+		case eSPECULAR_TECHNIQUES::BLINN_PHONG:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("BLINN_PHONG");
+			break;
+		}
+
+		switch (normal)
+		{
+		case eNORMAL_TECHNIQUES::VERTEX_SHADER:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("VERTEX_LIGHT");
+			break;
+		case eNORMAL_TECHNIQUES::PIXEL_SHADER:
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("PIXEL_LIGHT");
+			break;
+		}
+
+		if ((maps & TEXTURE_MAP_NORMAL) == TEXTURE_MAP_NORMAL)
+		{
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("NORMAL_MAP");			
+		}
+		if ((maps & TEXTURE_MAP_SPECULAR) == TEXTURE_MAP_SPECULAR)
+		{
+			m_techniques[m_techniques.size() - 1].tech.AddDefine("SPECULAR_MAP");
+		}
+	}
+
+	void Effect::CreatePass(std::string effect, string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull)
 	{
 		if (m_techniques.size() == 0)
-			GenerateEffects();
+			GenerateEffects(effect);
 		
 		for (Techs& t : m_techniques)
 		{

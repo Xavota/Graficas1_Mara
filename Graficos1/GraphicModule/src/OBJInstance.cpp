@@ -105,7 +105,8 @@ namespace GraphicsModule
 	bool OBJInstance::LoadModel(string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim)
 	{
 		m_importer = new Assimp::Importer();
-		m_scene = m_importer->ReadFile(fileName, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+		m_scene = m_importer->ReadFile(fileName, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph
+		| aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
 		if (!m_scene)
 		{
 			cout << m_importer->GetErrorString() << endl;
@@ -114,10 +115,10 @@ namespace GraphicsModule
 
 		std::vector<std::vector<Bone>> bones;
 
-		bones = m_skMesh.LoadSkeletalMesh(m_scene);
 
 		if (m_scene->HasAnimations())
 		{
+			bones = m_skMesh.LoadSkeletalMesh(m_scene);
 			for (int i = 0; i < m_scene->mNumAnimations; i++)
 			{
 				m_anims.push_back(Animation());
@@ -127,10 +128,22 @@ namespace GraphicsModule
 
 		return m_OBJModel.LoadModel(m_scene, fileName, Flags, mat, dim, bones);
 	}
+
+	bool OBJInstance::LoadSkeletalModel(aiNode* root, std::vector<std::vector<Bone>> bones)
+	{
+		std::vector<Bone> sk = m_skMesh.LoadSkeletalMesh(root, bones);
+		
+		m_OBJModel.LoadModel(root, sk);
+		return false;
+	}
 	
 	void OBJInstance::setSize(Vector size)
 	{
 		m_size = size;
+		if (m_skMesh.getSkeletonMesh() != nullptr)
+		{
+			m_skMesh.getSkeletonMesh()->setSize(size);
+		}
 	}
 	
 	Vector OBJInstance::getSize()
@@ -141,6 +154,10 @@ namespace GraphicsModule
 	void OBJInstance::setPosition(Vector pos)
 	{
 		m_pos = pos;
+		if (m_skMesh.getSkeletonMesh() != nullptr)
+		{
+			m_skMesh.getSkeletonMesh()->setPosition(pos);
+		}
 	}
 	
 	Vector OBJInstance::getPosition()
@@ -151,6 +168,10 @@ namespace GraphicsModule
 	void OBJInstance::setRotation(Vector rot)
 	{
 		m_rot = rot;
+		if (m_skMesh.getSkeletonMesh() != nullptr)
+		{
+			m_skMesh.getSkeletonMesh()->setRotation(rot);
+		}
 	}
 	
 	Vector OBJInstance::getRotation()
@@ -162,9 +183,19 @@ namespace GraphicsModule
 	{
 		if (m_anims.size() > 0)
 		{
-			for (int i = 0; i < m_OBJModel.m_modelMeshes.size(); i++)
+			if (m_currentAnimation >= 0)
 			{
-				m_anims[0].BoneTransform(deltaTime, i, &m_skMesh);
+				for (int i = 0; i < m_OBJModel.m_modelMeshes.size(); i++)
+				{
+					m_anims[m_currentAnimation].BoneTransform(deltaTime, i, &m_skMesh);
+				}
+			}
+			else
+			{
+				for (int i = 0; i < m_OBJModel.m_modelMeshes.size(); i++)
+				{
+					m_skMesh.BoneTransform(m_scene->mRootNode, i);
+				}
 			}
 		}
 	}
@@ -181,4 +212,21 @@ namespace GraphicsModule
 
 		m_OBJModel.SetResources(renderManager, useTextures);
  	}
+
+	int OBJInstance::getAnimationCount()
+	{
+		return m_anims.size();
+	}
+	int OBJInstance::getCurrentAnimation()
+	{
+		return m_currentAnimation;
+	}
+	void OBJInstance::setCurrentAnimation(int i)
+	{
+		m_currentAnimation = i;
+	}
+	const char* OBJInstance::getAnimationName(int animIndex)
+	{
+		return m_anims[animIndex].getName();
+	}
 }

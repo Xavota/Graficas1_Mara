@@ -2,11 +2,10 @@
 #include "Technique.h"
 #include <vector>
 
-#define TEXTURE_MAP_DIFFUSE 1
-#define TEXTURE_MAP_NORMAL 2
-#define TEXTURE_MAP_SPECULAR 4
+#define TEXTURE_MAP_NORMAL 1
+#define TEXTURE_MAP_SPECULAR 2
 
-#define TEXTURE_MAP_COUNT (TEXTURE_MAP_DIFFUSE | TEXTURE_MAP_NORMAL | TEXTURE_MAP_SPECULAR)
+#define TEXTURE_MAP_COUNT (TEXTURE_MAP_NORMAL | TEXTURE_MAP_SPECULAR)
 
 enum class eNORMAL_TECHNIQUES
 {
@@ -31,6 +30,7 @@ enum class eTONE_CORRECTION_TECHNIQUES
 	REINHARD,
 	BURGESS_DAWSON,
 	UNCHARTED2,
+	ALL,
 	COUNT
 };
 
@@ -43,7 +43,7 @@ public:
 	~Effect() = default;
 
 	//void CompileShader(const char* vertexShaderPath, const char* pixelShaderPath);
-	void CreatePass(string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull);
+	void CreatePass(std::string effect, string name, const char* vertexShaderPath, const char* pixelShaderPath, CULL_MODE cull);
 	
 	void SetShaderFlags(eNORMAL_TECHNIQUES nor, eSPECULAR_TECHNIQUES spec, unsigned int texFlags, eTONE_CORRECTION_TECHNIQUES toneMap/**/);
 
@@ -106,7 +106,9 @@ public:
 	void SetPassInputTexture(string passName, string textureName, Texture tex);
 	void AddPassOutputTexture(string passName, string textureName, bool cleanRenderTarget, float clearColor[4]);
 private:
-	void GenerateEffects();
+	void GenerateEffects(std::string effect);
+
+	void AddEffect(eNORMAL_TECHNIQUES normal, eSPECULAR_TECHNIQUES specular, unsigned int maps, eTONE_CORRECTION_TECHNIQUES toneCorrection);
 
 private:
 	struct Techs

@@ -94,6 +94,11 @@ namespace GraphicsModule
 			m_Technique = tech;
 		}
 
+		inline string GetTechnique()
+		{
+			return m_Technique;
+		}
+
     private:
 #if defined(DX11)
         HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11Device* pD3DDevice, InputLayout& pInputLayout);

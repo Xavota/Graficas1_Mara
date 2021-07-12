@@ -61,6 +61,8 @@ namespace GraphicsModule
 		unsigned int FindRotation(float AnimationTime, const AnimNode* pNodeAnim);
 		unsigned int FindPosition(float AnimationTime, const AnimNode* pNodeAnim);/**/
 
+		const char* getName();
+
 	private:
 		SkeletalMesh* m_skMesh = nullptr;
 

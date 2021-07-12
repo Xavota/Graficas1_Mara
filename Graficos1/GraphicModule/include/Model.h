@@ -25,6 +25,10 @@ public:
 
 	void AddMeshes(vector<Mesh> meshes);
 	bool LoadModel(const class aiScene* scene, string fileName, unsigned int Flags, MATRIX mat, eDIMENSION dim, std::vector<std::vector<Bone>> bones);
+
+	bool LoadModel(aiNode* root, std::vector<Bone> bones);
+	bool LoadNodes(aiNode* node, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, int& parentIndex, int& index, std::vector<std::vector<Bone>> bones);
+
 	void Draw(class RenderManager* renderManager, bool useTextures, SkeletalMesh* sk);
 	void SetResources(RenderManager* renderManager, bool useTextures);
 
@@ -57,5 +61,7 @@ public:
 #endif
 
 	bool yaBones = false;
+
+	unsigned int m_renderTopologyOGL = 0;
 };
 }

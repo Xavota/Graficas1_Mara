@@ -190,35 +190,39 @@ namespace GraphicsModule
 		g_RenderManager->AddEffect("Deferred");
 		g_RenderManager->AddEffect("Forward");/**/
 
-		g_RenderManager->getShader("Deferred").CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Deferred").CreatePass("SkyBox", "SkyBoxVertex.fx", "SkyBoxPixel.fx", CULL_BACK);
-		g_RenderManager->getShader("Deferred").CreatePass("Lights", "LightVertex.fx", "LightPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Deferred").CreatePass("SSAO", "SSAOVertex.fx", "SSAOPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Deferred").CreatePass("ToneMap", "ToneMapVertex.fx", "ToneMapPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Deferred").CreatePass("Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "SkyBox", "SkyBoxVertex.fx", "SkyBoxPixel.fx", CULL_BACK);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "Lights", "LightVertex.fx", "LightPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "SSAO", "SSAOVertex.fx", "SSAOPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "ToneMap", "ToneMapVertex.fx", "ToneMapPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "Skeletal", "SkeletalVertex.fx", "SkeletalPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
 
 
-		g_RenderManager->getShader("Forward").CreatePass("SkyBox", "SkyBoxFwdVertex.fx", "SkyBoxFwdPixel.fx", CULL_BACK);
-		g_RenderManager->getShader("Forward").CreatePass("Lights", "LightFwdVertex.fx", "LightFwdPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Forward").CreatePass("ToneMap", "ToneMapFwdVertex.fx", "ToneMapFwdPixel.fx", CULL_FRONT);
-		g_RenderManager->getShader("Forward").CreatePass("Copy", "CopyFwdVertex.fx", "CopyFwdPixel.fx", CULL_FRONT);/**/
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "SkyBox", "SkyBoxFwdVertex.fx", "SkyBoxFwdPixel.fx", CULL_BACK);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "Lights", "LightFwdVertex.fx", "LightFwdPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "ToneMap", "ToneMapFwdVertex.fx", "ToneMapFwdPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "Skeletal", "SkeletalVertex.fx", "SkeletalPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "Copy", "CopyFwdVertex.fx", "CopyFwdPixel.fx", CULL_FRONT);/**/
 #elif defined(OGL)
-	g_RenderManager->AddEffect("Deferred");
-	g_RenderManager->AddEffect("Forward");/**/
+		g_RenderManager->AddEffect("Deferred");
+		g_RenderManager->AddEffect("Forward");/**/
 
-	g_RenderManager->getShader("Deferred").CreatePass("GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
-	g_RenderManager->getShader("Deferred").CreatePass("SkyBox", "SkyBoxVertex.fx", "SkyBoxPixel.fx", CULL_BACK);
-	g_RenderManager->getShader("Deferred").CreatePass("Lights", "LightVertex.fx", "LightPixel.fx", CULL_FRONT);
-	g_RenderManager->getShader("Deferred").CreatePass("SSAO", "SSAOVertex.fx", "SSAOPixel.fx", CULL_FRONT);
-	g_RenderManager->getShader("Deferred").CreatePass("ToneMap", "ToneMapVertex.fx", "ToneMapPixel.fx", CULL_FRONT);
-	g_RenderManager->getShader("Deferred").CreatePass("Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "GBuffer", "GBufferVertex.fx", "GBufferPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "SkyBox", "SkyBoxVertex.fx", "SkyBoxPixel.fx", CULL_BACK);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "Lights", "LightVertex.fx", "LightPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "SSAO", "SSAOVertex.fx", "SSAOPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "ToneMap", "ToneMapVertex.fx", "ToneMapPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "Skeletal", "SkeletalVertex.fx", "SkeletalPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Deferred").CreatePass("Deferred", "Copy", "CopyVertex.fx", "CopyPixel.fx", CULL_FRONT);/**/
 
 
 
-	g_RenderManager->getShader("Forward").CreatePass("SkyBox", "SkyBoxFwdVertex.fx", "SkyBoxFwdPixel.fx", CULL_BACK);
-	g_RenderManager->getShader("Forward").CreatePass("Lights", "LightFwdVertex.fx", "LightFwdPixel.fx", CULL_FRONT);
-	g_RenderManager->getShader("Forward").CreatePass("ToneMap", "ToneMapFwdVertex.fx", "ToneMapFwdPixel.fx", CULL_FRONT);
-	g_RenderManager->getShader("Forward").CreatePass("Copy", "CopyFwdVertex.fx", "CopyFwdPixel.fx", CULL_FRONT);/**/
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "SkyBox", "SkyBoxFwdVertex.fx", "SkyBoxFwdPixel.fx", CULL_BACK);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "Lights", "LightFwdVertex.fx", "LightFwdPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "ToneMap", "ToneMapFwdVertex.fx", "ToneMapFwdPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "Skeletal", "SkeletalVertex.fx", "SkeletalPixel.fx", CULL_FRONT);
+		g_RenderManager->getShader("Forward").CreatePass("Forward", "Copy", "CopyFwdVertex.fx", "CopyFwdPixel.fx", CULL_FRONT);/**/
 #endif
 
 #if defined(DX11)
@@ -231,11 +235,13 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight", 6, sizeof(PointLight));
 		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));
 
-		g_RenderManager->getShader("Deferred").AddPassTrackValue("GBuffer", "Bones", 8, sizeof(MATRIX) * 100);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("GBuffer", "Bones", 3, sizeof(MATRIX) * 100);
 
 		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO", 0, sizeof(SSAO));
 
 		g_RenderManager->getShader("Deferred").AddPassTrackValue("ToneMap", "Exposure", 0, sizeof(Vector4));/**/
+
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("Skeletal", "Bones", 3, sizeof(MATRIX) * 100);
 
 		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "diffuse");
 		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "normal");
@@ -262,6 +268,8 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Deferred").AddPassInputTexture("ToneMap", "SSAO");
 		g_RenderManager->getShader("Deferred").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
 
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("Skeletal", "Final", false, color);
+
 		g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "Input");
 		g_RenderManager->getShader("Deferred").AddPassOutputTexture("Copy", "Final", true, color);/**/
 
@@ -279,107 +287,108 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SSAO", "Final", "ToneMap", "SSAO");/**/
 
 		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("ToneMap", "Final", "Copy", "Input");/*
-
 		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SSAO", "Final", "Copy", "Input");/**/
+
+		g_RenderManager->getShader("Deferred").UniteOutputOutputTextures("ToneMap", "Final", "Skeletal", "Final");/**/
 
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("SkyBox", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 		g_RenderManager->getShader("Deferred").SetPassOutputTexture("GBuffer", "Position", &g_pRenderTargetView, g_pDepthStencilView);/**/
 #elif defined(OGL)
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewMatrix", "view", eDataType::MAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", "projection", eDataType::MAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ModelMatrix", "model", eDataType::MAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewMatrix", "view", eDataType::MAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("ProjectionMatrix", "projection", eDataType::MAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("ModelMatrix", "model", eDataType::MAT);
 
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewPosition", "view_pos", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("ViewPosition", "view_pos", eDataType::FLOAT4);
 
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_ambient", "mat.ambient", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_specular", "mat.specular", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_diffuse", "mat.diffuse", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_shininess", "mat.shininess", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_ambient", "mat.ambient", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_specular", "mat.specular", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_diffuse", "mat.diffuse", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("Material_shininess", "mat.shininess", eDataType::FLOAT);
 
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight_dir", "dirL.lightDir", eDataType::FLOAT4);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight_color", "dirL.color", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight_dir", "dirL.lightDir", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("DirectionalLight_color", "dirL.color", eDataType::FLOAT4);
 
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_pos", "pointL.lightPos", eDataType::FLOAT4);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_color", "pointL.lightColor", eDataType::FLOAT4);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_att", "pointL.lightAtt", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_pos", "pointL.lightPos", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_color", "pointL.lightColor", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("PointLight_att", "pointL.lightAtt", eDataType::FLOAT);
 
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_pos", "spotL.lightPos", eDataType::FLOAT4);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_dir", "spotL.lightDir", eDataType::FLOAT4);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_color", "spotL.lightColor", eDataType::FLOAT4);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_att", "spotL.lightAtt", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_inner", "spotL.cutOff", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_outer", "spotL.outerCutOff", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_pos", "spotL.lightPos", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_dir", "spotL.lightDir", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_color", "spotL.lightColor", eDataType::FLOAT4);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_att", "spotL.lightAtt", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_inner", "spotL.cutOff", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddEffectTrackValue("SpotLight_outer", "spotL.outerCutOff", eDataType::FLOAT);
 
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("GBuffer", "Bones", "bones", eDataType::MAT, 100);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("GBuffer", "Bones", "bones", eDataType::MAT, 100);
 
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_rad", "_ssao.sampleRadius", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_scale", "_ssao.scale", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_bias", "_ssao.bias", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_intens", "_ssao.intensity", eDataType::FLOAT);
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_it", "_ssao.sampleIterations", eDataType::INT);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_rad", "_ssao.sampleRadius", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_scale", "_ssao.scale", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_bias", "_ssao.bias", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_intens", "_ssao.intensity", eDataType::FLOAT);
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("SSAO", "SSAO_it", "_ssao.sampleIterations", eDataType::INT);
 
-	g_RenderManager->getShader("Deferred").AddPassTrackValue("ToneMap", "Exposure", "exposure", eDataType::FLOAT);/**/
-
-
-
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "diffuse", "diffuseMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "normal", "normalMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "specular", "specularMap");
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Position", true, color);
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Color", true, color);
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Normal", true, color);
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Specular", true, color);
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Mask", true, color);/**/
-
-
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("SkyBox", "diffuse", "skyBoxMap");
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("SkyBox", "Final", true, color);/**/
-
-
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "position", "positionMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "diffuse", "colorMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "normal", "normalMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "specular", "specularMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "mask", "maskMap");
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("Lights", "Final", false, color);/**/
-
-
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("SSAO", "normal", "normalMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("SSAO", "position", "positionMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("SSAO", "mask", "maskMap");
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("SSAO", "Final", true, SSAOcolor);/**/
-
-
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("ToneMap", "Light", "LightMap");
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("ToneMap", "SSAO", "SSAOMap");
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
-
-
-	g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "Input", "inputMap");
-	g_RenderManager->getShader("Deferred").AddPassOutputTexture("Copy", "Final", true, color);/**/
+		g_RenderManager->getShader("Deferred").AddPassTrackValue("ToneMap", "Exposure", "exposure", eDataType::FLOAT);/**/
 
 
 
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "diffuse", "diffuseMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "normal", "normalMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("GBuffer", "specular", "specularMap");
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Position", true, color);
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Color", true, color);
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Normal", true, color);
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Specular", true, color);
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("GBuffer", "Mask", true, color);/**/
 
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "Lights", "position");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Color", "Lights", "diffuse");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "Lights", "normal");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Specular", "Lights", "specular");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Mask", "Lights", "mask");/**/
 
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "SSAO", "normal");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "SSAO", "position");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Mask", "SSAO", "mask");
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SSAO", "Final", "ToneMap", "SSAO");/**/
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("SkyBox", "diffuse", "skyBoxMap");
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("SkyBox", "Final", true, color);/**/
 
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SkyBox", "Final", "ToneMap", "Light");
-	
-	//g_RenderManager->getShader("Deferred").UniteOutputOutputTextures("SkyBox", "Final", "Lights", "Final");/**/
 
-	g_RenderManager->getShader("Deferred").UniteInputOutputTextures("ToneMap", "Final", "Copy", "Input");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "position", "positionMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "diffuse", "colorMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "normal", "normalMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "specular", "specularMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("Lights", "mask", "maskMap");
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("Lights", "Final", false, color);/**/
 
-	g_RenderManager->getShader("Deferred").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);
+
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("SSAO", "normal", "normalMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("SSAO", "position", "positionMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("SSAO", "mask", "maskMap");
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("SSAO", "Final", true, SSAOcolor);/**/
+
+
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("ToneMap", "Light", "LightMap");
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("ToneMap", "SSAO", "SSAOMap");
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
+
+
+		g_RenderManager->getShader("Deferred").AddPassInputTexture("Copy", "Input", "inputMap");
+		g_RenderManager->getShader("Deferred").AddPassOutputTexture("Copy", "Final", true, color);/**/
+
+
+
+
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "Lights", "position");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Color", "Lights", "diffuse");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "Lights", "normal");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Specular", "Lights", "specular");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Mask", "Lights", "mask");/**/
+
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Normal", "SSAO", "normal");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Position", "SSAO", "position");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("GBuffer", "Mask", "SSAO", "mask");
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SSAO", "Final", "ToneMap", "SSAO");/**/
+
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("SkyBox", "Final", "ToneMap", "Light");
+		
+		//g_RenderManager->getShader("Deferred").UniteOutputOutputTextures("SkyBox", "Final", "Lights", "Final");/**/
+
+		g_RenderManager->getShader("Deferred").UniteInputOutputTextures("ToneMap", "Final", "Copy", "Input");
+
+		g_RenderManager->getShader("Deferred").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);
 #endif
 
 		/*Forward*/
@@ -394,6 +403,8 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight", 7, sizeof(SpotLight));/**/
 
 		g_RenderManager->getShader("Forward").AddPassTrackValue("ToneMap", "Exposure", 0, sizeof(Vector4));/**/
+
+		g_RenderManager->getShader("Forward").AddPassTrackValue("Skeletal", "Bones", 8, sizeof(MATRIX) * 100);
 
 
 
@@ -411,6 +422,8 @@ namespace GraphicsModule
 		g_RenderManager->getShader("Forward").AddPassInputTexture("ToneMap", "Light");
 		g_RenderManager->getShader("Forward").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
 
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("Skeletal", "Final", false, color);
+
 
 		g_RenderManager->getShader("Forward").AddPassInputTexture("Copy", "Input");
 		g_RenderManager->getShader("Forward").AddPassOutputTexture("Copy", "Final", true, color);/**/
@@ -421,64 +434,68 @@ namespace GraphicsModule
 
 		g_RenderManager->getShader("Forward").UniteOutputOutputTextures("SkyBox", "Final", "Lights", "Final");/**/
 
+		g_RenderManager->getShader("Forward").UniteOutputOutputTextures("ToneMap", "Final", "Skeletal", "Final");/**/
+
 		g_RenderManager->getShader("Forward").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
 		g_RenderManager->getShader("Forward").SetPassOutputTexture("SkyBox", "Final", &g_pRenderTargetView, g_pDepthStencilView);/**/
 #elif defined(OGL)
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("ViewMatrix", "view", eDataType::MAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("ProjectionMatrix", "projection", eDataType::MAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("ModelMatrix", "model", eDataType::MAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("ViewMatrix", "view", eDataType::MAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("ProjectionMatrix", "projection", eDataType::MAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("ModelMatrix", "model", eDataType::MAT);
 
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("ViewPosition", "view_pos", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("ViewPosition", "view_pos", eDataType::FLOAT4);
 
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_ambient", "mat.ambient", eDataType::FLOAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_specular", "mat.specular", eDataType::FLOAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_diffuse", "mat.diffuse", eDataType::FLOAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_shininess", "mat.shininess", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_ambient", "mat.ambient", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_specular", "mat.specular", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_diffuse", "mat.diffuse", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("Material_shininess", "mat.shininess", eDataType::FLOAT);
 
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("DirectionalLight_dir", "dirL.lightDir", eDataType::FLOAT4);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("DirectionalLight_color", "dirL.color", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("DirectionalLight_dir", "dirL.lightDir", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("DirectionalLight_color", "dirL.color", eDataType::FLOAT4);
 
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight_pos", "pointL.lightPos", eDataType::FLOAT4);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight_color", "pointL.lightColor", eDataType::FLOAT4);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight_att", "pointL.lightAtt", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight_pos", "pointL.lightPos", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight_color", "pointL.lightColor", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("PointLight_att", "pointL.lightAtt", eDataType::FLOAT);
 
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_pos", "spotL.lightPos", eDataType::FLOAT4);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_dir", "spotL.lightDir", eDataType::FLOAT4);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_color", "spotL.lightColor", eDataType::FLOAT4);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_att", "spotL.lightAtt", eDataType::FLOAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_inner", "spotL.cutOff", eDataType::FLOAT);
-	g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_outer", "spotL.outerCutOff", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_pos", "spotL.lightPos", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_dir", "spotL.lightDir", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_color", "spotL.lightColor", eDataType::FLOAT4);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_att", "spotL.lightAtt", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_inner", "spotL.cutOff", eDataType::FLOAT);
+		g_RenderManager->getShader("Forward").AddEffectTrackValue("SpotLight_outer", "spotL.outerCutOff", eDataType::FLOAT);
 
-	g_RenderManager->getShader("Forward").AddPassTrackValue("ToneMap", "Exposure", "exposure", eDataType::FLOAT);/**/
+		g_RenderManager->getShader("Forward").AddPassTrackValue("GBuffer", "Bones", "bones", eDataType::MAT, 100);
 
-
-
-	g_RenderManager->getShader("Forward").AddPassInputTexture("SkyBox", "diffuse", "skyBoxMap");
-	g_RenderManager->getShader("Forward").AddPassOutputTexture("SkyBox", "Final", false, color);/**/
-
-
-	g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "diffuse", "diffuseMap");
-	g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "AO", "AOMap");
-	g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "normal", "normalMap");
-	g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "specular", "specularMap");
-	g_RenderManager->getShader("Forward").AddPassOutputTexture("Lights", "Final", true, color);/**/
-
-
-	g_RenderManager->getShader("Forward").AddPassInputTexture("ToneMap", "Light", "LightMap");
-	g_RenderManager->getShader("Forward").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
-
-
-	g_RenderManager->getShader("Forward").AddPassInputTexture("Copy", "Input", "inputMap");
-	g_RenderManager->getShader("Forward").AddPassOutputTexture("Copy", "Final", true, color);/**/
+		g_RenderManager->getShader("Forward").AddPassTrackValue("ToneMap", "Exposure", "exposure", eDataType::FLOAT);/**/
 
 
 
-	g_RenderManager->getShader("Forward").UniteInputOutputTextures("SkyBox", "Final", "ToneMap", "Light");
-	g_RenderManager->getShader("Forward").UniteInputOutputTextures("ToneMap", "Final", "Copy", "Input");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("SkyBox", "diffuse", "skyBoxMap");
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("SkyBox", "Final", false, color);/**/
 
 
-	g_RenderManager->getShader("Forward").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
-	g_RenderManager->getShader("Forward").SetPassOutputTexture("Lights", "Final", &g_pRenderTargetView, g_pDepthStencilView);/**/
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "diffuse", "diffuseMap");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "AO", "AOMap");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "normal", "normalMap");
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Lights", "specular", "specularMap");
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("Lights", "Final", true, color);/**/
+
+
+		g_RenderManager->getShader("Forward").AddPassInputTexture("ToneMap", "Light", "LightMap");
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("ToneMap", "Final", true, color);/**/
+
+
+		g_RenderManager->getShader("Forward").AddPassInputTexture("Copy", "Input", "inputMap");
+		g_RenderManager->getShader("Forward").AddPassOutputTexture("Copy", "Final", true, color);/**/
+
+
+
+		g_RenderManager->getShader("Forward").UniteInputOutputTextures("SkyBox", "Final", "ToneMap", "Light");
+		g_RenderManager->getShader("Forward").UniteInputOutputTextures("ToneMap", "Final", "Copy", "Input");
+
+
+		g_RenderManager->getShader("Forward").SetPassOutputTexture("Copy", "Final", &g_pRenderTargetView, g_pDepthStencilView);/*
+		g_RenderManager->getShader("Forward").SetPassOutputTexture("Lights", "Final", &g_pRenderTargetView, g_pDepthStencilView);/**/
 #endif
 
 		return S_OK;

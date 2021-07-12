@@ -152,7 +152,7 @@ HRESULT Mesh::setIndices(vector<unsigned int> indices)
 	}
 	return S_OK;
 }
-void Mesh::Draw(RenderManager* renderManager)
+void Mesh::Draw(RenderManager* renderManager, unsigned int topologyOGL)
 {
 #if defined(DX11)/*
 	UINT stride = sizeof(Vertex);
@@ -175,7 +175,7 @@ void Mesh::Draw(RenderManager* renderManager)
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, (const void*)0);
+	glDrawElements(topologyOGL, m_indicesCount, GL_UNSIGNED_INT, (const void*)0);
 
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	//glBindVertexArray(0);

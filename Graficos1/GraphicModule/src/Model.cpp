@@ -47,7 +47,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	
 		for (int i = 0; i < scene->mNumMaterials; i++)
 		{
-			int meshIndex = 0;	
+			int meshIndex = -1;	
 			for (int j = 0; j < scene->mNumMeshes; j++)
 			{
 				if (scene->mMeshes[j]->mMaterialIndex == i)
@@ -56,69 +56,72 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 				}
 			}
 
-			if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+			if (meshIndex != -1)
 			{
-	
-				aiGetMaterialTexture(scene->mMaterials[i], aiTextureType_DIFFUSE, 0, &path);
-	
-				aiString completePath;
-				completePath.Append(fileName.c_str());
-				completePath.Append("/../../Textures/");
-				completePath.Append(path.C_Str());
-	
-				aiString completeName;
-				completeName.Append("Texture ");
-				completeName.Append(completePath.C_Str());
-				cout << "\tPath: " << completePath.C_Str() << endl;
-				eSTATUS stat = GraphicsModule::TextureManager::CreateTextureFromFile({completePath.C_Str()}, completeName.C_Str(), Flags, dim);
-				if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
+				if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0)
 				{
-					setTexture(meshIndex, GraphicsModule::TextureManager::GetTexture(completeName.C_Str()));
+				
+					aiGetMaterialTexture(scene->mMaterials[i], aiTextureType_DIFFUSE, 0, &path);
+				
+					aiString completePath;
+					completePath.Append(fileName.c_str());
+					completePath.Append("/../../Textures/");
+					completePath.Append(path.C_Str());
+				
+					aiString completeName;
+					completeName.Append("Texture ");
+					completeName.Append(completePath.C_Str());
+					cout << "\tPath: " << completePath.C_Str() << endl;
+					eSTATUS stat = GraphicsModule::TextureManager::CreateTextureFromFile({completePath.C_Str()}, completeName.C_Str(), Flags, dim);
+					if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
+					{
+						setTexture(meshIndex, GraphicsModule::TextureManager::GetTexture(completeName.C_Str()));
+					}
+					else
+					{
+						cout << "Textura no cargada" << endl;
+						setTexture(meshIndex, GraphicsModule::TextureManager::GetTexture("Base Texture"));
+					}
 				}
 				else
 				{
-					cout << "Textura no cargada" << endl;
-					setTexture(meshIndex, GraphicsModule::TextureManager::GetTexture("Base Texture"));
-				}
-			}
-			else
-			{
-				std::vector<string> completePathDiffuse(1);
-				completePathDiffuse[0].append(fileName.c_str());
-				completePathDiffuse[0].append("/../../Textures/M_");
-				completePathDiffuse[0].append(m_name.c_str());
-				completePathDiffuse[0].append("_Albedo");
-				if (dim == eDIMENSION::TEXTURE2D)
-					completePathDiffuse[0].append(".jpg");
-				else if (dim == eDIMENSION::TEX_CUBE)
-				{
+					std::vector<string> completePathDiffuse(1);
+					completePathDiffuse[0].append(fileName.c_str());
+					completePathDiffuse[0].append("/../../Textures/M_");
+					completePathDiffuse[0].append(m_name.c_str());
+					completePathDiffuse[0].append("_Albedo");
+					if (dim == eDIMENSION::TEXTURE2D)
+						completePathDiffuse[0].append(".jpg");
+					else if (dim == eDIMENSION::TEX_CUBE)
+					{
 #if defined(DX11)
-					completePathDiffuse[0].append(".dds");
+						completePathDiffuse[0].append(".dds");
 #elif defined(OGL)
-
-					for (int i = 1; i < 6; i++)
-					{
-						completePathDiffuse.push_back(completePathDiffuse[0]);
-						completePathDiffuse[i].append(to_string(i));
-						completePathDiffuse[i].append(".jpg");
+				
+						for (int i = 1; i < 6; i++)
+						{
+							completePathDiffuse.push_back(completePathDiffuse[0]);
+							completePathDiffuse[i].append(to_string(i));
+							completePathDiffuse[i].append(".jpg");
+						}
+						completePathDiffuse[0].append("0.jpg");
+#endif			
 					}
-					completePathDiffuse[0].append("0.jpg");
-#endif
-				}
-				stat = TextureManager::CreateTextureFromFile({ completePathDiffuse }, m_name + "_Albedo", Flags, dim);
-				//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
-				if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
-				{
-					for (int i = 0; i < scene->mNumMeshes; i++)
+					stat = TextureManager::CreateTextureFromFile({ completePathDiffuse }, m_name + "_Albedo", Flags, dim);
+					//GetManager()->getShader().AddPassInputTexture("Lights", "diffuse");
+					if (stat == eSTATUS::OK || stat == eSTATUS::REPITED)
 					{
-						setTexture(i, TextureManager::GetTexture(m_name + "_Albedo"));
+						for (int i = 0; i < scene->mNumMeshes; i++)
+						{
+							setTexture(i, TextureManager::GetTexture(m_name + "_Albedo"));
+						}
 					}
-				}
-				else if (stat == eSTATUS::FAIL)
-				{
-					for (int i = 0; i < scene->mNumMeshes; i++)
+					else if (stat == eSTATUS::FAIL)
 					{
-						setTexture(i, TextureManager::GetTexture("Base Texture"));
+						for (int i = 0; i < scene->mNumMeshes; i++)
+						{
+							setTexture(i, TextureManager::GetTexture("Base Texture"));
+						}
 					}
 				}
 			}
@@ -184,7 +187,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 	{
 		for (int i = 0; i < scene->mNumMeshes; i++)
 		{
-			setTexture(i, TextureManager::GetTexture("Base Texture"));
+			setTexture(i, TextureManager::GetTexture("Base Normal"));
 		}
 	}
 	
@@ -267,15 +270,15 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 			}
 
 			//---UVs
-			for (int k = 0; k < scene->mMeshes[i]->mMaterialIndex; ++k)
-			{
-				if (scene->mMeshes[i]->HasTextureCoords(k))
+			//for (int k = 0; k < scene->mMeshes[i]->mMaterialIndex; ++k)
+		//	{
+				if (scene->mMeshes[i]->HasTextureCoords(0))
 				{
-					v.Tex.x = scene->mMeshes[i]->mTextureCoords[k][j].x;
-					v.Tex.y = scene->mMeshes[i]->mTextureCoords[k][j].y;
+					v.Tex.x = scene->mMeshes[i]->mTextureCoords[0][j].x;
+					v.Tex.y = scene->mMeshes[i]->mTextureCoords[0][j].y;
 
 				}
-			}
+			//}
 
 			//---Norms
 			if (scene->mMeshes[i]->HasNormals())
@@ -317,6 +320,13 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 						cout << "Matriz llena" << endl;
 					}
 				}
+			}
+		}
+		else
+		{
+			for (int j = 0; j < vertices.size(); j++)
+			{
+				vertices[j].IDs.x = -1;
 			}
 		}
 
@@ -375,7 +385,7 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 		indices.clear();
 		vertices.clear();
 
-		m_modelMeshes[m_modelMeshes.size() - 1].setMaterialID(scene->mMeshes[i]->mMaterialIndex);
+		//m_modelMeshes[m_modelMeshes.size() - 1].setMaterialID(scene->mMeshes[i]->mMaterialIndex);
 	}
 
 #if !defined(OGL)
@@ -392,9 +402,167 @@ bool Model::LoadModel(const aiScene* scene, string fileName, unsigned int Flags,
 		m_topology = GL_LINE;
 	if (Flags & MODEL_LOAD_FORMAT_POINTS)
 		m_topology = GL_POINT;
+
+	m_renderTopologyOGL = GL_TRIANGLES;
 #endif
 
 	return true;
+}
+
+aiNode* getNode(aiNode* root, std::string name)
+{
+	if (root->mName.C_Str() == name)
+	{
+		return root;
+	}
+	else
+	{
+		for (int i = 0; i < root->mNumChildren; i++)
+		{
+			aiNode* node = getNode(root->mChildren[i], name);
+			if (node != nullptr)
+				return node;
+		}
+	}
+	return nullptr;
+}
+
+int getIndex(std::vector<Bone> bones, std::string name)
+{
+	for (int i = 0; i < bones.size(); i++)
+	{
+		if (bones[i].m_name == name)
+			return i;
+	}
+	return -1;
+}
+
+bool Model::LoadModel(aiNode* root, std::vector<Bone> bones)
+{
+	m_textures.push_back(std::vector<Texture>());
+
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	int index = 0;
+	int parent = -1;
+
+	//LoadNodes(root, vertices, indices, parent, index, bones);
+
+	for (int i = 0; i < bones.size(); i++)
+	{
+		vertices.push_back(Vertex());
+
+		vertices[vertices.size() - 1].Pos = Vector3{ 0,0,0 };
+		vertices[vertices.size() - 1].Tex = Vector2{ 0,0 };
+		vertices[vertices.size() - 1].Normales = Vector3{ 0,0,0 };
+		vertices[vertices.size() - 1].Binormal = Vector3{ 0,0,0 };
+		vertices[vertices.size() - 1].Tangente = Vector3{ 0,0,0 };
+
+		vertices[vertices.size() - 1].IDs = Vectori4{ (int)vertices.size() - 1,0,0,0 };
+		vertices[vertices.size() - 1].weights = Vector4{ 1,0,0,0 };
+
+		std::string boneName = bones[i].m_name;
+
+		aiNode* node = getNode(root, boneName);
+
+		if (node != nullptr)
+		{
+ 			for (int j = 0; j < node->mNumChildren; j++)
+			{				
+				indices.push_back(getIndex(bones, node->mChildren[j]->mName.C_Str()));
+				indices.push_back(i);
+			}
+		}
+	}
+
+	m_modelMeshes.push_back(Mesh());
+
+	m_modelMeshes[0].setVertex(vertices);
+	m_modelMeshes[0].setIndices(indices);
+
+	vertices.clear();
+	indices.clear();
+
+#if !defined(OGL)
+	m_topology = PRIMITIVE_TOPOLOGY_LINELIST;
+#else
+	m_topology = GL_LINES;
+	m_renderTopologyOGL = GL_LINES;
+#endif
+
+	return false;
+}
+
+bool Model::LoadNodes(aiNode* node, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, int& parentIndex, int& index, std::vector<std::vector<Bone>> bones)
+{
+	if (node == nullptr)
+		return true;
+
+	bool isValidNode = false;
+
+	for (std::vector<Bone>& v : bones)
+	{
+		for (Bone& b : v)
+		{
+			if (b.m_name == node->mName.C_Str())
+			{
+				isValidNode = true;
+
+				break;
+			}
+		}
+
+		if (isValidNode)
+			break;
+	}
+
+	int parent = -1;
+
+	if (isValidNode)
+	{
+		vertices.push_back(Vertex());
+
+		vertices[vertices.size() - 1].Pos = Vector3{ 0,0,0 };
+		vertices[vertices.size() - 1].Tex = Vector2{ 0,0 };
+		vertices[vertices.size() - 1].Normales = Vector3{ 0,0,0 };
+		vertices[vertices.size() - 1].Binormal = Vector3{ 0,0,0 };
+		vertices[vertices.size() - 1].Tangente = Vector3{ 0,0,0 };
+
+		vertices[vertices.size() - 1].IDs = Vectori4{ (int)vertices.size() - 1,0,0,0 };
+		vertices[vertices.size() - 1].weights = Vector4{ 1,0,0,0 };
+
+
+		if (parentIndex != -1)
+		{
+			indices.push_back(index);
+			indices.push_back(parentIndex);
+		}
+
+		parent = index;
+	}
+
+
+	for (int i = 0; i < node->mNumChildren; i++)
+	{
+		if (isValidNode)
+			index++;
+		LoadNodes(node->mChildren[i], vertices, indices, parent, index, bones);
+	}
+
+	return false;
+}
+
+void SetTexture(int slot, Texture tex, std::string uniform)
+{
+#if defined(DX11)
+	GetManager()->PSSetShaderResources(slot, { tex });
+#elif defined(OGL)
+	GetManager()->ShaderSetInt(uniform, slot);
+
+	// Uses GL_TEXTURE0 as base, and increment it with 'slot' to GL_TEXTURE1, GL_TEXTURE2, etc., because its values are consecutive.
+	glActiveTexture(GL_TEXTURE0 + slot++);
+	glBindTexture(GL_TEXTURE_2D, tex.getID());
+#endif
 }
 
 void Model::Draw(RenderManager* renderManager, bool useTextures, SkeletalMesh* sk)
@@ -431,11 +599,21 @@ void Model::Draw(RenderManager* renderManager, bool useTextures, SkeletalMesh* s
 
 		//renderManager->getShader("Deferred").SetPassValue("GBuffer", "Bones", sk->GetBonesMatrices(i).data());
 
+		if (useTextures)
+		{
+			SetTexture(0, m_textures[i][0], "diffuseMap");
+			SetTexture(1, m_textures[i][1], "normalMap");
+			SetTexture(2, m_textures[i][2], "specularMap");
+			SetTexture(3, m_textures[i][3], "AOMap");
+		}
+
+
 
 		// TODO: Arreglar esto
 		std::vector<MATRIX> mats = sk->GetBonesMatrices(i);
 #if defined(DX11)
-		renderManager->getShader("Deferred").SetBuffer(3, "Bones", mats.data());
+		renderManager->getShader("Deferred").SetBuffer(8, "Bones", mats.data());
+		renderManager->getShader("Forward").SetBuffer(8, "Bones", mats.data());
 #elif defined(OGL)
 		std::vector<glm::mat4> matsr;
 		for (int i = 0; i < mats.size(); i++)
@@ -446,12 +624,15 @@ void Model::Draw(RenderManager* renderManager, bool useTextures, SkeletalMesh* s
 									  mats[i]._41, mats[i]._42, mats[i]._43, mats[i]._44 ));
 		}
 		if (matsr.size() > 0)
+		{
 			renderManager->getShader("Deferred").SetMat4("bones", matsr);
+			renderManager->getShader("Forward").SetMat4("bones", matsr);
+		}
 #endif
 
 		yaBones = true;
 
-		m_modelMeshes[i].Draw(renderManager);
+		m_modelMeshes[i].Draw(renderManager, m_renderTopologyOGL);
 	}
 }
 void Model::SetResources(RenderManager* renderManager, bool useTextures)
@@ -465,38 +646,6 @@ void Model::SetResources(RenderManager* renderManager, bool useTextures)
 
 	for (int i = 0; i < m_modelMeshes.size(); ++i)
 	{
-		if (useTextures)
-		{
-#if defined(DX11)
-			renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "diffuse", m_textures[i][0]);
-			renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "normal", m_textures[i][1]);
-			renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "specular", m_textures[i][2]);
-
-			renderManager->getShader("Deferred").SetPassInputTexture("SkyBox", "diffuse", m_textures[i][0]);
-
-
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "diffuse", m_textures[i][0]);
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "normal", m_textures[i][1]);
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "specular", m_textures[i][2]);
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "AO", m_textures[i][3]);
-
-			renderManager->getShader("Forward").SetPassInputTexture("SkyBox", "diffuse", m_textures[i][0]);
-#elif defined(OGL)
-			renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "diffuse", m_textures[i][0]);
-			renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "normal", m_textures[i][1]);
-			renderManager->getShader("Deferred").SetPassInputTexture("GBuffer", "specular", m_textures[i][2]);
-
-			renderManager->getShader("Deferred").SetPassInputTexture("SkyBox", "diffuse", m_textures[i][0]);/**/
-
-
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "diffuse", m_textures[i][0]);
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "normal", m_textures[i][1]);
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "specular", m_textures[i][2]);
-			renderManager->getShader("Forward").SetPassInputTexture("Lights", "AO", m_textures[i][3]);
-
-			renderManager->getShader("Forward").SetPassInputTexture("SkyBox", "diffuse", m_textures[i][0]);/**/
-#endif
-		}
 
 		m_modelMeshes[i].SetResources(renderManager);
 	}
